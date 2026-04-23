@@ -8,6 +8,7 @@ import Features from './pages/Features.jsx'
 import Services from './pages/Services.jsx'
 import Resources from './pages/Resources.jsx'
 import Integrations from './pages/Integrations.jsx'
+import UserPage from './pages/UserPage.jsx'
 
 function getCurrentPath() {
   const path = window.location.pathname || '/'
@@ -83,6 +84,10 @@ export default function App() {
 
   if (activePath === '/integrations') {
     return <Integrations activePath={activePath} onNavigate={navigateTo} />
+  }
+
+  if (activePath === '/dashboard') {
+    return <UserPage activePath={activePath} onNavigate={navigateTo} />
   }
 
   return (

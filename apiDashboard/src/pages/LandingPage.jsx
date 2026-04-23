@@ -1,5 +1,5 @@
 import conceptImage from '../assets/concept-image.png'
-import conceptImage2 from '../assets/Concept-image2.png'
+import reliabilityDashboardImg from '../assets/reliability-dashboard.png'
 import NavBar from '../components/NavBar'
 
 const GenericIcon = ({ className = '' }) => (
@@ -317,7 +317,7 @@ const Reliability = () => (
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#128C7E] rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
                     <div className="relative z-10 overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-800/20 backdrop-blur-sm">
                         <img
-                            src={conceptImage2}
+                            src={reliabilityDashboardImg}
                             alt="WhatsApp reliability and support dashboard"
                             className="block min-h-[280px] w-full object-cover"
                         />

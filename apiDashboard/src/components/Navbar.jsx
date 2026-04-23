@@ -6,11 +6,12 @@ const navItems = [
   { label: 'Resources', path: '/resources' },
   { label: 'Integrations', path: '/integrations' },
   { label: 'Registration', path: '/registration' },
+  { label: 'Dashboard', path: '/dashboard' },
 ]
 
 export default function NavBar({ activePath, onNavigate }) {
   return (
-    <header className="w-full border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-4 py-5 sm:px-6 lg:px-10">
         <button type="button" onClick={() => onNavigate('/')} className="shrink-0">
           <img
