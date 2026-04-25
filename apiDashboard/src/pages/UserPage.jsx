@@ -44,23 +44,36 @@ import {
 import InboxPage from './InboxPage';
 import CampaignPage from './CampaignPage';
 import TemplateEditor from './TemplateEditor';
+import AutomationPage from './AutomationPage';
+import ContactsPage from './ContactsPage';
+import AnalyticsPage from './AnalyticsPage';
+import MessageLogsPage from './MessageLogsPage';
 
 const chartData = [
-  { name: '12 May', sent: 5800, delivered: 4000, read: 2500, received: 1500 },
-  { name: '13 May', sent: 8000, delivered: 6000, read: 3900, received: 2800 },
-  { name: '14 May', sent: 7200, delivered: 5000, read: 1800, received: 1500 },
-  { name: '15 May', sent: 5900, delivered: 4000, read: 2500, received: 2400 },
-  { name: '16 May', sent: 7600, delivered: 5400, read: 2500, received: 2400 },
-  { name: '17 May', sent: 6300, delivered: 4500, read: 1800, received: 1200 },
-  { name: '18 May', sent: 8200, delivered: 6000, read: 3500, received: 2500 },
+  { name: '12 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '13 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '14 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '15 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '16 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '17 May', sent: 1, delivered: 1, read: 1, received: 1 },
+  { name: '18 May', sent: 1, delivered: 1, read: 1, received: 1 },
 ];
 
 export default function UserPage({ activePath, onNavigate }) {
-  const [activeTab, setActiveTab] = useState('/dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('activeDashboardTab') || '/dashboard';
+  });
+  const [subAction, setSubAction] = useState(null);
+
+  const handleTabChange = (path, action = null) => {
+    setActiveTab(path);
+    setSubAction(action);
+    localStorage.setItem('activeDashboardTab', path);
+  };
 
   const navItemsMain = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', active: true },
-    { name: 'Inbox', icon: MessageSquare, path: '/inbox', badge: 12 },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { name: 'Inbox', icon: MessageSquare, path: '/inbox', badge: 1 },
     { name: 'Campaigns', icon: Send, path: '/campaigns' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
     { name: 'Automation', icon: Bot, path: '/automation' },
@@ -102,14 +115,14 @@ export default function UserPage({ activePath, onNavigate }) {
               {navItemsMain.map((item) => (
                 <button
                   key={item.name}
-                  onClick={() => setActiveTab(item.path)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${item.active
+                  onClick={() => handleTabChange(item.path)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${activeTab === item.path
                       ? 'bg-emerald-900/40 text-emerald-400'
                       : 'hover:bg-slate-800 hover:text-white'
                     }`}
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon size={18} className={item.active ? 'text-emerald-400' : 'text-slate-400'} />
+                    <item.icon size={18} className={activeTab === item.path ? 'text-emerald-400' : 'text-slate-400'} />
                     <span className="text-sm font-medium">{item.name}</span>
                   </div>
                   {item.badge && (
@@ -128,9 +141,13 @@ export default function UserPage({ activePath, onNavigate }) {
               {navItemsDev.map((item) => (
                 <button
                   key={item.name}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+                  onClick={() => handleTabChange(item.path)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeTab === item.path
+                    ? 'bg-emerald-900/40 text-emerald-400'
+                    : 'hover:bg-slate-800 hover:text-white text-slate-300'
+                  }`}
                 >
-                  <item.icon size={18} className="text-slate-400" />
+                  <item.icon size={18} className={activeTab === item.path ? 'text-emerald-400' : 'text-slate-400'} />
                   <span className="text-sm font-medium">{item.name}</span>
                 </button>
               ))}
@@ -143,9 +160,13 @@ export default function UserPage({ activePath, onNavigate }) {
               {navItemsAccount.map((item) => (
                 <button
                   key={item.name}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+                  onClick={() => handleTabChange(item.path)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${activeTab === item.path
+                    ? 'bg-emerald-900/40 text-emerald-400'
+                    : 'hover:bg-slate-800 hover:text-white text-slate-300'
+                  }`}
                 >
-                  <item.icon size={18} className="text-slate-400" />
+                  <item.icon size={18} className={activeTab === item.path ? 'text-emerald-400' : 'text-slate-400'} />
                   <span className="text-sm font-medium">{item.name}</span>
                 </button>
               ))}
@@ -194,6 +215,34 @@ export default function UserPage({ activePath, onNavigate }) {
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">Design and preview your WhatsApp message templates</p>
               </>
+            ) : activeTab === '/automation' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  Automation Flows
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Build and manage intelligent WhatsApp automation workflows</p>
+              </>
+            ) : activeTab === '/contacts' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  Contacts
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Manage and organize your WhatsApp contacts</p>
+              </>
+            ) : activeTab === '/analytics' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  Analytics Overview
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Deep dive into your WhatsApp API performance and engagement</p>
+              </>
+            ) : activeTab === '/logs' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  Advanced Message Logs
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Monitor, analyze and troubleshoot every message in real-time</p>
+              </>
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -239,7 +288,7 @@ export default function UserPage({ activePath, onNavigate }) {
               <button className="text-slate-400 hover:text-slate-600 transition-colors relative">
                 <Bell size={20} />
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 border-2 border-white rounded-full text-[8px] font-bold text-white flex items-center justify-center">
-                  3
+                  1
                 </span>
               </button>
               <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold shadow-sm cursor-pointer border border-slate-300">
@@ -257,20 +306,28 @@ export default function UserPage({ activePath, onNavigate }) {
             <CampaignPage />
           ) : activeTab === '/templates' ? (
             <TemplateEditor />
+          ) : activeTab === '/automation' ? (
+            <AutomationPage />
+          ) : activeTab === '/contacts' ? (
+            <ContactsPage subAction={subAction} onActionComplete={() => setSubAction(null)} />
+          ) : activeTab === '/analytics' ? (
+            <AnalyticsPage />
+          ) : activeTab === '/logs' ? (
+            <MessageLogsPage />
           ) : (
             <div className={`max-w-7xl mx-auto space-y-6 ${activeTab !== '/dashboard' ? 'hidden' : ''}`}>
 
             {/* Top Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {/* Stat 1 */}
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col cursor-pointer hover:border-emerald-500 transition-all" onClick={() => handleTabChange('/analytics')}>
                 <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-4 text-green-500">
                   <Send size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Messages Sent</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">25,680</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">1</h3>
                 <p className="text-emerald-500 text-xs flex items-center gap-1 mt-2 font-medium">
-                  <TrendingUp size={12} /> 12.5%
+                  <TrendingUp size={12} /> 1%
                 </p>
                 <p className="text-slate-400 text-xs mt-1">vs last 7 days</p>
               </div>
@@ -281,9 +338,9 @@ export default function UserPage({ activePath, onNavigate }) {
                   <CheckCircle2 size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Delivered</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">24,312</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">1</h3>
                 <p className="text-emerald-500 text-xs flex items-center gap-1 mt-2 font-medium">
-                  94.67%
+                  1%
                 </p>
                 <p className="text-slate-400 text-xs mt-1">vs last 7 days</p>
               </div>
@@ -294,9 +351,9 @@ export default function UserPage({ activePath, onNavigate }) {
                   <Eye size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Read</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">18,721</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">1</h3>
                 <p className="text-emerald-500 text-xs flex items-center gap-1 mt-2 font-medium">
-                  72.68%
+                  1%
                 </p>
                 <p className="text-slate-400 text-xs mt-1">vs last 7 days</p>
               </div>
@@ -307,9 +364,9 @@ export default function UserPage({ activePath, onNavigate }) {
                   <MessageCircle size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Received</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">8,542</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">1</h3>
                 <p className="text-emerald-500 text-xs flex items-center gap-1 mt-2 font-medium">
-                  <TrendingUp size={12} /> 8.3%
+                  <TrendingUp size={12} /> 1%
                 </p>
                 <p className="text-slate-400 text-xs mt-1">vs last 7 days</p>
               </div>
@@ -320,9 +377,9 @@ export default function UserPage({ activePath, onNavigate }) {
                   <Users size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Active Contacts</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">6,842</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">1</h3>
                 <p className="text-emerald-500 text-xs flex items-center gap-1 mt-2 font-medium">
-                  <TrendingUp size={12} /> 10.2%
+                  <TrendingUp size={12} /> 1%
                 </p>
                 <p className="text-slate-400 text-xs mt-1">vs last 7 days</p>
               </div>
@@ -333,8 +390,8 @@ export default function UserPage({ activePath, onNavigate }) {
                   <Wallet size={20} />
                 </div>
                 <p className="text-slate-500 text-sm font-medium">Wallet Balance</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">₹2,450.00</h3>
-                <button className="mt-3 flex items-center justify-center gap-1 w-full py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">₹1.00</h3>
+                <button onClick={() => handleTabChange('/billing')} className="mt-3 flex items-center justify-center gap-1 w-full py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
                   <Plus size={14} /> Add Funds
                 </button>
               </div>
@@ -375,7 +432,7 @@ export default function UserPage({ activePath, onNavigate }) {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-3 flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-slate-800">WhatsApp Business Profile</h3>
-                  <button className="px-3 py-1 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                  <button onClick={() => handleTabChange('/settings')} className="px-3 py-1 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-all">
                     Edit
                   </button>
                 </div>
@@ -415,7 +472,7 @@ export default function UserPage({ activePath, onNavigate }) {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-3 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-slate-800">Recent Notifications</h3>
-                  <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  <button onClick={() => handleTabChange('/logs')} className="text-sm font-medium text-blue-600 hover:text-blue-700">
                     View All
                   </button>
                 </div>
@@ -474,7 +531,7 @@ export default function UserPage({ activePath, onNavigate }) {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-8">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-slate-800">Campaign Overview</h3>
-                  <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                  <button onClick={() => handleTabChange('/campaigns')} className="text-sm font-medium text-blue-600 hover:text-blue-700">
                     View All
                   </button>
                 </div>
@@ -499,10 +556,10 @@ export default function UserPage({ activePath, onNavigate }) {
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Sent
                           </span>
                         </td>
-                        <td className="py-4 text-right text-slate-600">5,230</td>
-                        <td className="py-4 text-right text-slate-600">4,975</td>
-                        <td className="py-4 text-right text-slate-600">3,542</td>
-                        <td className="py-4 text-right font-medium text-slate-800">12.45%</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right font-medium text-slate-800">1%</td>
                       </tr>
                       <tr className="border-b border-slate-50">
                         <td className="py-4 font-medium text-slate-800">Weekend Offer</td>
@@ -523,10 +580,10 @@ export default function UserPage({ activePath, onNavigate }) {
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Completed
                           </span>
                         </td>
-                        <td className="py-4 text-right text-slate-600">2,340</td>
-                        <td className="py-4 text-right text-slate-600">2,250</td>
-                        <td className="py-4 text-right text-slate-600">1,782</td>
-                        <td className="py-4 text-right font-medium text-slate-800">9.21%</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right font-medium text-slate-800">1%</td>
                       </tr>
                       <tr>
                         <td className="py-4 font-medium text-slate-800">Festive Season Sale</td>
@@ -535,10 +592,10 @@ export default function UserPage({ activePath, onNavigate }) {
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Completed
                           </span>
                         </td>
-                        <td className="py-4 text-right text-slate-600">8,750</td>
-                        <td className="py-4 text-right text-slate-600">8,120</td>
-                        <td className="py-4 text-right text-slate-600">6,341</td>
-                        <td className="py-4 text-right font-medium text-slate-800">15.67%</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right text-slate-600">1</td>
+                        <td className="py-4 text-right font-medium text-slate-800">1%</td>
                       </tr>
                     </tbody>
                   </table>
@@ -549,42 +606,42 @@ export default function UserPage({ activePath, onNavigate }) {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-4 flex flex-col">
                 <h3 className="text-lg font-bold text-slate-800 mb-6">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-4 flex-1">
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-green-200 hover:bg-green-50/50 transition-all group">
+                  <button onClick={() => handleTabChange('/campaigns')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-green-200 hover:bg-green-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
                       <Send size={20} />
                     </div>
                     <span className="text-sm font-medium text-slate-700">Create Campaign</span>
                   </button>
 
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-purple-200 hover:bg-purple-50/50 transition-all group">
+                  <button onClick={() => handleTabChange('/campaigns')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-purple-200 hover:bg-purple-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
                       <LayoutTemplate size={20} />
                     </div>
                     <span className="text-sm font-medium text-slate-700">Send Template</span>
                   </button>
 
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-blue-200 hover:bg-blue-50/50 transition-all group">
+                  <button onClick={() => handleTabChange('/contacts', 'openAddModal')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-blue-200 hover:bg-blue-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
                       <Users size={20} />
                     </div>
                     <span className="text-sm font-medium text-slate-700">Add Contacts</span>
                   </button>
 
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-amber-200 hover:bg-amber-50/50 transition-all group">
+                  <button onClick={() => handleTabChange('/templates')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-amber-200 hover:bg-amber-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
                       <PenSquare size={20} />
                     </div>
                     <span className="text-sm font-medium text-slate-700">Create Template</span>
                   </button>
 
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-emerald-200 hover:bg-emerald-50/50 transition-all group">
+                  <button onClick={() => handleTabChange('/inbox')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-emerald-200 hover:bg-emerald-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                       <MessageCircle size={20} />
                     </div>
                     <span className="text-sm font-medium text-slate-700 text-center">Chat with Contact</span>
                   </button>
 
-                  <button className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50/50 transition-all group">
+                  <button onClick={() => window.open('https://developers.facebook.com/docs/whatsapp', '_blank')} className="flex flex-col items-center justify-center gap-3 p-4 border border-slate-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50/50 transition-all group">
                     <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                       <Code2 size={20} />
                     </div>

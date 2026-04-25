@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function TemplateEditor() {
-    const [templateName, setTemplateName] = useState('Order Update');
+    const [templateName, setTemplateName] = useState('template_1');
     const [category, setCategory] = useState('Utility');
     const [language, setLanguage] = useState('English');
 
@@ -26,12 +26,12 @@ export default function TemplateEditor() {
     const [headerFile, setHeaderFile] = useState(null);
     const [headerPreview, setHeaderPreview] = useState('https://images.unsplash.com/photo-1580828369062-850d9841f3e9?auto=format&fit=crop&q=80&w=400');
 
-    const [bodyText, setBodyText] = useState('Hello {{1}}, your order #1123 is confirmed! It will be delivered by {{3}}.');
-    const [footerText, setFooterText] = useState('Thank you for shopping with us!');
+    const [bodyText, setBodyText] = useState('Hello {{1}}');
+    const [footerText, setFooterText] = useState('1');
 
     const [buttons, setButtons] = useState([
-        { id: 1, type: 'url', text: 'Track Order', url: 'https://example.com/track' },
-        { id: 2, type: 'call', text: 'Call Support', phone: '+1234567890' }
+        { id: 1, type: 'url', text: '1', url: 'https://example.com/1' },
+        { id: 2, type: 'call', text: '1', phone: '+1' }
     ]);
 
     const fileInputRef = useRef(null);
