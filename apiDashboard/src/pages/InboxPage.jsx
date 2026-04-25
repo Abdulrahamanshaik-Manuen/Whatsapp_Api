@@ -219,7 +219,7 @@ export default function InboxPage() {
              <p className="text-[10px] text-slate-400">Avg. response time</p>
           </div>
           <div className="h-8 w-20">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={responseTimeData}>
                 <Line type="monotone" dataKey="val" stroke="#3b82f6" strokeWidth={2} dot={false} />
               </LineChart>

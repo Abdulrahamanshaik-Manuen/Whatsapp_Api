@@ -177,7 +177,7 @@ export default function MessageLogsPage() {
             <h3 className="text-2xl font-black text-slate-800">{stat.value}</h3>
             {stat.trend === 'chart' ? (
               <div className="h-8 mt-2">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <LineChart data={sparkData}>
                     <Line type="monotone" dataKey="val" stroke="#f59e0b" strokeWidth={2} dot={false} />
                   </LineChart>
