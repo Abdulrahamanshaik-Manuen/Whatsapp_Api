@@ -110,7 +110,7 @@ export default function UserPage({ activePath, onNavigate }) {
             <MessageSquare size={20} />
           </div>
           <div>
-            <h1 className="text-white font-semibold text-lg leading-tight">YourBrand</h1>
+            <h1 className="text-white font-semibold text-lg leading-tight">Manuen Infotech</h1>
             <p className="text-xs text-slate-400">WhatsApp API</p>
           </div>
         </div>
