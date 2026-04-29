@@ -41,5 +41,12 @@ const contactSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+contactSchema.pre('save', function(next) {
+  if (this.phoneNumber) {
+    this.phoneNumber = this.phoneNumber.replace(/\D/g, '');
+  }
+  next();
+});
+
 const Contact = mongoose.model('Contact', contactSchema);
 export default Contact;

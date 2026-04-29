@@ -9,7 +9,7 @@ export const verifyWebhook = (req, res) => {
     const challenge = req.query['hub.challenge'];
 
     if (mode && token) {
-        if (mode === 'subscribe' && token === process.env.WEBHOKVERIFYTOKEN) {
+        if (mode === 'subscribe' && token === process.env.WEBHOOKVERIFYTOKEN) {
             console.log('WEBHOOK_VERIFIED');
             res.status(200).send(challenge);
         } else {
@@ -51,7 +51,7 @@ export const handleWebhook = async (req, res) => {
                     const msg = value.messages[0];
                     const contactInfo = value.contacts && value.contacts[0] ? value.contacts[0] : { profile: { name: 'Unknown' } };
 
-                    const phone = msg.from;
+                    const phone = msg.from.replace(/\D/g, ''); // Ensure pure digits
                     const name = contactInfo.profile.name;
                     const msgText = msg.type === 'text' ? msg.text.body : (msg.type === 'image' ? 'Image received' : 'Media received');
 

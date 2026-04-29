@@ -4,9 +4,12 @@ import {
     sendMessage
 } from '../controllers/messageController.js';
 
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' });
+
 const router = express.Router();
 
 router.get('/:contactId', getMessages);
-router.post('/send', sendMessage);
+router.post('/send', upload.array('files'), sendMessage);
 
 export default router;

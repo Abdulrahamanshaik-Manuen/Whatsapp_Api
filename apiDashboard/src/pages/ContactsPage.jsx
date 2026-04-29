@@ -542,8 +542,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase px-1">Phone Number</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">+1</span>
-                  <input type="text" id="add-phone" placeholder="555 000 0000" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+                  <input type="text" id="add-phone" placeholder="+91 000 000 0000" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
                 </div>
               </div>
 
@@ -573,7 +572,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                   const handleAddSubmit = async () => {
                     const newContactData = {
                       name: `${fname} ${lname}`.trim(),
-                      phoneNumber: `+1 ${phone}`,
+                      phoneNumber: phone,
                       email: email,
                       location: location || 'Unknown',
                       details: {
@@ -877,7 +876,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                   setTimeout(() => {
                     const [fname, ...lnameArr] = (detailsContact.name || '').split(' ');
                     const lname = lnameArr.join(' ');
-                    const phoneInput = (detailsContact.phone || '').replace('+1 ', '').replace('+1', '').trim();
+                    const phoneInput = (detailsContact.phone || '').trim();
 
                     const elFname = document.getElementById('add-fname');
                     const elLname = document.getElementById('add-lname');

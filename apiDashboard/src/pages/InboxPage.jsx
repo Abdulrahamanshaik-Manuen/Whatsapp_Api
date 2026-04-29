@@ -13,52 +13,19 @@ const responseTimeData = [
   { val: 20 }, { val: 40 }, { val: 30 }, { val: 50 }, { val: 35 }, { val: 60 }, { val: 45 }
 ];
 
-const dummyConversations = [
-  {
-    _id: "dummy1",
-    name: 'Rahul Sharma',
-    phoneNumber: '+91 98765 43210',
-    status: 'online',
-    profilePicture: '',
-    unreadCount: 0,
-    lastMessageAt: new Date().toISOString(),
-    messages: [],
-    details: {
-      email: 'rahul.s@gmail.com',
-      location: 'Mumbai, India',
-      joined: '20 May 2025',
-      tags: ['VIP Customer', 'Repeat Buyer'],
-      orders: [
-        { id: 'ORD-12345', item: 'Smart Watch X1', status: 'Delivered', price: '₹2,499', date: '20 May 2025' },
-        { id: 'ORD-12312', item: 'Wireless Earbuds', status: 'Processing', price: '₹1,299', date: '18 May 2025' }
-      ]
-    }
-  },
-  {
-    _id: "dummy2",
-    name: 'Priya Patel',
-    phoneNumber: '+91 88888 77777',
-    status: 'online',
-    profilePicture: '',
-    unreadCount: 0,
-    lastMessageAt: new Date(Date.now() - 100000).toISOString(),
-    messages: [],
-    details: {
-      email: 'priya.p@outlook.com',
-      location: 'Ahmedabad, India',
-      joined: '15 June 2023',
-      tags: ['New Customer'],
-      orders: []
-    }
-  }
-];
+const dummyConversations = [];
 
 export default function InboxPage() {
-  const [activeChatId, setActiveChatId] = useState(dummyConversations[0]._id);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [messageText, setMessageText] = useState('');
   const [showSnippets, setShowSnippets] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [attachments, setAttachments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [newTagValue, setNewTagValue] = useState('');
 
   const [conversations, setConversations] = useState(dummyConversations);
   const [messages, setMessages] = useState([]);
@@ -124,7 +91,19 @@ export default function InboxPage() {
     }
   }, [socket, activeChatId]);
 
-  const activeChat = conversations.find(c => c._id === activeChatId) || conversations[0];
+  const filteredConversations = conversations
+    .filter(conv => {
+      const matchesSearch = (conv.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (conv.phoneNumber || '').includes(searchTerm);
+      if (!matchesSearch) return false;
+      
+      if (activeFilter === 'unread') return (conv.unreadCount || 0) > 0;
+      if (activeFilter === 'open') return (conv.status === 'online');
+      return true;
+    })
+    .sort((a, b) => new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0));
+
+  const activeChat = conversations.find(c => c._id === activeChatId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -200,14 +179,68 @@ export default function InboxPage() {
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/api/messages/send', {
-        contactId: activeChatId,
-        phoneNumber: activeChat.phoneNumber,
-        text: textToSend
+      const formData = new FormData();
+      formData.append('contactId', activeChatId);
+      formData.append('phoneNumber', activeChat.phoneNumber);
+      formData.append('text', textToSend);
+
+      currentAttachments.forEach(att => {
+        formData.append('files', att.file);
       });
-      setMessages(prev => [...prev, res.data]);
+
+      const res = await axios.post('http://localhost:5000/api/messages/send', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Handle response - the backend might return an array of messages or a single one
+      if (Array.isArray(res.data)) {
+        setMessages(prev => [...prev, ...res.data]);
+      } else {
+        setMessages(prev => [...prev, res.data]);
+      }
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error("Failed to send message:", err.response ? err.response.data : err.message);
+    }
+  };
+
+  const handleToggleStar = async () => {
+    if (!activeChat) return;
+    try {
+      const res = await axios.put(`http://localhost:5000/api/contacts/${activeChat._id}`, {
+        isStarred: !activeChat.isStarred
+      });
+      setConversations(prev => prev.map(c => c._id === activeChat._id ? res.data : c));
+    } catch (err) {
+      console.error("Failed to star contact:", err);
+    }
+  };
+
+  const handleToggleResolved = async () => {
+    if (!activeChat) return;
+    try {
+      const res = await axios.put(`http://localhost:5000/api/contacts/${activeChat._id}`, {
+        status: activeChat.status === 'resolved' ? 'online' : 'resolved'
+      });
+      setConversations(prev => prev.map(c => c._id === activeChat._id ? res.data : c));
+    } catch (err) {
+      console.error("Failed to resolve conversation:", err);
+    }
+  };
+
+  const handleAddTag = async () => {
+    if (!activeChat || !newTagValue.trim()) return;
+    try {
+      const currentTags = activeChat.tags || activeChat.details?.tags || [];
+      const res = await axios.put(`http://localhost:5000/api/contacts/${activeChat._id}`, {
+        tags: [...currentTags, newTagValue.trim()]
+      });
+      setConversations(prev => prev.map(c => c._id === activeChat._id ? res.data : c));
+      setIsTagModalOpen(false);
+      setNewTagValue('');
+    } catch (err) {
+      console.error("Failed to add tag:", err);
     }
   };
 
@@ -280,25 +313,36 @@ export default function InboxPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search conversations..."
                 className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-              <button className="px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full whitespace-nowrap border border-green-200">
-                All <span className="bg-green-500 text-white px-1.5 py-0.5 rounded-full text-[10px] ml-1">{conversations.length}</span>
+              <button 
+                onClick={() => setActiveFilter('all')}
+                className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap border transition-all ${activeFilter === 'all' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
+              >
+                All <span className={`px-1.5 py-0.5 rounded-full text-[10px] ml-1 ${activeFilter === 'all' ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>{conversations.length}</span>
               </button>
-              <button className="px-3 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-full whitespace-nowrap border border-slate-200 hover:bg-slate-100">
-                Unread <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full text-[10px] ml-1">{conversations.filter(c => c.unreadCount > 0).length}</span>
+              <button 
+                onClick={() => setActiveFilter('unread')}
+                className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap border transition-all ${activeFilter === 'unread' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
+              >
+                Unread <span className={`px-1.5 py-0.5 rounded-full text-[10px] ml-1 ${activeFilter === 'unread' ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-600'}`}>{conversations.filter(c => (c.unreadCount || 0) > 0).length}</span>
               </button>
-              <button className="px-3 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-full whitespace-nowrap border border-slate-200 hover:bg-slate-100">
-                Open <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full text-[10px] ml-1">1</span>
+              <button 
+                onClick={() => setActiveFilter('open')}
+                className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap border transition-all ${activeFilter === 'open' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
+              >
+                Open <span className={`px-1.5 py-0.5 rounded-full text-[10px] ml-1 ${activeFilter === 'open' ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600'}`}>{conversations.filter(c => c.status === 'online').length}</span>
               </button>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {conversations.map((conv) => (
+            {filteredConversations.map((conv) => (
               <div
                 key={conv._id}
                 onClick={() => setActiveChatId(conv._id)}
@@ -373,9 +417,19 @@ export default function InboxPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all"><Tag size={16} /></button>
-                  <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all"><Star size={16} /></button>
-                  <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all"><CheckCircle2 size={16} /></button>
+                  <button onClick={() => alert("Tag feature coming soon!")} className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all"><Tag size={16} /></button>
+                  <button 
+                    onClick={handleToggleStar}
+                    className={`p-2 rounded-full transition-all ${activeChat.isStarred ? 'text-amber-500 bg-amber-50' : 'text-slate-500 hover:bg-slate-100'}`}
+                  >
+                    <Star size={16} fill={activeChat.isStarred ? "currentColor" : "none"} />
+                  </button>
+                  <button 
+                    onClick={handleToggleResolved}
+                    className={`p-2 rounded-full transition-all ${activeChat.status === 'resolved' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-500 hover:bg-slate-100'}`}
+                  >
+                    <CheckCircle2 size={16} />
+                  </button>
                   <div className="w-px h-4 bg-slate-200 mx-1"></div>
                   <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all"><MoreVertical size={18} /></button>
                 </div>
@@ -438,12 +492,22 @@ export default function InboxPage() {
               {/* Chat Input Area */}
               <div className="bg-white border-t border-slate-200 p-4 relative z-20 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-6 mb-3 px-2">
-                  <button className="text-xs font-bold text-green-600 border-b-2 border-green-600 pb-1.5">Reply</button>
-                  <button className="text-xs font-bold text-slate-400 hover:text-slate-600 pb-1.5">Internal Note</button>
+                  <button 
+                    onClick={() => setIsInternalNote(false)}
+                    className={`text-xs font-bold pb-1.5 transition-all ${!isInternalNote ? 'text-green-600 border-b-2 border-green-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    Reply
+                  </button>
+                  <button 
+                    onClick={() => setIsInternalNote(true)}
+                    className={`text-xs font-bold pb-1.5 transition-all ${isInternalNote ? 'text-amber-600 border-b-2 border-amber-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    Internal Note
+                  </button>
                 </div>
 
                 <div className="flex items-end gap-3">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl focus-within:bg-white focus-within:ring-4 focus-within:ring-green-500/10 focus-within:border-green-500 transition-all flex flex-col overflow-hidden">
+                  <div className={`flex-1 border rounded-2xl transition-all flex flex-col overflow-hidden ${isInternalNote ? 'bg-amber-50/50 border-amber-200' : 'bg-slate-50 border-slate-200 focus-within:bg-white focus-within:ring-4 focus-within:ring-green-500/10 focus-within:border-green-500'}`}>
                     {attachments.length > 0 && (
                       <div className="p-3 border-b border-slate-200 flex gap-2 flex-wrap bg-white/80 backdrop-blur-sm">
                         {attachments.map((att, idx) => (
@@ -522,8 +586,11 @@ export default function InboxPage() {
                         </div>
                       </div>
 
-                      <button onClick={handleSend} className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2 group">
-                        Send <Send size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      <button 
+                        onClick={handleSend} 
+                        className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-2 group ${isInternalNote ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200 text-white' : 'bg-green-600 hover:bg-green-700 shadow-green-200 text-white'}`}
+                      >
+                        {isInternalNote ? 'Add Note' : 'Send'} <Send size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </button>
                     </div>
                   </div>
@@ -566,9 +633,9 @@ export default function InboxPage() {
                 </h4>
                 <p className="text-slate-500 text-sm font-medium mt-1">{activeChat.phoneNumber}</p>
                 <div className="flex gap-2 mt-4">
-                  <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><Phone size={16} /></button>
-                  <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><Mail size={16} /></button>
-                  <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><ExternalLink size={16} /></button>
+                  <a href={`tel:${activeChat.phoneNumber}`} className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><Phone size={16} /></a>
+                  <a href={`mailto:${activeChat.email || activeChat.details?.email || ''}`} className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><Mail size={16} /></a>
+                  <button onClick={() => window.open(`https://wa.me/${activeChat.phoneNumber.replace(/\D/g, '')}`, '_blank')} className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"><ExternalLink size={16} /></button>
                 </div>
               </div>
 
@@ -581,11 +648,11 @@ export default function InboxPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <span className="text-[11px] text-slate-500 font-medium">Email</span>
-                      <span className="text-[11px] font-bold text-slate-800 truncate max-w-[120px]">{activeChat.details?.email || 'N/A'}</span>
+                      <span className="text-[11px] font-bold text-slate-800 truncate max-w-[120px]">{activeChat.email || activeChat.details?.email || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <span className="text-[11px] text-slate-500 font-medium">Location</span>
-                      <span className="text-[11px] font-bold text-slate-800">{activeChat.details?.location || 'Unknown'}</span>
+                      <span className="text-[11px] font-bold text-slate-800">{activeChat.location || activeChat.details?.location || 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
@@ -594,13 +661,35 @@ export default function InboxPage() {
                   <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Tag size={14} className="text-purple-500" /> Active Tags
                   </h5>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 relative">
                     {(activeChat.tags || activeChat.details?.tags || []).map((tag, i) => (
                       <span key={i} className="px-2.5 py-1 bg-purple-50 text-purple-700 text-[10px] font-bold rounded-lg border border-purple-100">{tag}</span>
                     ))}
-                    <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:bg-white hover:text-slate-600 transition-all">
+                    <button 
+                      onClick={() => setIsTagModalOpen(true)}
+                      className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:bg-white hover:text-slate-600 transition-all"
+                    >
                       <Plus size={14} />
                     </button>
+
+                    {isTagModalOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-3 animate-in fade-in slide-in-from-top-2">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">New Tag</p>
+                        <div className="flex gap-2">
+                          <input 
+                            autoFocus
+                            type="text" 
+                            value={newTagValue}
+                            onChange={(e) => setNewTagValue(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                            placeholder="Type tag..."
+                            className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-purple-400"
+                          />
+                          <button onClick={handleAddTag} className="p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600"><Check size={14} /></button>
+                          <button onClick={() => setIsTagModalOpen(false)} className="p-1.5 bg-slate-100 text-slate-400 rounded-lg hover:bg-slate-200"><X size={14} /></button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

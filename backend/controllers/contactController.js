@@ -13,19 +13,26 @@ export const getContacts = async (req, res) => {
 export const saveContact = async (req, res) => {
     try {
         const { phoneNumber, name, email, location, details } = req.body;
-        // Check if contact already exists
-        let contact = await Contact.findOne({ phoneNumber });
+        if (!phoneNumber) {
+            return res.status(400).json({ error: "Phone number is required" });
+        }
+        const cleanPhone = phoneNumber.replace(/\D/g, '');
+        const updateData = { name };
+        if (email !== undefined) updateData.email = email;
+        if (location !== undefined) updateData.location = location;
+        if (details !== undefined) updateData.details = details;
+
+        let contact = await Contact.findOneAndUpdate(
+            { phoneNumber: cleanPhone },
+            { $set: updateData },
+            { new: true }
+        );
+
         if (contact) {
-            // Update existing contact
-            contact.name = name || contact.name;
-            if (email !== undefined) contact.email = email;
-            if (location !== undefined) contact.location = location;
-            contact.details = { ...contact.details, ...details };
-            await contact.save();
             return res.status(200).json(contact);
         }
 
-        contact = new Contact({ phoneNumber, name, email, location, details, status: 'offline' });
+        contact = new Contact({ phoneNumber: cleanPhone, name, email, location, details, status: 'offline' });
         await contact.save();
         res.status(201).json(contact);
     } catch (error) {
