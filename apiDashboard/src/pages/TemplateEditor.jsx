@@ -16,6 +16,7 @@ import {
     PlayCircle,
     Music,
 } from 'lucide-react';
+import axios from 'axios';
 
 export default function TemplateEditor() {
     const [templateName, setTemplateName] = useState('template_1');
@@ -264,7 +265,29 @@ export default function TemplateEditor() {
                     <button className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-colors shadow-sm">
                         Save Draft
                     </button>
-                    <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm flex-1 sm:flex-none">
+                    <button 
+                        onClick={async () => {
+                            const templateData = {
+                                name: templateName,
+                                category: category,
+                                language: language,
+                                components: [
+                                    { type: 'HEADER', format: headerType.toUpperCase() },
+                                    { type: 'BODY', text: bodyText },
+                                    ...(footerText ? [{ type: 'FOOTER', text: footerText }] : []),
+                                    ...(buttons.length > 0 ? [{ type: 'BUTTONS', buttons: buttons.map(b => ({ type: b.type.toUpperCase(), text: b.text, url: b.url, phoneNumber: b.phone })) }] : [])
+                                ],
+                                status: 'pending'
+                            };
+                            try {
+                                await axios.post('http://localhost:5000/api/templates', templateData);
+                                alert("Template submitted successfully!");
+                            } catch (error) {
+                                console.error("Failed to submit template:", error);
+                                alert("Error submitting template.");
+                            }
+                        }}
+                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm flex-1 sm:flex-none">
                         Submit for Approval
                     </button>
                 </div>

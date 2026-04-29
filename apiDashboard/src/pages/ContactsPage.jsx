@@ -41,6 +41,7 @@ import {
   Hash,
   Plus
 } from 'lucide-react';
+import axios from 'axios';
 
 export default function ContactsPage({ subAction, onActionComplete }) {
   const [activeInternalTab, setActiveInternalTab] = useState('all');
@@ -49,12 +50,33 @@ export default function ContactsPage({ subAction, onActionComplete }) {
   const [activeChip, setActiveChip] = useState('A-Z');
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  
-  const [contacts, setContacts] = useState([
-    { id: 1, name: 'Rahul Sharma', status: 'online', phone: '+91 98765 43210', email: 'rahul.s@gmail.com', group: 'Personal', initials: 'RS', joined: '20 May 2025', lastContact: 'Just now', location: 'Mumbai, India' },
-    { id: 2, name: 'Priya Patel', status: 'online', phone: '+91 88888 77777', email: 'priya.p@outlook.com', group: 'Personal', initials: 'PP', joined: '15 June 2023', lastContact: '11:28 AM', location: 'Ahmedabad, India' },
-    { id: 3, name: 'Amit Verma', status: 'offline', phone: '+91 77777 66666', email: 'amit.v@yahoo.com', group: 'Personal', initials: 'AV', joined: '02 Feb 2024', lastContact: 'Yesterday', location: 'Delhi, India' }
-  ]);
+
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/contacts');
+        const mappedContacts = res.data.map(c => ({
+          id: c._id,
+          name: c.name,
+          status: c.status || 'offline',
+          phone: c.phoneNumber,
+          email: c.email || '',
+          group: c.details?.group || 'General',
+          tags: c.details?.tags || [],
+          location: c.location || 'Unknown',
+          joined: c.details?.joined || new Date(c.createdAt || Date.now()).toLocaleDateString(),
+          lastContact: c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleDateString() : 'Never',
+          initials: c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??'
+        }));
+        setContacts(mappedContacts);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+      }
+    };
+    fetchContacts();
+  }, []);
 
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -63,7 +85,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
   const [activeChat, setActiveChat] = useState(null);
   const [detailsContact, setDetailsContact] = useState(null);
   const [toast, setToast] = useState(null);
-  
+
   const importInputRef = useRef(null);
 
   const showToast = (message) => {
@@ -80,17 +102,17 @@ export default function ContactsPage({ subAction, onActionComplete }) {
 
   const handleExport = () => {
     showToast("Exporting contacts...");
-    
+
     // Create CSV content
     const headers = ["Name", "Status", "Phone", "Email", "Group", "Location", "Joined"];
     const rows = contacts.map(c => [
       c.name, c.status, c.phone || "", c.email || "", c.group, c.location || "", c.joined
     ]);
-    
+
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `whatsapp_contacts_${new Date().toISOString().split('T')[0]}.csv`);
@@ -98,7 +120,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     showToast("Contacts exported successfully!");
   };
 
@@ -115,7 +137,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
     reader.onload = (event) => {
       const text = event.target.result;
       const lines = text.split('\n').filter(line => line.trim() !== '');
-      
+
       // Skip header
       const newContacts = lines.slice(1).map((line, index) => {
         const [name, status, phone, email, group, location, joined] = line.split(',');
@@ -183,10 +205,10 @@ export default function ContactsPage({ subAction, onActionComplete }) {
   return (
     <div className="flex flex-col bg-slate-50 -m-8 min-h-[calc(100vh-80px)] overflow-hidden relative">
       {/* Hidden File Input for Import */}
-      <input 
-        type="file" 
-        ref={importInputRef} 
-        className="hidden" 
+      <input
+        type="file"
+        ref={importInputRef}
+        className="hidden"
         accept=".csv"
         onChange={handleFileImport}
       />
@@ -217,21 +239,21 @@ export default function ContactsPage({ subAction, onActionComplete }) {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
             >
               <Download size={18} /> Export
             </button>
-            <button 
+            <button
               onClick={() => setIsImportModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
             >
               <Upload size={18} className="rotate-180" /> Import
             </button>
-            <button 
+            <button
               onClick={() => setIsAddModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200"
             >
@@ -297,13 +319,13 @@ export default function ContactsPage({ subAction, onActionComplete }) {
         {/* View Toggle and Actions */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-            <button 
+            <button
               onClick={() => setViewType('grid')}
               className={`p-2 rounded-lg transition-all ${viewType === 'grid' ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <LayoutGrid size={20} />
             </button>
-            <button 
+            <button
               onClick={() => setViewType('table')}
               className={`p-2 rounded-lg transition-all ${viewType === 'table' ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
@@ -354,20 +376,20 @@ export default function ContactsPage({ subAction, onActionComplete }) {
 
                     <div className="space-y-2 pt-2 transition-all duration-300">
                       <div className="grid grid-cols-2 gap-2">
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleMessage(contact); }}
                           className="flex items-center justify-center gap-2 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border border-emerald-100 hover:bg-emerald-100 transition-all"
                         >
                           <MessageCircle size={14} /> Message
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleCall(contact); }}
                           className="flex items-center justify-center gap-2 py-2 bg-slate-50 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 hover:bg-slate-100 transition-all"
                         >
                           <Phone size={14} /> Call
                         </button>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleViewDetails(contact); }}
                         className="w-full py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 hover:bg-slate-200 transition-all"
                       >
@@ -375,7 +397,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                       </button>
                     </div>
                   </div>
-                  
+
                   <button className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-all">
                     <MoreHorizontal size={18} />
                   </button>
@@ -421,13 +443,13 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); handleMessage(contact); }}
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                           >
                             <MessageCircle size={18} />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => { e.stopPropagation(); handleCall(contact); }}
                             className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
                           >
@@ -449,14 +471,14 @@ export default function ContactsPage({ subAction, onActionComplete }) {
         {/* Footer Navigation */}
         <div className="flex items-center justify-between pt-6 border-t border-slate-200">
           <div className="flex items-center gap-1.5">
-            <button 
+            <button
               onClick={() => currentPage > 1 && setCurrentPage(p => p - 1)}
               className="p-2 text-slate-400 hover:bg-white rounded-lg transition-all"
             >
               <ChevronLeft size={18} />
             </button>
             {[1, 2, 3, 4, 5, 6].map(page => (
-              <button 
+              <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all font-bold text-xs ${currentPage === page ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-white text-slate-500'}`}
@@ -465,13 +487,13 @@ export default function ContactsPage({ subAction, onActionComplete }) {
               </button>
             ))}
             <span className="px-2 text-slate-400 text-xs">...</span>
-            <button 
+            <button
               onClick={() => setCurrentPage(2048)}
               className={`px-3 h-8 flex items-center justify-center rounded-lg transition-all font-bold text-xs ${currentPage === 2048 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-white text-slate-500'}`}
             >
               2048
             </button>
-            <button 
+            <button
               onClick={() => currentPage < 2048 && setCurrentPage(p => p + 1)}
               className="p-2 text-slate-400 hover:bg-white rounded-lg transition-all"
             >
@@ -504,7 +526,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -516,7 +538,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                   <input type="text" id="add-lname" placeholder="Doe" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
                 </div>
               </div>
-              
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase px-1">Phone Number</label>
                 <div className="relative">
@@ -525,37 +547,75 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase px-1">Email (Optional)</label>
-                <input type="email" id="add-email" placeholder="john@example.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase px-1">Email (Optional)</label>
+                  <input type="email" id="add-email" placeholder="john@example.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase px-1">Location (Optional)</label>
+                  <input type="text" id="add-location" placeholder="New York, USA" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+                </div>
               </div>
             </div>
 
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-white rounded-xl transition-all">Cancel</button>
-              <button 
+              <button
                 onClick={() => {
                   const fname = document.getElementById('add-fname').value;
                   const lname = document.getElementById('add-lname').value;
                   const phone = document.getElementById('add-phone').value;
                   const email = document.getElementById('add-email').value;
+                  const location = document.getElementById('add-location').value;
                   if (!fname || !phone) { showToast("Please enter at least Name and Phone"); return; }
-                  
-                  const newContact = {
-                    id: Date.now(),
-                    name: `${fname} ${lname}`.trim(),
-                    status: 'online',
-                    phone: `+1 ${phone}`,
-                    email: email,
-                    group: 'Personal',
-                    initials: `${fname[0]}${lname[0] || ''}`.toUpperCase(),
-                    joined: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-                    lastContact: 'Just now',
-                    location: 'Added via Dashboard'
+
+                  const handleAddSubmit = async () => {
+                    const newContactData = {
+                      name: `${fname} ${lname}`.trim(),
+                      phoneNumber: `+1 ${phone}`,
+                      email: email,
+                      location: location || 'Unknown',
+                      details: {
+                        joined: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        group: 'Personal',
+                        tags: []
+                      }
+                    };
+                    try {
+                      const res = await axios.post('http://localhost:5000/api/contacts', newContactData);
+                      const c = res.data;
+                      const mappedContact = {
+                        id: c._id,
+                        name: c.name,
+                        status: c.status || 'offline',
+                        phone: c.phoneNumber,
+                        email: c.email || '',
+                        group: c.details?.group || 'Personal',
+                        tags: c.details?.tags || [],
+                        location: c.location || 'Added via Dashboard',
+                        joined: c.details?.joined || new Date().toLocaleDateString(),
+                        lastContact: 'Never',
+                        initials: c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??'
+                      };
+                      setContacts(prev => {
+                        const existingIndex = prev.findIndex(c => c.phone === mappedContact.phone);
+                        if (existingIndex >= 0) {
+                          const newList = [...prev];
+                          newList[existingIndex] = mappedContact;
+                          return newList;
+                        }
+                        return [mappedContact, ...prev];
+                      });
+                      setIsAddModalOpen(false);
+                      setDetailsContact(mappedContact); // Update side drawer with new details if it's open
+                      showToast("Contact saved successfully!");
+                    } catch (error) {
+                      console.error("Error adding contact:", error);
+                      showToast("Failed to add contact.");
+                    }
                   };
-                  setContacts(prev => [newContact, ...prev]);
-                  setIsAddModalOpen(false);
-                  showToast("Contact added successfully!");
+                  handleAddSubmit();
                 }}
                 className="px-8 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all flex items-center gap-2"
               >
@@ -584,9 +644,9 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-10">
-              <div 
+              <div
                 onClick={handleImportClick}
                 className="border-2 border-dashed border-slate-200 rounded-3xl p-12 flex flex-col items-center text-center space-y-4 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all group cursor-pointer"
               >
@@ -606,7 +666,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
               </button>
               <div className="flex items-center gap-3">
                 <button onClick={() => setIsImportModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-white rounded-xl transition-all">Cancel</button>
-                <button 
+                <button
                   onClick={handleImportClick}
                   className="px-8 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-900/10 hover:bg-black transition-all"
                 >
@@ -628,7 +688,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 {activeCall.initials}
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <h2 className="text-3xl font-bold text-white tracking-tight">{activeCall.name}</h2>
               <p className="text-emerald-400 font-medium tracking-widest uppercase text-sm animate-pulse">Ringing...</p>
@@ -811,7 +871,28 @@ export default function ContactsPage({ subAction, onActionComplete }) {
               <button className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl text-sm font-bold hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
                 <ExternalLink size={18} /> Full History
               </button>
-              <button className="flex-1 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  setIsAddModalOpen(true);
+                  setTimeout(() => {
+                    const [fname, ...lnameArr] = (detailsContact.name || '').split(' ');
+                    const lname = lnameArr.join(' ');
+                    const phoneInput = (detailsContact.phone || '').replace('+1 ', '').replace('+1', '').trim();
+
+                    const elFname = document.getElementById('add-fname');
+                    const elLname = document.getElementById('add-lname');
+                    const elPhone = document.getElementById('add-phone');
+                    const elEmail = document.getElementById('add-email');
+                    const elLocation = document.getElementById('add-location');
+
+                    if (elFname) elFname.value = fname || '';
+                    if (elLname) elLname.value = lname || '';
+                    if (elPhone) elPhone.value = phoneInput || '';
+                    if (elEmail) elEmail.value = detailsContact.email || '';
+                    if (elLocation) elLocation.value = detailsContact.location === 'Added via Dashboard' || detailsContact.location === 'Unknown' ? '' : detailsContact.location || '';
+                  }, 100);
+                }}
+                className="flex-1 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
                 <Save size={18} /> Update Profile
               </button>
             </div>
