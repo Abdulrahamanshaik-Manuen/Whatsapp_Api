@@ -209,9 +209,14 @@ export default function CampaignPage() {
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none appearance-none"
                     >
                       <option value="">Select a template</option>
-                      {templates.map(t => (
-                        <option key={t._id} value={t.name}>{t.name}</option>
-                      ))}
+                        {templates.filter(t => t.status === 'APPROVED' || t.status === 'Approved').map((template) => (
+                          <option key={template._id} value={template.name}>
+                            {template.name} ({template.language})
+                          </option>
+                        ))}
+                        {templates.filter(t => t.status === 'APPROVED' || t.status === 'Approved').length === 0 && (
+                          <option disabled>No approved templates found</option>
+                        )}
                     </select>
                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   </div>

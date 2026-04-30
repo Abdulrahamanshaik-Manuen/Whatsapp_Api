@@ -357,7 +357,11 @@ export default function UserPage({ activePath, onNavigate }) {
           ) : activeTab === '/campaigns' ? (
             <CampaignPage />
           ) : activeTab === '/templates' ? (
-            subAction === 'create' ? <TemplateEditor onBack={() => setSubAction(null)} /> : <TemplatesPage onCreateNew={() => setSubAction('create')} />
+            subAction === 'create' ? <TemplateEditor onBack={() => setSubAction(null)} /> : <TemplatesPage onCreateNew={() => setSubAction('create')} onUseInCampaign={(t) => {
+              setActiveTab('/campaigns');
+              localStorage.setItem('activeDashboardTab', '/campaigns');
+              // We could also pass the template ID to CampaignPage here
+            }} />
           ) : activeTab === '/automation' ? (
             <AutomationPage />
           ) : activeTab === '/contacts' ? (

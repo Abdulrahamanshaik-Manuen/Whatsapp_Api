@@ -10,19 +10,34 @@ import {
     MoreVertical,
     Eye,
     Trash2,
-    ArrowRight
+    ArrowRight,
+    Image,
+    Video,
+    FileText,
+    PenSquare
 } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:5000/api';
 
-export default function TemplatesPage({ onCreateNew }) {
+export default function TemplatesPage({ onCreateNew, onUseInCampaign }) {
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
 
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const [showPreview, setShowPreview] = useState(false);
+
+    const [menuOpenId, setMenuOpenId] = useState(null);
+
     useEffect(() => {
         fetchTemplates();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = () => setMenuOpenId(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
     }, []);
 
     const fetchTemplates = async () => {
@@ -40,7 +55,6 @@ export default function TemplatesPage({ onCreateNew }) {
     const syncStatuses = async () => {
         try {
             setSyncing(true);
-            // We'll implement a bulk sync endpoint in the backend
             await axios.post(`${API_BASE}/templates/sync-meta-status`);
             await fetchTemplates();
             alert("Statuses synced with Meta successfully!");
@@ -52,7 +66,8 @@ export default function TemplatesPage({ onCreateNew }) {
         }
     };
 
-    const deleteTemplate = async (id) => {
+    const deleteTemplate = async (e, id) => {
+        if (e) e.stopPropagation();
         if (!window.confirm("Are you sure you want to delete this template?")) return;
         try {
             await axios.delete(`${API_BASE}/templates/${id}`);
@@ -62,8 +77,51 @@ export default function TemplatesPage({ onCreateNew }) {
         }
     };
 
+    const handlePreview = (template) => {
+        setSelectedTemplate(template);
+        setShowPreview(true);
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Preview Modal */}
+            {showPreview && selectedTemplate && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800">Template Preview</h3>
+                            <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-slate-600 font-bold">Close</button>
+                        </div>
+                        <div className="p-8 bg-slate-50 flex justify-center">
+                            {/* Simple WhatsApp-style bubble */}
+                            <div className="bg-white rounded-2xl shadow-md max-w-[280px] overflow-hidden border border-slate-200">
+                                {selectedTemplate.components.find(c => c.type === 'HEADER') && (
+                                    <div className="h-32 bg-slate-100 flex flex-col items-center justify-center text-slate-400 border-b border-slate-100 gap-2">
+                                        {selectedTemplate.components.find(c => c.type === 'HEADER')?.format === 'IMAGE' && <Image size={32} className="opacity-20" />}
+                                        {selectedTemplate.components.find(c => c.type === 'HEADER')?.format === 'VIDEO' && <Video size={32} className="opacity-20" />}
+                                        {selectedTemplate.components.find(c => c.type === 'HEADER')?.format === 'DOCUMENT' && <FileText size={32} className="opacity-20" />}
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">{selectedTemplate.components.find(c => c.type === 'HEADER')?.format} HEADER</span>
+                                    </div>
+                                )}
+                                <div className="p-4 space-y-2">
+                                    <p className="text-sm text-slate-800 whitespace-pre-wrap">
+                                        {selectedTemplate.components.find(c => c.type === 'BODY')?.text}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400">
+                                        {selectedTemplate.components.find(c => c.type === 'FOOTER')?.text}
+                                    </p>
+                                </div>
+                                {selectedTemplate.components.find(c => c.type === 'BUTTONS')?.buttons.map((b, i) => (
+                                    <div key={i} className="border-t border-slate-100 p-2.5 text-center text-blue-600 text-sm font-semibold">
+                                        {b.text}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
@@ -102,7 +160,7 @@ export default function TemplatesPage({ onCreateNew }) {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {templates.map((template) => (
+                    {templates.filter(t => ['APPROVED', 'PENDING', 'REJECTED'].includes(t.status?.toUpperCase())).map((template) => (
                         <div key={template._id} className="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-emerald-500/30 transition-all relative overflow-hidden">
                             {/* Status Badge */}
                             <div className="flex items-center justify-between mb-4">
@@ -116,9 +174,39 @@ export default function TemplatesPage({ onCreateNew }) {
                                      <Clock size={12} />}
                                     {template.status || 'Pending'}
                                 </span>
-                                <button className="text-slate-400 hover:text-slate-600">
-                                    <MoreVertical size={18} />
-                                </button>
+                                
+                                <div className="relative">
+                                    <button 
+                                        onClick={(e) => { 
+                                            e.preventDefault();
+                                            e.stopPropagation(); 
+                                            setMenuOpenId(menuOpenId === template._id ? null : template._id); 
+                                        }}
+                                        className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors"
+                                    >
+                                        <MoreVertical size={18} />
+                                    </button>
+                                    
+                                    {menuOpenId === template._id && (
+                                        <div 
+                                            className="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-20 py-2 animate-in fade-in slide-in-from-top-1 duration-200"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <button 
+                                                className="w-full text-left px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                                                onClick={() => { alert("Edit feature coming soon!"); setMenuOpenId(null); }}
+                                            >
+                                                <PenSquare size={14} /> Edit
+                                            </button>
+                                            <button 
+                                                onClick={(e) => { deleteTemplate(e, template._id); setMenuOpenId(null); }}
+                                                className="w-full text-left px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                                            >
+                                                <Trash2 size={14} /> Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-4">
@@ -132,28 +220,32 @@ export default function TemplatesPage({ onCreateNew }) {
                                 </div>
 
                                 <div className="flex items-center gap-2 pt-2">
-                                    <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all border border-slate-100">
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); handlePreview(template); }}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all border border-slate-100"
+                                    >
                                         <Eye size={14} /> Preview
                                     </button>
                                     <button 
-                                        onClick={() => deleteTemplate(template._id)}
+                                        onClick={(e) => { e.stopPropagation(); onUseInCampaign(template); }}
+                                        title="Use in Campaign"
+                                        className="w-10 h-10 flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all border border-emerald-100"
+                                    >
+                                        <ArrowRight size={16} />
+                                    </button>
+                                    <button 
+                                        onClick={(e) => deleteTemplate(e, template._id)}
+                                        title="Delete Template"
                                         className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                                     >
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Hover Arrow */}
-                            <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all">
-                                <div className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center">
-                                    <ArrowRight size={16} />
-                                </div>
-                            </div>
                         </div>
                     ))}
 
-                    {templates.length === 0 && (
+                    {templates.filter(t => ['APPROVED', 'PENDING', 'REJECTED'].includes(t.status?.toUpperCase())).length === 0 && (
                         <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
                                 <LayoutTemplate size={40} />
