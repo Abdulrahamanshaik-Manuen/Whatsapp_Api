@@ -55,6 +55,7 @@ import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
 import TeamManagementPage from './TeamManagementPage';
 import RegistrationForms from './RegistrationForms';
+import TemplatesPage from './TemplatesPage';
 
 const chartData = [
   { name: '12 May', sent: 1, delivered: 1, read: 1, received: 1 },
@@ -218,9 +219,11 @@ export default function UserPage({ activePath, onNavigate }) {
             ) : activeTab === '/templates' ? (
               <>
                 <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                  Template Editor
+                  {subAction === 'create' ? 'Template Editor' : 'Message Templates'}
                 </h2>
-                <p className="text-slate-500 text-sm mt-1">Design and preview your WhatsApp message templates</p>
+                <p className="text-slate-500 text-sm mt-1">
+                  {subAction === 'create' ? 'Design and preview your WhatsApp message templates' : 'Manage and track the approval status of your templates'}
+                </p>
               </>
             ) : activeTab === '/automation' ? (
               <>
@@ -354,7 +357,7 @@ export default function UserPage({ activePath, onNavigate }) {
           ) : activeTab === '/campaigns' ? (
             <CampaignPage />
           ) : activeTab === '/templates' ? (
-            <TemplateEditor />
+            subAction === 'create' ? <TemplateEditor onBack={() => setSubAction(null)} /> : <TemplatesPage onCreateNew={() => setSubAction('create')} />
           ) : activeTab === '/automation' ? (
             <AutomationPage />
           ) : activeTab === '/contacts' ? (

@@ -15,6 +15,7 @@ import {
     UploadCloud,
     PlayCircle,
     Music,
+    Settings
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -76,15 +77,18 @@ export default function TemplateEditor() {
                 <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
                     <h3 className="text-lg font-bold text-slate-800 mb-4">Template Details</h3>
                     <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Template Name</label>
+                        <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+                            <label className="block text-sm font-bold text-emerald-900 mb-1.5 flex items-center gap-2">
+                                <Settings size={16} /> Template Name (Unique)
+                            </label>
                             <input
                                 type="text"
                                 value={templateName}
                                 onChange={(e) => setTemplateName(e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                                placeholder="e.g. order_update_v1"
+                                className="w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                                placeholder="e.g. interior_design_offer"
                             />
+                            <p className="text-[10px] text-emerald-600 mt-1.5 font-medium italic">* This name will be visible in your Meta Business Suite.</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -214,7 +218,7 @@ export default function TemplateEditor() {
                                 <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
                                     {btn.type === 'url' ? <Globe size={16} /> : btn.type === 'call' ? <PhoneCall size={16} /> : <MessageSquare size={16} />}
                                 </div>
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 space-y-2">
                                     <input
                                         type="text"
                                         value={btn.text}
@@ -226,7 +230,32 @@ export default function TemplateEditor() {
                                         className="w-full bg-transparent text-sm font-semibold text-slate-800 focus:outline-none placeholder-slate-400"
                                         placeholder="Button Text"
                                     />
-                                    <p className="text-xs text-slate-500 truncate mt-0.5">{btn.type === 'url' ? btn.url : btn.type === 'call' ? btn.phone : 'Quick Reply Action'}</p>
+                                    {btn.type === 'url' && (
+                                        <input
+                                            type="text"
+                                            value={btn.url || ''}
+                                            onChange={(e) => {
+                                                const newBtns = [...buttons];
+                                                newBtns[idx].url = e.target.value;
+                                                setButtons(newBtns);
+                                            }}
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] focus:border-emerald-500 outline-none"
+                                            placeholder="https://example.com"
+                                        />
+                                    )}
+                                    {btn.type === 'call' && (
+                                        <input
+                                            type="text"
+                                            value={btn.phone || ''}
+                                            onChange={(e) => {
+                                                const newBtns = [...buttons];
+                                                newBtns[idx].phone = e.target.value;
+                                                setButtons(newBtns);
+                                            }}
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] focus:border-emerald-500 outline-none"
+                                            placeholder="+919876543210"
+                                        />
+                                    )}
                                 </div>
                                 <button onClick={() => removeButton(btn.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                                     <Trash2 size={16} />
@@ -267,24 +296,51 @@ export default function TemplateEditor() {
                     </button>
                     <button 
                         onClick={async () => {
-                            const templateData = {
-                                name: templateName,
-                                category: category,
-                                language: language,
-                                components: [
-                                    { type: 'HEADER', format: headerType.toUpperCase() },
-                                    { type: 'BODY', text: bodyText },
-                                    ...(footerText ? [{ type: 'FOOTER', text: footerText }] : []),
-                                    ...(buttons.length > 0 ? [{ type: 'BUTTONS', buttons: buttons.map(b => ({ type: b.type.toUpperCase(), text: b.text, url: b.url, phoneNumber: b.phone })) }] : [])
-                                ],
-                                status: 'pending'
-                            };
                             try {
-                                await axios.post('http://localhost:5000/api/templates', templateData);
-                                alert("Template submitted successfully!");
+                                let mediaHandle = null;
+                                
+                                // 1. Upload Media if present
+                                if (headerFile && headerType !== 'Text') {
+                                  const formData = new FormData();
+                                  formData.append('file', headerFile);
+                                  const uploadRes = await axios.post('http://localhost:5000/api/templates/upload-media', formData);
+                                  mediaHandle = uploadRes.data.handle;
+                                }
+
+                                const templateData = {
+                                    name: templateName,
+                                    category: category,
+                                    language: language,
+                                    components: [
+                                        { 
+                                          type: 'HEADER', 
+                                          format: headerType.toUpperCase(),
+                                          text: headerType === 'Text' ? bodyText.split('\n')[0] : undefined, // Sample header text
+                                          mediaHandle: mediaHandle
+                                        },
+                                        { type: 'BODY', text: bodyText },
+                                        ...(footerText ? [{ type: 'FOOTER', text: footerText }] : []),
+                                        ...(buttons.length > 0 ? [{ type: 'BUTTONS', buttons: buttons.map(b => ({ type: b.type.toUpperCase(), text: b.text, url: b.url, phoneNumber: b.phone })) }] : [])
+                                    ],
+                                    status: 'pending'
+                                };
+
+                                // 2. Save locally
+                                const saveRes = await axios.post('http://localhost:5000/api/templates', templateData);
+                                const templateId = saveRes.data._id;
+                                
+                                // 3. Submit to Meta
+                                await axios.post(`http://localhost:5000/api/templates/${templateId}/submit-to-meta`);
+                                
+                                alert("Template saved and submitted to Meta with media!");
                             } catch (error) {
                                 console.error("Failed to submit template:", error);
-                                alert("Error submitting template.");
+                                const data = error.response?.data;
+                                let errorMsg = data?.message || error.message;
+                                if (data?.details?.error_data?.details) {
+                                  errorMsg += `\nDetails: ${data.details.error_data.details}`;
+                                }
+                                alert("Error: " + errorMsg);
                             }
                         }}
                         className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm flex-1 sm:flex-none">

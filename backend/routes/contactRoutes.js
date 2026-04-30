@@ -5,11 +5,13 @@ import {
     searchContacts,
     getContactDetails,
     updateContact,
-    deleteContact
+    deleteContact,
+    getGroups
 } from '../controllers/contactController.js';
 
 const router = express.Router();
 
+router.get('/groups', getGroups);
 router.get('/', getContacts);
 router.post('/', saveContact);
 router.get('/search/:query', searchContacts);

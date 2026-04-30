@@ -86,4 +86,15 @@ export const searchContacts = async (req, res) => {
     }
 };
 
+export const getGroups = async (req, res) => {
+    try {
+        const groups = await Contact.distinct('details.group');
+        const tags = await Contact.distinct('tags');
+        const allGroups = [...new Set([...groups, ...tags])].filter(Boolean);
+        res.status(200).json(allGroups);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const sendContact = async (req, res) => { res.status(501).json({ message: "Not implemented yet" }); };

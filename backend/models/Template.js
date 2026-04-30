@@ -7,41 +7,19 @@ const templateSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['Utility', 'Marketing', 'Authentication'],
     required: true,
   },
   language: {
     type: String,
     default: 'English',
   },
-  header: {
-    type: {
-      type: String,
-      enum: ['Text', 'Image', 'Video', 'Audio', 'Document'],
-      default: 'Text'
-    },
-    mediaUrl: { type: String }
+  components: {
+    type: Array,
+    required: true
   },
-  body: {
-    type: String,
-    required: true,
-  },
-  footer: {
-    type: String,
-  },
-  buttons: [{
-    type: {
-      type: String,
-      enum: ['reply', 'url', 'call']
-    },
-    text: { type: String },
-    url: { type: String },
-    phone: { type: String }
-  }],
   status: {
     type: String,
-    enum: ['Draft', 'Pending Approval', 'Approved', 'Rejected'],
-    default: 'Draft',
+    default: 'Pending Approval',
   }
 }, { timestamps: true });
 
