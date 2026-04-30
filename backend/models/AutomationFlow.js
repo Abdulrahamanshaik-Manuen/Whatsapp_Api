@@ -15,7 +15,11 @@ const automationFlowSchema = new mongoose.Schema({
   }],
   nodes: {
     type: mongoose.Schema.Types.Mixed,
-    default: {}
+    default: []
+  },
+  connections: {
+    type: mongoose.Schema.Types.Mixed,
+    default: []
   },
   metrics: {
     interactions: { type: Number, default: 0 },

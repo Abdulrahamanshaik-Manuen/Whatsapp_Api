@@ -63,9 +63,7 @@ export default function SettingsPage() {
           <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
             {/* Header Card */}
             <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5">
-                <User size={120} />
-              </div>
+
               <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-3xl bg-emerald-500 text-white flex items-center justify-center text-3xl font-black shadow-xl shadow-emerald-200 border-4 border-white">
