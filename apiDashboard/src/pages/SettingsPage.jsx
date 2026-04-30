@@ -46,8 +46,8 @@ export default function SettingsPage() {
             key={section.id}
             onClick={() => setActiveSection(section.id)}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeSection === section.id
-                ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+              ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
               }`}
           >
             <section.icon size={18} />
@@ -69,14 +69,14 @@ export default function SettingsPage() {
               <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-3xl bg-emerald-500 text-white flex items-center justify-center text-3xl font-black shadow-xl shadow-emerald-200 border-4 border-white">
-                    1
+                    A
                   </div>
                   <button className="absolute -bottom-2 -right-2 p-2 bg-white border border-slate-200 rounded-xl shadow-lg text-slate-600 hover:text-emerald-500 transition-all">
                     <Camera size={16} />
                   </button>
                 </div>
                 <div className="text-center md:text-left space-y-1">
-                  <h2 className="text-2xl font-black text-slate-800">1</h2>
+                  <h2 className="text-2xl font-black text-slate-800">Abdul Rahaman Shaik</h2>
                   <p className="text-slate-500 font-medium">Manage your public WhatsApp profile identity.</p>
                   <div className="flex items-center gap-2 pt-2 justify-center md:justify-start">
                     <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-100 flex items-center gap-1">
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase px-1">Display Name</label>
-                    <input type="text" defaultValue="1" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+                    <input type="text" defaultValue="Abdul Rahaman Shaik" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase px-1">Category</label>
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                     <label className="text-xs font-bold text-slate-500 uppercase px-1">Support Email</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input type="email" defaultValue="1" className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
+                      <input type="email" defaultValue="abdulrahamanshaik@manuen.com" className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
                     </div>
                   </div>
                 </div>
