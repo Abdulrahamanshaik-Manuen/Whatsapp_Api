@@ -10,27 +10,15 @@ const contactSchema = new mongoose.Schema({
     type: String,
     default: 'Unknown Contact'
   },
-  email: {
-    type: String
-  },
+
   location: {
     type: String
   },
-  profilePicture: {
-    type: String
-  },
+
   status: {
     type: String,
     enum: ['online', 'offline'],
     default: 'offline'
-  },
-  unreadCount: {
-    type: Number,
-    default: 0
-  },
-  lastMessageAt: {
-    type: Date,
-    default: Date.now
   },
   tags: [{
     type: String
@@ -38,10 +26,30 @@ const contactSchema = new mongoose.Schema({
   details: {
     joined: String,
     group: String
+  },
+  // ✅ Consent Boolean
+  consent: {
+    type: Boolean,
+    default: false
+  },
+  consent_source: {
+    type: String,
+    enum: ['qr', 'store', 'web', 'csv'],
+    required: false
+  },
+  consent_status: {
+    type: String,
+    enum: ['verified', 'unverified'],
+    default: 'unverified'
+  },
+  consent_timestamp: {
+    type: Date,
+    default: null
   }
 }, { timestamps: true });
 
-contactSchema.pre('save', function(next) {
+
+contactSchema.pre('save', function (next) {
   if (this.phoneNumber) {
     this.phoneNumber = this.phoneNumber.replace(/\D/g, '');
   }
@@ -50,3 +58,5 @@ contactSchema.pre('save', function(next) {
 
 const Contact = mongoose.model('Contact', contactSchema);
 export default Contact;
+
+

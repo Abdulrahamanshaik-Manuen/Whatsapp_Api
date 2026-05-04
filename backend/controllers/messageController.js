@@ -115,7 +115,7 @@ export const sendMessage = async (req, res) => {
                         type: waType,
                         [waType]: { id: mediaId }
                     };
-                    
+
                     // Add filename for documents
                     if (waType === 'document') {
                         mediaPayload.document.filename = file.originalname;
@@ -155,9 +155,9 @@ export const sendMessage = async (req, res) => {
     } catch (error) {
         const errorData = error.response ? error.response.data : error.message;
         console.error("Error sending message:", errorData);
-        
+
         const errorMessage = errorData.error?.message || "Failed to send message";
-        res.status(error.response?.status || 500).json({ 
+        res.status(error.response?.status || 500).json({
             error: errorMessage,
             details: errorData
         });

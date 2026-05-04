@@ -48,7 +48,7 @@ export const uploadMediaToMeta = async (req, res) => {
             }
         );
 
-        res.status(200).json({ 
+        res.status(200).json({
             handle: uploadRes.data.h,
             message: "Media uploaded to Meta successfully"
         });
@@ -135,7 +135,7 @@ export const submitTemplateToMeta = async (req, res) => {
         }
 
         if (!template.category) return res.status(400).json({ error: "Template category is missing." });
-        const metaCategory = template.category.toUpperCase(); 
+        const metaCategory = template.category.toUpperCase();
 
         const metaComponents = template.components.map(comp => {
             if (comp.type === 'HEADER' && comp.format === 'TEXT') {
@@ -190,8 +190,8 @@ export const submitTemplateToMeta = async (req, res) => {
     } catch (error) {
         console.error("Meta Submission Error Detail:", JSON.stringify(error.response?.data || error.message, null, 2));
         const metaError = error.response?.data?.error || {};
-        res.status(500).json({ 
-            error: "Meta Submission Failed", 
+        res.status(500).json({
+            error: "Meta Submission Failed",
             message: metaError.message || error.message,
             details: metaError
         });
@@ -215,7 +215,7 @@ export const syncMetaStatuses = async (req, res) => {
 
         for (const metaT of metaTemplates) {
             await Template.findOneAndUpdate(
-                { name: metaT.name }, 
+                { name: metaT.name },
                 { status: metaT.status, category: metaT.category, language: metaT.language },
                 { upsert: true }
             );
@@ -233,3 +233,6 @@ export const syncMetaStatuses = async (req, res) => {
 };
 
 export const sendTemplateById = async (req, res) => { res.status(501).json({ message: "Not implemented yet" }); };
+
+
+

@@ -44,7 +44,6 @@ import {
 import InboxPage from './InboxPage';
 import CampaignPage from './CampaignPage';
 import TemplateEditor from './TemplateEditor';
-import AutomationPage from './AutomationPage';
 import ContactsPage from './ContactsPage';
 import AnalyticsPage from './AnalyticsPage';
 import MessageLogsPage from './MessageLogsPage';
@@ -53,7 +52,6 @@ import WebhooksPage from './WebhooksPage';
 import ApiKeysPage from './ApiKeysPage';
 import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
-import TeamManagementPage from './TeamManagementPage';
 import RegistrationForms from './RegistrationForms';
 import TemplatesPage from './TemplatesPage';
 
@@ -84,7 +82,6 @@ export default function UserPage({ activePath, onNavigate }) {
     { name: 'Inbox', icon: MessageSquare, path: '/inbox', badge: 1 },
     { name: 'Campaigns', icon: Send, path: '/campaigns' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
-    { name: 'Automation', icon: Bot, path: '/automation' },
     { name: 'Contacts', icon: Users, path: '/contacts' },
     { name: 'Analytics', icon: BarChart2, path: '/analytics' },
     { name: 'Message Logs', icon: FileText, path: '/logs' },
@@ -93,7 +90,6 @@ export default function UserPage({ activePath, onNavigate }) {
   const navItemsDev = [
     { name: 'API & Webhooks', icon: Webhook, path: '/webhooks' },
     { name: 'API Keys', icon: KeyRound, path: '/keys' },
-    { name: 'Team Management', icon: Users2, path: '/teams' },
   ];
 
   const navItemsAccount = [
@@ -362,8 +358,6 @@ export default function UserPage({ activePath, onNavigate }) {
               localStorage.setItem('activeDashboardTab', '/campaigns');
               // We could also pass the template ID to CampaignPage here
             }} />
-          ) : activeTab === '/automation' ? (
-            <AutomationPage />
           ) : activeTab === '/contacts' ? (
             <ContactsPage subAction={subAction} onActionComplete={() => setSubAction(null)} />
           ) : activeTab === '/analytics' ? (
@@ -380,8 +374,6 @@ export default function UserPage({ activePath, onNavigate }) {
             <SettingsPage />
           ) : activeTab === '/integrations' ? (
             <Integrations />
-          ) : activeTab === '/teams' ? (
-            <TeamManagementPage />
           ) : activeTab === '/dashboard' ? (
             <div className="space-y-8 pb-12">
 
