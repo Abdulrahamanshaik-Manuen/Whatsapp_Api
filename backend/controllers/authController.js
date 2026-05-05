@@ -75,8 +75,16 @@ export const register = async (req, res) => {
         // Cleanup OTP
         await Otp.deleteMany({ phone });
 
+        // Generate JWT for seamless onboarding
+        const token = jwt.sign(
+            { user_id: user._id, phone: user.phone },
+            process.env.JWT_SECRET || 'secret_key',
+            { expiresIn: '7d' }
+        );
+
         res.status(201).json({ 
-            message: "User and Business Profile registered successfully", 
+            message: "User registered successfully", 
+            token,
             user: { id: user._id, name: user.name, phone: user.phone } 
         });
     } catch (err) {
