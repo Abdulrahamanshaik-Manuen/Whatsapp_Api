@@ -56,6 +56,7 @@ import SettingsPage from './SettingsPage';
 import RegistrationForms from './RegistrationForms';
 import TemplatesPage from './TemplatesPage';
 import QRCapturePage from './QRCapturePage';
+import GroupsPage from './GroupsPage';
 
 const chartData = [
   { name: '12 May', sent: 1, delivered: 1, read: 1, received: 1 },
@@ -85,6 +86,7 @@ export default function UserPage({ activePath, onNavigate }) {
     { name: 'Campaigns', icon: Send, path: '/campaigns' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
     { name: 'Contacts', icon: Users, path: '/contacts' },
+    { name: 'Groups', icon: Users2, path: '/groups' },
     { name: 'QR Capture', icon: QrCode, path: '/qr' },
     { name: 'Analytics', icon: BarChart2, path: '/analytics' },
     { name: 'Message Logs', icon: FileText, path: '/logs' },
@@ -238,6 +240,13 @@ export default function UserPage({ activePath, onNavigate }) {
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">Manage and organize your WhatsApp contacts</p>
               </>
+            ) : activeTab === '/groups' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  Contact Groups
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Organize your contacts into segments for targeted campaigns</p>
+              </>
             ) : activeTab === '/qr' ? (
               <>
                 <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -370,6 +379,8 @@ export default function UserPage({ activePath, onNavigate }) {
             }} />
           ) : activeTab === '/contacts' ? (
             <ContactsPage subAction={subAction} onActionComplete={() => setSubAction(null)} />
+          ) : activeTab === '/groups' ? (
+            <GroupsPage />
           ) : activeTab === '/qr' ? (
             <QRCapturePage />
           ) : activeTab === '/analytics' ? (

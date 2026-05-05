@@ -1,5 +1,6 @@
 import os from 'os';
 // ... existing imports ...
+import express from 'express'
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from '../config/db.js';
@@ -52,18 +53,18 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/system/ip', (req, res) => {
-    const interfaces = os.networkInterfaces();
-    let ip = '127.0.0.1';
-    for (const devName in interfaces) {
-        const iface = interfaces[devName];
-        for (let i = 0; i < iface.length; i++) {
-            const alias = iface[i];
-            if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-                ip = alias.address;
-            }
-        }
+  const interfaces = os.networkInterfaces();
+  let ip = '127.0.0.1';
+  for (const devName in interfaces) {
+    const iface = interfaces[devName];
+    for (let i = 0; i < iface.length; i++) {
+      const alias = iface[i];
+      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+        ip = alias.address;
+      }
     }
-    res.json({ ip });
+  }
+  res.json({ ip });
 });
 
 io.on('connection', (socket) => {
