@@ -246,7 +246,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
         type="file"
         ref={importInputRef}
         className="hidden"
-        accept=".csv"
+        accept=".csv, .xlsx, .xls"
         onChange={handleFileImport}
       />
 
@@ -749,7 +749,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-800">Import Contacts</h3>
-                  <p className="text-xs text-slate-500">Upload your CSV or Excel file</p>
+                  <p className="text-xs text-slate-500">Upload your CSV, XLSX or XLS file</p>
                 </div>
               </div>
               <button onClick={() => setIsImportModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-xl transition-all">
@@ -767,7 +767,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                 </div>
                 <div>
                   <p className="text-base font-bold text-slate-800">Click to upload your CSV file</p>
-                  <p className="text-xs text-slate-500 mt-1">Select the exported CSV for a perfect match</p>
+                  <p className="text-xs text-slate-500 mt-1">Select the exported file for a perfect match</p>
                 </div>
               </div>
             </div>

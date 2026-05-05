@@ -9,6 +9,7 @@ import Services from './pages/Services.jsx'
 import Resources from './pages/Resources.jsx'
 import Integrations from './pages/Integrations.jsx'
 import UserPage from './pages/UserPage.jsx'
+import QRRegisterPage from './pages/QRRegisterPage.jsx'
 
 function getCurrentPath() {
   const path = window.location.pathname || '/'
@@ -88,6 +89,13 @@ export default function App() {
 
   if (activePath === '/dashboard') {
     return <UserPage activePath={activePath} onNavigate={navigateTo} />
+  }
+
+  if (activePath.startsWith('/capture/')) {
+    const parts = activePath.split('/');
+    const userId = parts[2];
+    const refId = parts[3];
+    return <QRRegisterPage userId={userId} refId={refId} />;
   }
 
   return (

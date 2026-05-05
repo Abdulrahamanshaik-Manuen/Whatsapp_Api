@@ -1,13 +1,15 @@
 import Contact from '../models/Contact.js';
 import Message from '../models/Message.js';
-import { parseCSV, validateContactData } from '../utility/csvParser.js';
+import { parseFile, validateContactData } from '../utility/csvParser.js';
 import fs from 'fs';
+import { uploadToCloudinary } from '../config/cloudinary.js';
+import axios from 'axios';
 
 export const getContacts = async (req, res) => {
     try {
         const { consent_status, consent_source, consent } = req.query;
         const filter = {};
-        
+
         if (consent_status) filter.consent_status = consent_status;
         if (consent_source) filter.consent_source = consent_source;
         if (consent !== undefined) filter.consent = consent === 'true';
@@ -72,19 +74,24 @@ export const saveContact = async (req, res) => {
  */
 export const captureQRConsent = async (req, res) => {
     try {
-        const { phoneNumber, name, location, email } = req.body;
+        const { phoneNumber, name, location, email, userId, details } = req.body;
         if (!phoneNumber) {
             return res.status(400).json({ error: "Phone number is required" });
         }
-        
+
         const cleanPhone = phoneNumber.replace(/\D/g, '');
-        
+
         const updateData = {
             name: name || 'QR Lead',
             consent: true,
             consent_status: 'verified',
             consent_source: 'qr',
-            consent_timestamp: new Date()
+            consent_timestamp: new Date(),
+            userId: userId || 'system',
+            details: {
+                ...details,
+                joined: new Date().toISOString()
+            }
         };
 
         if (location) updateData.location = location;
@@ -109,26 +116,48 @@ export const captureQRConsent = async (req, res) => {
 export const uploadContacts = async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ error: "CSV file is required" });
+            return res.status(400).json({ error: "File is required" });
         }
 
-        const rawData = await parseCSV(req.file.path);
+        console.log("Uploading file to Cloudinary:", req.file.originalname);
+        
+        // 1. Save to Cloudinary
+        const cloudinaryResult = await uploadToCloudinary(req.file.path);
+        const cloudinaryUrl = cloudinaryResult.secure_url;
+        console.log("File saved to Cloudinary:", cloudinaryUrl);
+
+        // 2. Fetch from Cloudinary (as per user requirement "fetched from cloudinary")
+        console.log("Fetching file back from Cloudinary...");
+        const response = await axios.get(cloudinaryUrl, { 
+            responseType: 'arraybuffer',
+            timeout: 10000 // 10s timeout
+        });
+        const fileBuffer = Buffer.from(response.data);
+        console.log("File fetched successfully, buffer size:", fileBuffer.length);
+
+        // 3. Parse the fetched data
+        // We pass the buffer and the original name to ensure correct extension detection
+        console.log("Starting data parse...");
+        const rawData = await parseFile(fileBuffer, req.file.originalname);
+        console.log(`Successfully parsed ${rawData.length} rows`);
+
         const results = {
             success: 0,
             failed: 0,
-            errors: []
+            errors: [],
+            cloudinary_url: cloudinaryUrl
         };
 
-        for (const item of rawData) {
-            const { valid, data, error } = validateContactData(item);
-            if (!valid) {
-                results.failed++;
-                results.errors.push({ item, error });
-                continue;
-            }
-
+        for (const [index, item] of rawData.entries()) {
             try {
-                // Ensure the data from CSV is marked as 'csv' source if not already
+                console.log(`Processing row ${index + 1}:`, item);
+                const { valid, data, error } = validateContactData(item);
+                if (!valid) {
+                    results.failed++;
+                    results.errors.push({ item, error });
+                    continue;
+                }
+
                 const finalData = {
                     ...data,
                     consent_source: data.consent_source || 'csv'
@@ -141,16 +170,19 @@ export const uploadContacts = async (req, res) => {
                 );
                 results.success++;
             } catch (err) {
+                console.error("Error processing row:", err.message);
                 results.failed++;
                 results.errors.push({ item, error: err.message });
             }
         }
 
-        // Clean up uploaded file
-        fs.unlink(req.file.path, (err) => { if (err) console.error("Error deleting CSV file:", err); });
+        // Clean up local temp file
+        fs.unlink(req.file.path, (err) => { if (err) console.error("Error deleting temp file:", err); });
 
+        console.log("All rows processed. Success:", results.success, "Failed:", results.failed);
         res.status(200).json(results);
     } catch (error) {
+        console.error("Upload controller error:", error);
         res.status(500).json({ error: error.message });
     }
 };

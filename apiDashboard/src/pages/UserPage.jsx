@@ -29,7 +29,8 @@ import {
   Info,
   PenSquare,
   ChevronRight,
-  Code2
+  Code2,
+  QrCode
 } from 'lucide-react';
 import {
   LineChart,
@@ -54,6 +55,7 @@ import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
 import RegistrationForms from './RegistrationForms';
 import TemplatesPage from './TemplatesPage';
+import QRCapturePage from './QRCapturePage';
 
 const chartData = [
   { name: '12 May', sent: 1, delivered: 1, read: 1, received: 1 },
@@ -83,6 +85,7 @@ export default function UserPage({ activePath, onNavigate }) {
     { name: 'Campaigns', icon: Send, path: '/campaigns' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
     { name: 'Contacts', icon: Users, path: '/contacts' },
+    { name: 'QR Capture', icon: QrCode, path: '/qr' },
     { name: 'Analytics', icon: BarChart2, path: '/analytics' },
     { name: 'Message Logs', icon: FileText, path: '/logs' },
   ];
@@ -235,6 +238,13 @@ export default function UserPage({ activePath, onNavigate }) {
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">Manage and organize your WhatsApp contacts</p>
               </>
+            ) : activeTab === '/qr' ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  QR Lead Capture
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Generate and manage QR codes for offline lead generation</p>
+              </>
             ) : activeTab === '/analytics' ? (
               <>
                 <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -360,6 +370,8 @@ export default function UserPage({ activePath, onNavigate }) {
             }} />
           ) : activeTab === '/contacts' ? (
             <ContactsPage subAction={subAction} onActionComplete={() => setSubAction(null)} />
+          ) : activeTab === '/qr' ? (
+            <QRCapturePage />
           ) : activeTab === '/analytics' ? (
             <AnalyticsPage />
           ) : activeTab === '/logs' ? (
