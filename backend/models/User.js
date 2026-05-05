@@ -21,6 +21,19 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    whatsapp_connected: {
+        type: Boolean,
+        default: false
+    },
+    waba_id: {
+        type: String
+    },
+    phone_number_id: {
+        type: String
+    },
+    access_token: {
+        type: String
+    },
     created_at: {
         type: Date,
         default: Date.now
