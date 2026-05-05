@@ -39,7 +39,8 @@ import {
   ShieldCheck,
   MessageSquare,
   Hash,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -50,13 +51,21 @@ export default function ContactsPage({ subAction, onActionComplete }) {
   const [activeChip, setActiveChip] = useState('A-Z');
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterSource, setFilterSource] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterConsent, setFilterConsent] = useState('');
 
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/contacts');
+        let url = 'http://localhost:5000/api/contacts?';
+        if (filterSource) url += `consent_source=${filterSource}&`;
+        if (filterStatus) url += `consent_status=${filterStatus}&`;
+        if (filterConsent) url += `consent=${filterConsent}&`;
+
+        const res = await axios.get(url);
         const mappedContacts = res.data.map(c => ({
           id: c._id,
           name: c.name,
@@ -68,7 +77,10 @@ export default function ContactsPage({ subAction, onActionComplete }) {
           location: c.location || 'Unknown',
           joined: c.details?.joined || new Date(c.createdAt || Date.now()).toLocaleDateString(),
           lastContact: c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleDateString() : 'Never',
-          initials: c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??'
+          initials: c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??',
+          consent: c.consent,
+          consent_source: c.consent_source,
+          consent_status: c.consent_status
         }));
         setContacts(mappedContacts);
       } catch (error) {
@@ -76,7 +88,7 @@ export default function ContactsPage({ subAction, onActionComplete }) {
       }
     };
     fetchContacts();
-  }, []);
+  }, [filterSource, filterStatus, filterConsent]);
 
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -128,40 +140,50 @@ export default function ContactsPage({ subAction, onActionComplete }) {
     importInputRef.current.click();
   };
 
-  const handleFileImport = (e) => {
+  const handleFileImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    showToast("Importing contacts...");
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
-      const lines = text.split('\n').filter(line => line.trim() !== '');
+    const formData = new FormData();
+    formData.append('file', file);
 
-      // Skip header
-      const newContacts = lines.slice(1).map((line, index) => {
-        const [name, status, phone, email, group, location, joined] = line.split(',');
-        const initials = name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??';
-        return {
-          id: Date.now() + index,
-          name: name || "New Contact",
-          status: status || "offline",
-          phone: phone || "",
-          email: email || "",
-          group: group || "Imported",
-          location: location || "Unknown",
-          joined: joined || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-          initials,
-          lastContact: "Never"
-        };
+    showToast("Uploading and processing contacts...");
+    
+    try {
+      const res = await axios.post('http://localhost:5000/api/contacts/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
-
-      setContacts(prev => [...newContacts, ...prev]);
+      
+      showToast(`Success: ${res.data.success}, Failed: ${res.data.failed}`);
+      
+      // Refetch contacts to see new ones
+      const fetchRes = await axios.get('http://localhost:5000/api/contacts');
+      const mapped = fetchRes.data.map(c => ({
+        id: c._id,
+        name: c.name,
+        status: c.status || 'offline',
+        phone: c.phoneNumber,
+        email: c.email || '',
+        group: c.details?.group || 'General',
+        tags: c.details?.tags || [],
+        location: c.location || 'Unknown',
+        joined: c.details?.joined || new Date(c.createdAt || Date.now()).toLocaleDateString(),
+        lastContact: c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleDateString() : 'Never',
+        initials: c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '??',
+        consent: c.consent,
+        consent_source: c.consent_source,
+        consent_status: c.consent_status
+      }));
+      setContacts(mapped);
       setIsImportModalOpen(false);
-      showToast(`${newContacts.length} contacts imported successfully!`);
-    };
-    reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    } catch (error) {
+      console.error("Import failed:", error);
+      showToast("Import failed. Check console for details.");
+    } finally {
+      e.target.value = ''; // Reset input
+    }
   };
 
   const stats = [
@@ -200,6 +222,21 @@ export default function ContactsPage({ subAction, onActionComplete }) {
 
   const handleViewDetails = (contact) => {
     setDetailsContact(contact);
+  };
+
+  const handleDeleteContact = async (id, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this contact?")) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/contacts/${id}`);
+      setContacts(prev => prev.filter(c => c.id !== id));
+      showToast("Contact deleted successfully");
+      if (detailsContact && detailsContact.id === id) setDetailsContact(null);
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      showToast("Failed to delete contact");
+    }
   };
 
   return (
@@ -283,7 +320,30 @@ export default function ContactsPage({ subAction, onActionComplete }) {
             <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-500">
               <Filter size={14} /> Filters:
             </div>
-            <div className="flex items-center gap-2">
+            
+            <select 
+              value={filterSource}
+              onChange={(e) => setFilterSource(e.target.value)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 focus:ring-2 focus:ring-emerald-500/10 outline-none"
+            >
+              <option value="">All Sources</option>
+              <option value="qr">QR Code</option>
+              <option value="web">Website</option>
+              <option value="csv">CSV Import</option>
+              <option value="store">In-Store</option>
+            </select>
+
+            <select 
+              value={filterConsent}
+              onChange={(e) => setFilterConsent(e.target.value)}
+              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 focus:ring-2 focus:ring-emerald-500/10 outline-none"
+            >
+              <option value="">Consent (All)</option>
+              <option value="true">Opted In</option>
+              <option value="false">Opted Out</option>
+            </select>
+
+            <div className="flex items-center gap-2 ml-2">
               {chips.map((chip, i) => (
                 <button
                   key={i}
@@ -398,9 +458,17 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                     </div>
                   </div>
 
-                  <button className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-all">
-                    <MoreHorizontal size={18} />
-                  </button>
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <button 
+                      onClick={(e) => handleDeleteContact(contact.id, e)}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <button className="p-1.5 text-slate-300 hover:text-slate-600">
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -454,6 +522,12 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                             className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
                           >
                             <Phone size={18} />
+                          </button>
+                           <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteContact(contact.id, e); }}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          >
+                            <Trash2 size={18} />
                           </button>
                           <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg transition-all" onClick={(e) => { e.stopPropagation(); showToast(`Menu for ${contact.name}`); }}>
                             <MoreHorizontal size={18} />
@@ -556,6 +630,39 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                   <input type="text" id="add-location" placeholder="New York, USA" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all" />
                 </div>
               </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-6">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="add-consent" 
+                    className="w-5 h-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 transition-all cursor-pointer" 
+                    defaultChecked={true}
+                  />
+                  <label htmlFor="add-consent" className="text-sm font-bold text-slate-700 cursor-pointer select-none">
+                    User provided consent
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase px-1">Consent Source</label>
+                    <select id="add-consent-source" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all">
+                      <option value="web">Web Dashboard</option>
+                      <option value="qr">QR Code</option>
+                      <option value="store">In-Store</option>
+                      <option value="csv">Bulk Import</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase px-1">Consent Status</label>
+                    <select id="add-consent-status" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all">
+                      <option value="verified">Verified</option>
+                      <option value="unverified">Unverified</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
@@ -567,6 +674,9 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                   const phone = document.getElementById('add-phone').value;
                   const email = document.getElementById('add-email').value;
                   const location = document.getElementById('add-location').value;
+                  const consent = document.getElementById('add-consent').checked;
+                  const consent_source = document.getElementById('add-consent-source').value;
+                  const consent_status = document.getElementById('add-consent-status').value;
                   if (!fname || !phone) { showToast("Please enter at least Name and Phone"); return; }
 
                   const handleAddSubmit = async () => {
@@ -575,6 +685,9 @@ export default function ContactsPage({ subAction, onActionComplete }) {
                       phoneNumber: phone,
                       email: email,
                       location: location || 'Unknown',
+                      consent: consent,
+                      consent_source: consent_source,
+                      consent_status: consent_status,
                       details: {
                         joined: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                         group: 'Personal',

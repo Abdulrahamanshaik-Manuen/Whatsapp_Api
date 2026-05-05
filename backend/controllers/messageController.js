@@ -48,6 +48,15 @@ export const sendMessage = async (req, res) => {
         const phoneId = process.env.PHONE_NUMBER_ID;
         const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
 
+        // Check for consent
+        const contact = await Contact.findById(contactId);
+        if (!contact || contact.consent_status !== 'verified') {
+            return res.status(403).json({ 
+                error: "Consent required", 
+                message: "This contact has not verified their consent to receive messages." 
+            });
+        }
+
         const results = [];
 
         // 1. Handle Text Message

@@ -1,3 +1,5 @@
 **/node_modules/
 **/package-lock.json
 .env
+**backend/ngrok_test.log
+**backend/test_contact.json

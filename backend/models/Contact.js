@@ -45,15 +45,18 @@ const contactSchema = new mongoose.Schema({
   consent_timestamp: {
     type: Date,
     default: null
+  },
+  email: {
+    type: String,
+    required: false
   }
 }, { timestamps: true });
 
 
-contactSchema.pre('save', function (next) {
+contactSchema.pre('save', function () {
   if (this.phoneNumber) {
     this.phoneNumber = this.phoneNumber.replace(/\D/g, '');
   }
-  next();
 });
 
 const Contact = mongoose.model('Contact', contactSchema);
