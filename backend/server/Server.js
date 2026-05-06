@@ -6,6 +6,7 @@ import connectDB from '../config/db.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import routes from '../routes/Routes.js';
+import '../workers/campaignQueue.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';

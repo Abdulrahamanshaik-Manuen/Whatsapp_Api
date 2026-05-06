@@ -1,3 +1,8 @@
+import Message from '../models/Message.js';
+import Campaign from '../models/Campaign.js';
+import User from '../models/User.js';
+import Contact from '../models/Contact.js';
+
 export const verifyWebhook = (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
@@ -15,12 +20,80 @@ export const verifyWebhook = (req, res) => {
     }
 };
 
-export const handleWebhookEvent = (req, res) => {
+export const handleWebhookEvent = async (req, res) => {
     const body = req.body;
 
     if (body.object === 'whatsapp_business_account') {
         try {
-            console.log('Incoming WhatsApp Event:', JSON.stringify(body, null, 2));
+            const entry = body.entry?.[0];
+            const changes = entry?.changes?.[0];
+            const value = changes?.value;
+
+            // 1. Handle Status Updates (sent, delivered, read, failed)
+            if (value?.statuses) {
+                const statusUpdate = value.statuses[0];
+                const meta_message_id = statusUpdate.id;
+                const status = statusUpdate.status;
+
+                const message = await Message.findOne({ meta_message_id });
+                if (message) {
+                    message.status = status;
+                    await message.save();
+
+                    // Update Campaign analytics if linked
+                    if (message.campaign_id) {
+                        const incField = `${status}_count`;
+                        const update = { $inc: { [incField]: 1 } };
+                        
+                        // If moving from sent to delivered, we might want to decrement sent_count? 
+                        // Usually these are cumulative: Total Sent, Total Delivered etc.
+                        await Campaign.findByIdAndUpdate(message.campaign_id, update);
+                    }
+                }
+            }
+
+            // 2. Handle Incoming Messages (2-way chat)
+            if (value?.messages) {
+                const incoming = value.messages[0];
+                const from = incoming.from;
+                const meta_message_id = incoming.id;
+                const type = incoming.type;
+                let bodyText = incoming.text?.body || '';
+
+                // Handle Button Clicks (Quick Replies)
+                if (type === 'button') {
+                    bodyText = incoming.button?.text || '';
+                } else if (type === 'interactive') {
+                    bodyText = incoming.interactive?.button_reply?.title || incoming.interactive?.list_reply?.title || '';
+                }
+
+                // Identify which user this belongs to
+                const phone_number_id = value.metadata?.phone_number_id;
+                const user = await User.findOne({ phone_number_id });
+
+                if (user) {
+                    // Check for Opt-Out Keywords (e.g., STOP, UNSUBSCRIBE)
+                    const upperText = bodyText.trim().toUpperCase();
+                    if (['STOP', 'UNSUBSCRIBE', 'OPT OUT'].includes(upperText)) {
+                        await Contact.findOneAndUpdate(
+                            { phoneNumber: from, userId: user._id },
+                            { consent: false, consent_timestamp: new Date() }
+                        );
+                        console.log(`User ${from} opted out. Consent revoked.`);
+                    }
+
+                    await Message.create({
+                        user_id: user._id,
+                        to: from,
+                        direction: 'incoming',
+                        type: type,
+                        body: bodyText,
+                        status: 'delivered',
+                        meta_message_id
+                    });
+                    console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+                }
+            }
 
             res.status(200).send('EVENT_RECEIVED');
         } catch (err) {

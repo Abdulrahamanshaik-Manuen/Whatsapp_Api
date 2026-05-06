@@ -34,6 +34,30 @@ const userSchema = new mongoose.Schema({
     access_token: {
         type: String
     },
+    message_limit: {
+        type: Number,
+        default: 50
+    },
+    messages_used: {
+        type: Number,
+        default: 0
+    },
+    platform_cost_total: {
+        type: Number,
+        default: 0
+    },
+    meta_cost_total: {
+        type: Number,
+        default: 0
+    },
+    total_cost: {
+        type: Number,
+        default: 0
+    },
+    extra_message_cost: {
+        type: Number,
+        default: 1.2
+    },
     created_at: {
         type: Date,
         default: Date.now

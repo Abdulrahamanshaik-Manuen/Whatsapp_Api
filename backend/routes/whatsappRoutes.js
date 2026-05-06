@@ -1,5 +1,5 @@
 import express from 'express';
-import { connectWhatsApp, oauthCallback, getStatus } from '../controllers/whatsappController.js';
+import { connectWhatsApp, oauthCallback, getStatus, getTemplates } from '../controllers/whatsappController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 import User from '../models/User.js';
 
@@ -30,5 +30,8 @@ router.get('/callback', oauthCallback);
 
 // 3. Get Status
 router.get('/status', verifyToken, getStatus);
+
+// 4. Get Templates
+router.get('/templates', verifyToken, getTemplates);
 
 export default router;

@@ -97,3 +97,26 @@ export const getStatus = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch status" });
     }
 };
+/**
+ * Step 4: Fetch Message Templates from Meta
+ */
+export const getTemplates = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.user_id);
+        if (!user || !user.whatsapp_connected || !user.waba_id || !user.access_token) {
+            return res.status(403).json({ error: "WhatsApp not connected" });
+        }
+
+        const response = await axios.get(`https://graph.facebook.com/v19.0/${user.waba_id}/message_templates`, {
+            headers: { Authorization: `Bearer ${user.access_token}` }
+        });
+
+        // Filter for APPROVED templates
+        const templates = response.data.data.filter(t => t.status === 'APPROVED');
+
+        res.json(templates);
+    } catch (err) {
+        console.error("Fetch Templates Error:", err.response?.data || err.message);
+        res.status(500).json({ error: "Failed to fetch templates" });
+    }
+};
