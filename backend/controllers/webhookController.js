@@ -2,6 +2,7 @@ import Message from '../models/Message.js';
 import Campaign from '../models/Campaign.js';
 import User from '../models/User.js';
 import Contact from '../models/Contact.js';
+import Template from '../models/Template.js';
 
 export const verifyWebhook = (req, res) => {
     const mode = req.query['hub.mode'];
@@ -29,7 +30,7 @@ export const handleWebhookEvent = async (req, res) => {
             const changes = entry?.changes?.[0];
             const value = changes?.value;
 
-            // 1. Handle Status Updates (sent, delivered, read, failed)
+            // Handle Status Updates (sent, delivered, read, failed)
             if (value?.statuses) {
                 const statusUpdate = value.statuses[0];
                 const meta_message_id = statusUpdate.id;
@@ -44,15 +45,13 @@ export const handleWebhookEvent = async (req, res) => {
                     if (message.campaign_id) {
                         const incField = `${status}_count`;
                         const update = { $inc: { [incField]: 1 } };
-                        
-                        // If moving from sent to delivered, we might want to decrement sent_count? 
-                        // Usually these are cumulative: Total Sent, Total Delivered etc.
+
                         await Campaign.findByIdAndUpdate(message.campaign_id, update);
                     }
                 }
             }
 
-            // 2. Handle Incoming Messages (2-way chat)
+            // Handle Incoming Messages (2-way chat)
             if (value?.messages) {
                 const incoming = value.messages[0];
                 const from = incoming.from;
@@ -92,6 +91,24 @@ export const handleWebhookEvent = async (req, res) => {
                         meta_message_id
                     });
                     console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+                }
+            }
+
+            // Handle Template Status Updates (Approved/Rejected by Meta)
+            if (changes?.field === 'message_template_status_update') {
+                const { event, message_template_id, message_template_name, reason } = value;
+                const status = event.toLowerCase();
+
+                if (['approved', 'rejected'].includes(status)) {
+                    await Template.findOneAndUpdate(
+                        { name: message_template_name },
+                        {
+                            status: status,
+                            meta_template_id: message_template_id,
+                            meta_rejection_reason: reason || null
+                        }
+                    );
+                    console.log(`Template "${message_template_name}" status updated to: ${status}`);
                 }
             }
 

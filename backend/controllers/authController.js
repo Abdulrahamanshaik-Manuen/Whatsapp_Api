@@ -77,7 +77,7 @@ export const register = async (req, res) => {
 
         // Generate JWT for seamless onboarding
         const token = jwt.sign(
-            { user_id: user._id, phone: user.phone },
+            { user_id: user._id, phone: user.phone, role: user.role },
             process.env.JWT_SECRET || 'secret_key',
             { expiresIn: '7d' }
         );
@@ -106,7 +106,7 @@ export const login = async (req, res) => {
 
         // Generate JWT
         const token = jwt.sign(
-            { user_id: user._id, phone: user.phone },
+            { user_id: user._id, phone: user.phone, role: user.role },
             process.env.JWT_SECRET || 'secret_key',
             { expiresIn: '7d' }
         );
@@ -129,5 +129,54 @@ export const login = async (req, res) => {
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).json({ error: "Login failed", message: err.message });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { phone } = req.body;
+        if (!phone) return res.status(400).json({ error: "Phone number is required" });
+
+        const user = await User.findOne({ phone });
+        if (!user) return res.status(404).json({ error: "User with this phone number does not exist" });
+
+        const otpData = otpService.generateOTP(phone);
+        await Otp.create(otpData);
+        await smsService.sendOTP(phone, otpData.otp);
+
+        res.status(200).json({ message: "OTP sent successfully for password reset" });
+    } catch (err) {
+        console.error("Forgot Password Error:", err);
+        res.status(500).json({ error: "Failed to process forgot password request" });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { phone, otp, password } = req.body;
+        if (!phone || !otp || !password) {
+            return res.status(400).json({ error: "Phone, OTP, and new password are required" });
+        }
+
+        // Verify OTP
+        const result = await otpService.verifyOTP(phone, otp);
+        if (!result.success) {
+            return res.status(400).json({ error: result.message });
+        }
+
+        // Update Password
+        const user = await User.findOne({ phone });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        user.password = password;
+        await user.save();
+
+        // Cleanup OTP
+        await Otp.deleteMany({ phone });
+
+        res.status(200).json({ message: "Password reset successfully" });
+    } catch (err) {
+        console.error("Reset Password Error:", err);
+        res.status(500).json({ error: "Failed to reset password" });
     }
 };

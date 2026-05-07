@@ -7,6 +7,7 @@ import messagingRoutes from './messagingRoutes.js';
 import campaignRoutes from './campaignRoutes.js';
 import contactRoutes from './contactRoutes.js';
 import groupRoutes from './groupRoutes.js';
+import templateRoutes from './templateRoutes.js';
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/contacts', contactRoutes);
 router.use('/groups', groupRoutes);
 router.use('/', messagingRoutes);
 router.use('/campaigns', campaignRoutes);
+router.use('/templates', templateRoutes);
 
 export default router;

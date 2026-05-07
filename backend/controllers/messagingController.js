@@ -2,6 +2,8 @@ import axios from 'axios';
 import User from '../models/User.js';
 import Message from '../models/Message.js';
 import Contact from '../models/Contact.js';
+import Template from '../models/Template.js';
+import * as whatsappService from '../services/whatsappService.js';
 
 const META_PRICING = {
     marketing: 1.0,
@@ -12,14 +14,32 @@ const META_PRICING = {
 export const sendMessage = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { to, template_name, template_type } = req.body;
+        const { to, template_id, template_name, template_type, variable_values } = req.body;
 
-        if (!to || !template_name || !template_type) {
-            return res.status(400).json({ error: "Missing required fields" });
+        if (!to || (!template_id && (!template_name || !template_type))) {
+            return res.status(400).json({ error: "Missing required fields. Provide template_id or name/type." });
         }
 
-        if (!META_PRICING[template_type]) {
-            return res.status(400).json({ error: "Invalid template_type. Must be marketing, utility, or authentication" });
+        let template;
+        if (template_id) {
+            template = await Template.findById(template_id);
+            if (!template) return res.status(404).json({ error: "Template not found" });
+            if (template.status !== 'approved') return res.status(403).json({ error: "Template is not approved by Meta yet." });
+
+            // Validate variables count
+            const requiredVars = template.variables?.length || 0;
+            const providedVars = variable_values?.length || 0;
+            if (requiredVars !== providedVars) {
+                return res.status(400).json({ error: `Template "${template.name}" requires ${requiredVars} variables, but ${providedVars} were provided.` });
+            }
+        }
+
+        const t_name = template ? template.name : template_name;
+        const t_type = template ? template.category : template_type;
+        const t_lang = template ? template.language : "en_US";
+
+        if (!META_PRICING[t_type]) {
+            return res.status(400).json({ error: "Invalid template category. Must be marketing, utility, or authentication" });
         }
 
         const user = await User.findById(userId);
@@ -30,7 +50,7 @@ export const sendMessage = async (req, res) => {
         }
 
         // Consent Validation
-        if (template_type !== 'authentication') {
+        if (t_type !== 'authentication') {
             const contact = await Contact.findOne({ phoneNumber: to, consent: true });
             if (!contact) {
                 return res.status(403).json({ error: "Recipient has not provided consent." });
@@ -38,7 +58,7 @@ export const sendMessage = async (req, res) => {
         }
 
         // Pricing Calculation
-        const meta_cost = META_PRICING[template_type];
+        const meta_cost = META_PRICING[t_type];
         let platform_cost = 0;
 
         if (user.messages_used >= user.message_limit) {
@@ -51,43 +71,32 @@ export const sendMessage = async (req, res) => {
 
         const total_cost = meta_cost + platform_cost;
 
-        // Call Meta API
+        // Call Meta API via Service
+        const result = await whatsappService.sendTemplateMessage(
+            user.phone_number_id,
+            user.access_token,
+            to,
+            t_name,
+            t_lang,
+            variable_values || []
+        );
+
         let meta_message_id = null;
         let status = 'failed';
 
-        try {
-            const metaResponse = await axios.post(
-                `https://graph.facebook.com/v19.0/${user.phone_number_id}/messages`,
-                {
-                    messaging_product: "whatsapp",
-                    to: to,
-                    type: "template",
-                    template: {
-                        name: template_name,
-                        language: { code: "en_US" }
-                    }
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${user.access_token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            meta_message_id = metaResponse.data?.messages?.[0]?.id;
+        if (result.success) {
+            meta_message_id = result.data?.messages?.[0]?.id;
             status = 'sent';
-        } catch (metaErr) {
-            console.error("Meta API Error:", metaErr.response?.data || metaErr.message);
-            status = 'failed';
         }
 
         // Save Message Log
         const messageLog = await Message.create({
             user_id: user._id,
             to,
-            template_name,
-            template_type,
+            template_id: template_id || null,
+            template_name: t_name,
+            template_type: t_type,
+            variable_values: variable_values || [],
             meta_cost,
             platform_cost,
             total_cost,
@@ -105,7 +114,7 @@ export const sendMessage = async (req, res) => {
 
             return res.status(200).json({ message: "Message sent successfully", data: messageLog });
         } else {
-            return res.status(500).json({ error: "Failed to send message via Meta API", data: messageLog });
+            return res.status(500).json({ error: "Failed to send message via Meta API", details: result.error, data: messageLog });
         }
 
     } catch (err) {
@@ -117,26 +126,44 @@ export const sendMessage = async (req, res) => {
 export const sendBulkMessages = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { to, template_name, template_type } = req.body;
+        const { to, template_id, template_name, template_type, variable_values } = req.body;
 
-        if (!to || !Array.isArray(to) || to.length === 0 || !template_name || !template_type) {
-            return res.status(400).json({ error: "Missing required fields. 'to' must be a non-empty array of phone numbers." });
+        if (!to || !Array.isArray(to) || to.length === 0 || (!template_id && (!template_name || !template_type))) {
+            return res.status(400).json({ error: "Missing required fields. Provide phone numbers array and template." });
         }
 
-        if (!META_PRICING[template_type]) {
-            return res.status(400).json({ error: "Invalid template_type. Must be marketing, utility, or authentication" });
+        let template;
+        if (template_id) {
+            template = await Template.findById(template_id);
+            if (!template) return res.status(404).json({ error: "Template not found" });
+            if (template.status !== 'approved') return res.status(403).json({ error: "Template is not approved by Meta." });
+
+            // Validate variables count
+            const requiredVars = template.variables?.length || 0;
+            const providedVars = variable_values?.length || 0;
+            if (requiredVars !== providedVars) {
+                return res.status(400).json({ error: `Template "${template.name}" requires ${requiredVars} variables, but ${providedVars} were provided.` });
+            }
+        }
+
+        const t_name = template ? template.name : template_name;
+        const t_type = template ? template.category : template_type;
+        const t_lang = template ? template.language : "en_US";
+
+        if (!META_PRICING[t_type]) {
+            return res.status(400).json({ error: "Invalid template category." });
         }
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: "User not found" });
 
         if (!user.whatsapp_connected || !user.phone_number_id || !user.access_token) {
-            return res.status(403).json({ error: "WhatsApp not connected or missing credentials" });
+            return res.status(403).json({ error: "WhatsApp not connected" });
         }
 
         // Consent Validation
         let validContacts = [...new Set(to)];
-        if (template_type !== 'authentication') {
+        if (t_type !== 'authentication') {
             const consentedContacts = await Contact.find({
                 phoneNumber: { $in: validContacts },
                 consent: true
@@ -152,12 +179,12 @@ export const sendBulkMessages = async (req, res) => {
             return res.status(403).json({
                 error: "Message limit exceeded",
                 upgrade_required: true,
-                message: `This bulk send requires ${validContacts.length} messages, but you only have ${user.message_limit - user.messages_used} left. Please upgrade your subscription.`
+                message: `Limit exceeded. You need ${validContacts.length} messages, but have ${user.message_limit - user.messages_used} left.`
             });
         }
 
-        const meta_cost = META_PRICING[template_type];
-        let platform_cost = 0; // Assuming hard limit is enforced, no extra cost
+        const meta_cost = META_PRICING[t_type];
+        let platform_cost = 0;
         const total_cost_per_msg = meta_cost + platform_cost;
 
         const results = {
@@ -170,49 +197,37 @@ export const sendBulkMessages = async (req, res) => {
         let total_platform_cost_incurred = 0;
         let total_cost_incurred = 0;
 
-        // Process sequentially to respect basic rate limits
         for (const phone of validContacts) {
+            const result = await whatsappService.sendTemplateMessage(
+                user.phone_number_id,
+                user.access_token,
+                phone,
+                t_name,
+                t_lang,
+                variable_values || []
+            );
+
             let meta_message_id = null;
             let status = 'failed';
 
-            try {
-                const metaResponse = await axios.post(
-                    `https://graph.facebook.com/v19.0/${user.phone_number_id}/messages`,
-                    {
-                        messaging_product: "whatsapp",
-                        to: phone,
-                        type: "template",
-                        template: {
-                            name: template_name,
-                            language: { code: "en_US" }
-                        }
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${user.access_token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-
-                meta_message_id = metaResponse.data?.messages?.[0]?.id;
+            if (result.success) {
+                meta_message_id = result.data?.messages?.[0]?.id;
                 status = 'sent';
-
                 results.successful++;
                 total_meta_cost_incurred += meta_cost;
                 total_platform_cost_incurred += platform_cost;
                 total_cost_incurred += total_cost_per_msg;
-            } catch (metaErr) {
-                console.error(`Meta API Error for ${phone}:`, metaErr.response?.data || metaErr.message);
-                status = 'failed';
+            } else {
                 results.failed++;
             }
 
             results.logs.push({
                 user_id: user._id,
                 to: phone,
-                template_name,
-                template_type,
+                template_id: template_id || null,
+                template_name: t_name,
+                template_type: t_type,
+                variable_values: variable_values || [],
                 meta_cost,
                 platform_cost,
                 total_cost: total_cost_per_msg,
@@ -221,12 +236,10 @@ export const sendBulkMessages = async (req, res) => {
             });
         }
 
-        // Bulk insert logs
         if (results.logs.length > 0) {
             await Message.insertMany(results.logs);
         }
 
-        // Update User Usage if any succeeded
         if (results.successful > 0) {
             user.messages_used += results.successful;
             user.meta_cost_total += total_meta_cost_incurred;
@@ -247,7 +260,7 @@ export const sendBulkMessages = async (req, res) => {
 
     } catch (err) {
         console.error("Bulk Send Error:", err);
-        res.status(500).json({ error: "Internal server error during bulk sending" });
+        res.status(500).json({ error: "Internal server error" });
     }
 };
 

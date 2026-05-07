@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import User from '../models/User.js';
 import Message from '../models/Message.js';
 import Campaign from '../models/Campaign.js';
+import * as whatsappService from '../services/whatsappService.js';
 
 // Ensure .env is loaded before reading process.env
 dotenv.config();
@@ -25,7 +26,7 @@ const META_PRICING = {
 
 // Process jobs
 bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
-    const { to, template_name, template_type, user_id, campaign_id } = job.data;
+    const { to, template_id, template_name, template_type, variable_values, user_id, campaign_id } = job.data;
     
     try {
         const user = await User.findById(user_id);
@@ -40,8 +41,10 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                 user_id,
                 campaign_id,
                 to,
+                template_id: template_id || null,
                 template_name,
                 template_type,
+                variable_values: variable_values || [],
                 status: 'failed',
                 meta_cost: 0,
                 platform_cost: 0,
@@ -55,37 +58,28 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
         }
 
         const meta_cost = META_PRICING[template_type] || 1.0;
-        const platform_cost = 0; // Hard limit applies, no extra cost
+        const platform_cost = 0;
         const total_cost = meta_cost + platform_cost;
 
         let meta_message_id = null;
         let status = 'failed';
 
-        try {
-            const metaResponse = await axios.post(
-                `https://graph.facebook.com/v19.0/${user.phone_number_id}/messages`,
-                {
-                    messaging_product: "whatsapp",
-                    to: to,
-                    type: "template",
-                    template: {
-                        name: template_name,
-                        language: { code: "en_US" }
-                    }
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${user.access_token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+        // Use whatsappService
+        const result = await whatsappService.sendTemplateMessage(
+            user.phone_number_id,
+            user.access_token,
+            to,
+            template_name,
+            'en_US',
+            variable_values || []
+        );
 
-            meta_message_id = metaResponse.data?.messages?.[0]?.id;
+        if (result.success) {
+            meta_message_id = result.data?.messages?.[0]?.id;
             status = 'sent';
-        } catch (metaErr) {
+        } else {
             status = 'failed';
-            throw metaErr; // throw to trigger job retry
+            throw new Error(result.error);
         }
 
         // Log success
@@ -93,8 +87,10 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             user_id,
             campaign_id,
             to,
+            template_id: template_id || null,
             template_name,
             template_type,
+            variable_values: variable_values || [],
             status,
             meta_cost,
             platform_cost,
@@ -125,8 +121,10 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                 user_id,
                 campaign_id,
                 to,
+                template_id: template_id || null,
                 template_name,
                 template_type,
+                variable_values: variable_values || [],
                 status: 'failed',
                 meta_cost: 0,
                 platform_cost: 0,
@@ -145,7 +143,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
  * Handle Campaign Launching (especially for scheduled ones)
  */
 bulkMessageQueue.process('launch-campaign', async (job) => {
-    const { campaign_id, finalContacts, template_name, template_type, user_id } = job.data;
+    const { campaign_id, finalContacts, template_id, template_name, template_type, variable_values, user_id } = job.data;
     
     try {
         console.log(`Launching Campaign: ${campaign_id}`);
@@ -156,13 +154,14 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
         // Add individual message jobs
         const jobs = finalContacts.map(phone => ({
             to: phone,
+            template_id,
             template_name,
             template_type,
+            variable_values,
             user_id,
             campaign_id
         }));
 
-        // Add to queue with a different job name to trigger 'send-message' process
         for (const jobData of jobs) {
             await bulkMessageQueue.add('send-message', jobData, {
                 attempts: 3,

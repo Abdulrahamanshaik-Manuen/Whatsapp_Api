@@ -10,6 +10,10 @@ const campaignSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    template_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template'
+    },
     template_name: {
         type: String,
         required: true
@@ -19,6 +23,9 @@ const campaignSchema = new mongoose.Schema({
         enum: ['marketing', 'utility', 'authentication'],
         required: true
     },
+    variable_values: [{
+        type: String
+    }],
     total_contacts: {
         type: Number,
         required: true

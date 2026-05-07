@@ -3,6 +3,7 @@ import Message from '../models/Message.js';
 import User from '../models/User.js';
 import Group from '../models/Group.js';
 import Contact from '../models/Contact.js';
+import Template from '../models/Template.js';
 import { bulkMessageQueue } from '../workers/campaignQueue.js';
 
 const META_PRICING = {
@@ -86,13 +87,23 @@ export const previewCampaign = async (req, res) => {
 export const createCampaign = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { campaign_name, template_name, template_type, contacts, group_ids, scheduled_at } = req.body;
+        const { campaign_name, template_id, template_name, template_type, variable_values, contacts, group_ids, scheduled_at } = req.body;
 
-        if (!campaign_name || !template_name || !template_type) {
-            return res.status(400).json({ error: "Missing required campaign fields" });
+        if (!campaign_name || (!template_id && (!template_name || !template_type))) {
+            return res.status(400).json({ error: "Missing required campaign fields. Provide template_id or name/type." });
         }
 
-        const finalContacts = await resolveContacts(contacts, group_ids, userId, template_type);
+        let template;
+        if (template_id) {
+            template = await Template.findById(template_id);
+            if (!template) return res.status(404).json({ error: "Template not found" });
+            if (template.status !== 'approved') return res.status(403).json({ error: "Template is not approved by Meta." });
+        }
+
+        const t_name = template ? template.name : template_name;
+        const t_type = template ? template.category : template_type;
+
+        const finalContacts = await resolveContacts(contacts, group_ids, userId, t_type);
 
         if (finalContacts.length === 0) {
             return res.status(400).json({ error: "No valid contacts selected for this campaign" });
@@ -129,8 +140,10 @@ export const createCampaign = async (req, res) => {
         const campaign = await Campaign.create({
             user_id: userId,
             name: campaign_name,
-            template_name,
-            template_type,
+            template_id: template_id || null,
+            template_name: t_name,
+            template_type: t_type,
+            variable_values: variable_values || [],
             total_contacts: finalContacts.length,
             status,
             scheduled_at: scheduled_at || null
@@ -140,11 +153,13 @@ export const createCampaign = async (req, res) => {
         await bulkMessageQueue.add('launch-campaign', {
             campaign_id: campaign._id,
             finalContacts,
-            template_name,
-            template_type,
+            template_id: template_id || null,
+            template_name: t_name,
+            template_type: t_type,
+            variable_values: variable_values || [],
             user_id: userId
         }, {
-            delay, // This is the magic for scheduling
+            delay,
             attempts: 3,
             backoff: 5000,
             removeOnComplete: true

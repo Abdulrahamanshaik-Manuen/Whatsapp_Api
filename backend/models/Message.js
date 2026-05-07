@@ -27,6 +27,10 @@ const messageSchema = new mongoose.Schema({
     body: {
         type: String
     },
+    template_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Template'
+    },
     template_name: {
         type: String
     },
@@ -34,6 +38,9 @@ const messageSchema = new mongoose.Schema({
         type: String,
         enum: ['marketing', 'utility', 'authentication']
     },
+    variable_values: [{
+        type: String
+    }],
     meta_cost: {
         type: Number,
         default: 0
