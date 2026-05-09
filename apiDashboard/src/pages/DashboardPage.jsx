@@ -46,10 +46,6 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${tabPathMap['Dashboard'].split('/')[0]}//localhost:5000/api/auth/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      // Wait, let's use a more robust URL builder or just API_BASE_URL if defined
       const API_BASE_URL = 'http://localhost:5000/api';
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -98,10 +94,10 @@ export default function DashboardPage({ onNavigate, initialPath }) {
         onNavigate={onNavigate}
       />
       
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
         <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />
         
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
             <DashboardContent 
               activeTab={activeTab} 

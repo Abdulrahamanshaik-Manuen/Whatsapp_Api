@@ -105,11 +105,11 @@ export default function InboxPage() {
   );
 
   return (
-    <div className="flex-1 flex h-full bg-[#F8FAFC] overflow-hidden">
-      {/* 1. Chat List Column */}
-      <div className="w-full md:w-[380px] flex flex-col h-full bg-white border-r border-slate-100 shadow-sm relative z-10">
+    <div className="flex-1 flex min-h-0 bg-[#F7F9FC] overflow-hidden p-4 md:p-6 gap-6">
+      {/* 1. Chat List Column - Wrapped in Card */}
+      <div className="w-full md:w-[320px] flex flex-col bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 relative z-10 overflow-hidden">
         {/* Inbox Header */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white border-b border-slate-50">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">Messages</h1>
             <div className="flex items-center gap-2">
@@ -129,13 +129,13 @@ export default function InboxPage() {
               placeholder="Search conversations..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-transparent rounded-full text-xs font-bold focus:bg-white focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400"
+              className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-transparent rounded-full text-xs font-bold focus:bg-white focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400 shadow-inner"
             />
           </div>
         </div>
 
         {/* Scrollable Conversations */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-3 pb-6 space-y-2">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-2">
           {loading ? (
             Array(6).fill(0).map((_, i) => (
               <div key={i} className="p-4 rounded-3xl bg-slate-50/50 animate-pulse flex gap-4">
@@ -147,11 +147,11 @@ export default function InboxPage() {
               </div>
             ))
           ) : filteredConversations.length === 0 ? (
-            <div className="p-10 text-center space-y-4 opacity-40">
-              <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto">
-                <MessageCircle size={32} className="text-slate-400" />
+            <div className="p-10 text-center space-y-3 opacity-30 mt-10">
+              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto border border-slate-100">
+                <MessageCircle size={20} className="text-slate-300" />
               </div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">No chats found</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No messages found</p>
             </div>
           ) : (
             filteredConversations.map(conv => (
@@ -172,7 +172,7 @@ export default function InboxPage() {
                   <div className="flex items-center justify-between mb-0.5">
                     <p className={`text-sm font-black transition-colors ${activeChat?._id === conv._id ? 'text-indigo-600' : 'text-slate-800'}`}>{conv._id}</p>
                     <span className="text-[10px] font-bold text-slate-400">
-                      {new Date(conv.lastMessage?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {conv.lastMessage?.createdAt ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
                   </div>
                   <p className="text-[12px] text-slate-500 truncate font-medium opacity-80 leading-relaxed">
@@ -192,8 +192,8 @@ export default function InboxPage() {
         </div>
       </div>
 
-      {/* 2. Main Conversation Column */}
-      <div className="flex-1 flex flex-col h-full bg-white relative">
+      {/* 2. Main Conversation Column - Wrapped in Card */}
+      <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden">
         {activeChat ? (
           <>
             {/* Professional Chat Header */}
@@ -243,7 +243,7 @@ export default function InboxPage() {
                       )}
 
                       <div className={`flex items-center gap-2 mt-3 justify-end opacity-40 text-[10px]`}>
-                        <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                         {msg.direction === 'outgoing' && (
                           msg.status === 'read' ? <CheckCheck size={14} /> : <Check size={14} />
                         )}
@@ -286,19 +286,19 @@ export default function InboxPage() {
             </div>
           </>
         ) : (
-          /* Proper Empty State Design */
+          /* Proper Centered Empty State Design */
           <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-[#F7F9FC]">
-            <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center text-slate-200 shadow-2xl shadow-slate-200/50 mb-10 border border-slate-100 relative group animate-in zoom-in duration-700">
-              <div className="absolute inset-0 bg-indigo-500/5 rounded-[3rem] animate-pulse"></div>
-              <MessageCircle size={64} className="relative z-10 text-slate-100 group-hover:text-indigo-600/20 transition-colors duration-500" />
+            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-slate-200 shadow-xl shadow-slate-200/50 mb-8 border border-slate-100 relative group animate-in zoom-in duration-700">
+              <div className="absolute inset-0 bg-indigo-500/5 rounded-3xl animate-pulse"></div>
+              <MessageCircle size={32} className="relative z-10 text-slate-100 group-hover:text-indigo-600/20 transition-colors duration-500" />
             </div>
             <div className="space-y-4 max-w-sm">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">📭 No Conversations Yet</h2>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">No Conversations Yet</h2>
               <p className="text-sm text-slate-400 font-bold leading-loose">
-                Your inbox is waiting! Select a contact to start chatting or wait for new incoming messages.
+                Your inbox is waiting! Start a new chat to begin. Select a contact or wait for new incoming messages.
               </p>
               <div className="pt-6">
-                <button className="px-10 py-5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95">
+                <button className="px-10 py-5 bg-emerald-500 text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 active:scale-95">
                   Start New Conversation
                 </button>
               </div>
@@ -307,8 +307,8 @@ export default function InboxPage() {
         )}
       </div>
 
-      {/* 3. Details Column (Hidden on Small Screens) */}
-      <div className="hidden xl:flex w-[320px] flex-col h-full bg-white border-l border-slate-100">
+      {/* 3. Details Column (Hidden on Small Screens) - Wrapped in Card */}
+      <div className="hidden xl:flex w-[260px] flex-col bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="p-8 text-center space-y-6">
           <div className="w-24 h-24 bg-slate-50 rounded-[2rem] mx-auto flex items-center justify-center text-slate-200 border border-slate-100">
             <User size={48} />
@@ -342,6 +342,5 @@ export default function InboxPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
 }

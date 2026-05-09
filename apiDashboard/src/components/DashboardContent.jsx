@@ -86,12 +86,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate 
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
+
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F7F9FC]">

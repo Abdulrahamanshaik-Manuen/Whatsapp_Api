@@ -31,7 +31,7 @@ export default function Header({ toggleSidebar, onNavigate }) {
         </button>
         <div>
           <h2 className="text-lg md:text-xl font-black text-slate-900 flex items-center gap-2 tracking-tight">
-            {getGreeting()}, {user.name?.split(' ')[0] || 'Shravya'} 👋
+            {getGreeting()}, {user.name?.split(' ')[0] || 'Venishetty'}
           </h2>
           <p className="text-slate-500 text-[10px] md:text-[11px] font-bold uppercase tracking-widest leading-none mt-1 opacity-60">Here's what's happening today.</p>
         </div>
