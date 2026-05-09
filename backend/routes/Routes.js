@@ -8,6 +8,8 @@ import campaignRoutes from './campaignRoutes.js';
 import contactRoutes from './contactRoutes.js';
 import groupRoutes from './groupRoutes.js';
 import templateRoutes from './templateRoutes.js';
+import analyticsRoutes from './analyticsRoutes.js';
+import automationRoutes from './automationRoutes.js';
 
 const router = express.Router();
 
@@ -26,5 +28,7 @@ router.use('/groups', groupRoutes);
 router.use('/', messagingRoutes);
 router.use('/campaigns', campaignRoutes);
 router.use('/templates', templateRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/automations', automationRoutes);
 
 export default router;

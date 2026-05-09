@@ -9,11 +9,16 @@ export const connectWhatsApp = async (req, res) => {
         const userId = req.user.user_id; // From authMiddleware
         
         const appId = process.env.APP_ID;
-        const redirectUri = process.env.META_REDIRECT_URI;
-        const scopes = 'whatsapp_business_management,whatsapp_business_messaging';
+        const redirectUri = encodeURIComponent(process.env.META_REDIRECT_URI.trim());
+        const scopes = 'whatsapp_business_management,whatsapp_business_messaging,business_management';
         
-        const oauthUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${userId}&response_type=code`;
+        const oauthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scopes}&state=${userId}&response_type=code`;
         
+        console.log("==========================================");
+        console.log("🔗 GENERATED OAUTH URL:");
+        console.log(oauthUrl);
+        console.log("==========================================");
+
         res.json({ url: oauthUrl });
     } catch (err) {
         res.status(500).json({ error: "Failed to initiate WhatsApp connection" });
@@ -24,60 +29,119 @@ export const connectWhatsApp = async (req, res) => {
  * Step 2: OAuth Callback - Exchange code for token and fetch IDs
  */
 export const oauthCallback = async (req, res) => {
+    console.log("--- START OAUTH CALLBACK ---");
     const { code, state } = req.query; // state contains userId
     const userId = state;
 
+    console.log("1. Received from Meta:", { code: code ? 'PRESENT' : 'MISSING', userId });
+
     if (!code) {
+        console.error("❌ ERROR: Authorization code missing");
         return res.status(400).json({ error: "Authorization code missing" });
     }
 
     try {
+        console.log("2. Exchanging code for Access Token...");
         // 1. Exchange code for Access Token
-        const tokenResponse = await axios.get('https://graph.facebook.com/v22.0/oauth/access_token', {
+        const tokenResponse = await axios.post('https://graph.facebook.com/v20.0/oauth/access_token', null, {
             params: {
-                client_id: process.env.APP_ID,
-                client_secret: process.env.APP_SECRET,
-                redirect_uri: process.env.META_REDIRECT_URI,
-                code
+                client_id: process.env.APP_ID?.trim(),
+                client_secret: process.env.APP_SECRET?.trim(),
+                redirect_uri: process.env.META_REDIRECT_URI?.trim(),
+                code: code.trim()
             }
         });
 
         const accessToken = tokenResponse.data.access_token;
+        console.log("3. Access Token received successfully!");
 
-        // 2. Fetch WhatsApp Business Accounts (WABA ID)
-        const wabaResponse = await axios.get(`https://graph.facebook.com/v22.0/me?fields=whatsapp_business_accounts`, {
+        // 2. DIAGNOSTIC: Fetch User Identity and Permissions
+        console.log("4. Running Diagnostic Scan on Token...");
+        const diagnosticRes = await axios.get('https://graph.facebook.com/v20.0/me?fields=id,name,email,permissions', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
-        const wabaData = wabaResponse.data.whatsapp_business_accounts?.data?.[0];
-        if (!wabaData) throw new Error("No WhatsApp Business Account found");
+        console.log("5. DIAGNOSTIC RESULT:", JSON.stringify(diagnosticRes.data, null, 2));
 
-        const wabaId = wabaData.id;
+        // 3. Directly Fetch WhatsApp Business Accounts
+        console.log("6. Fetching WABA ID directly...");
+        let wabaId = null;
+        try {
+            const wabaResponse = await axios.get('https://graph.facebook.com/v20.0/me/owned_whatsapp_business_accounts', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            wabaId = wabaResponse.data.data?.[0]?.id;
+            console.log("7. WABA found via owned_edge:", wabaId);
+        } catch (e) {
+            console.log("7a. Owned edge failed, trying Client accounts scan...");
+            try {
+                const clientRes = await axios.get('https://graph.facebook.com/v20.0/me/client_whatsapp_business_accounts', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                wabaId = clientRes.data.data?.[0]?.id;
+                console.log("7b. WABA found via Client edge:", wabaId);
+            } catch (e2) {
+                console.log("7c. Client scan failed, trying Accounts (Pages) scan...");
+                try {
+                    const accountsRes = await axios.get('https://graph.facebook.com/v20.0/me/accounts?fields=whatsapp_business_accounts', {
+                        headers: { Authorization: `Bearer ${accessToken}` }
+                    });
+                    wabaId = accountsRes.data.data?.[0]?.whatsapp_business_accounts?.data?.[0]?.id;
+                    console.log("7d. WABA found via Accounts edge:", wabaId);
+                } catch (e3) {
+                    console.log("7e. Accounts scan failed, trying direct fields query...");
+                    const wabaResponse = await axios.get('https://graph.facebook.com/v20.0/me?fields=whatsapp_business_accounts', {
+                        headers: { Authorization: `Bearer ${accessToken}` }
+                    });
+                    wabaId = wabaResponse.data.whatsapp_business_accounts?.data?.[0]?.id;
+                    console.log("7f. WABA found via fields query:", wabaId);
+                }
+            }
+        }
+
+        if (!wabaId) {
+            console.error("❌ ERROR: No WhatsApp Business Account found");
+            throw new Error("No WhatsApp Business Account found. Make sure you have a WABA linked to your Business Manager.");
+        }
+
+        console.log("8. WABA ID Found:", wabaId);
 
         // 3. Fetch Phone Number ID for this WABA
-        const phoneResponse = await axios.get(`https://graph.facebook.com/v22.0/${wabaId}/phone_numbers`, {
+        console.log("6. Fetching Phone Number ID...");
+        const phoneResponse = await axios.get(`https://graph.facebook.com/v20.0/${wabaId}/phone_numbers`, {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
         const phoneData = phoneResponse.data.data?.[0];
-        if (!phoneData) throw new Error("No phone numbers found in this WABA");
+        if (!phoneData) {
+            console.error("❌ ERROR: No phone numbers found in this WABA");
+            throw new Error("No phone numbers found in this WABA");
+        }
 
         const phoneNumberId = phoneData.id;
+        console.log("7. Phone Number ID Found:", phoneNumberId);
 
         // 4. Update User in DB
-        await User.findOneAndUpdate({ user_id: userId }, {
+        console.log("8. Updating User in Database, ID:", userId);
+        const updatedUser = await User.findByIdAndUpdate(userId, {
             waba_id: wabaId,
             phone_number_id: phoneNumberId,
             access_token: accessToken,
             whatsapp_connected: true
-        });
+        }, { new: true });
+
+        console.log("9. Database Update Success! Connected:", updatedUser?.whatsapp_connected);
 
         // Redirect back to frontend dashboard
-        res.redirect(`${process.env.FRONTEND_URL}/user?status=whatsapp_connected`);
+        const redirectUrl = `${process.env.FRONTEND_URL}/setup?status=whatsapp_connected`;
+        console.log("10. Finalizing Redirect to:", redirectUrl);
+        res.redirect(redirectUrl);
     } catch (err) {
-        console.error("OAuth Callback Error:", err.response?.data || err.message);
+        console.error("❌ OAUTH CALLBACK ERROR DETAILS:");
+        console.error(JSON.stringify(err.response?.data || err.message, null, 2));
         res.status(500).json({ error: "OAuth flow failed", details: err.message });
     }
+    console.log("--- END OAUTH CALLBACK ---");
 };
 
 /**
@@ -85,16 +149,42 @@ export const oauthCallback = async (req, res) => {
  */
 export const getStatus = async (req, res) => {
     try {
-        const user = await User.findOne({ user_id: req.user.user_id });
+        const user = await User.findById(req.user.user_id);
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        const webhookUrl = `${process.env.FRONTEND_URL}/api/webhook`;
+
         res.json({
-            connected: user.whatsapp_connected,
+            whatsapp_connected: user.whatsapp_connected,
             phone_number_id: user.phone_number_id,
-            waba_id: user.waba_id
+            waba_id: user.waba_id,
+            webhook_url: webhookUrl,
+            verify_token: "whatsapp_token"
         });
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch status" });
+        res.status(500).json({ error: "Failed to get status" });
+    }
+};
+
+/**
+ * Step 3.5: Manual Save Settings
+ */
+export const saveSettings = async (req, res) => {
+    try {
+        const { phone_number_id, waba_id, access_token } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.user.user_id,
+            { 
+                phone_number_id, 
+                waba_id, 
+                access_token,
+                whatsapp_connected: !!(phone_number_id && access_token)
+            },
+            { new: true }
+        );
+        res.json({ message: "Settings saved successfully", user });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to save settings" });
     }
 };
 /**

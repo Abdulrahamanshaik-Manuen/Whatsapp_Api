@@ -264,6 +264,119 @@ export const sendBulkMessages = async (req, res) => {
     }
 };
 
+export const getMessages = async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        const { page = 1, limit = 50, search = '' } = req.query;
+
+        const query = { user_id: userId };
+        if (search) {
+            query.to = { $regex: search, $options: 'i' };
+        }
+
+        const messages = await Message.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        const total = await Message.countDocuments(query);
+
+        res.status(200).json({
+            messages,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (err) {
+        console.error("Fetch Messages Error:", err);
+        res.status(500).json({ error: "Failed to fetch message logs" });
+    }
+};
+
+export const getConversations = async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        
+        // Group by 'to' and get the latest message for each
+        const conversations = await Message.aggregate([
+            { $match: { user_id: userId } },
+            { $sort: { createdAt: -1 } },
+            { $group: {
+                _id: "$to",
+                lastMessage: { $first: "$$ROOT" },
+                unreadCount: { $sum: { $cond: [{ $eq: ["$direction", "incoming"] }, 1, 0] } } // Simplistic unread count
+            }},
+            { $sort: { "lastMessage.createdAt": -1 } }
+        ]);
+
+        res.status(200).json(conversations);
+    } catch (err) {
+        console.error("Fetch Conversations Error:", err);
+        res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+};
+
+export const getMessagesByContact = async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        const { phone } = req.params;
+
+        const messages = await Message.find({
+            user_id: userId,
+            to: phone
+        }).sort({ createdAt: 1 });
+
+        res.status(200).json(messages);
+    } catch (err) {
+        console.error("Fetch Thread Error:", err);
+        res.status(500).json({ error: "Failed to fetch message thread" });
+    }
+};
+
+export const sendReply = async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        const { to, text } = req.body;
+
+        if (!to || !text) {
+            return res.status(400).json({ error: "Recipient and text are required" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user || !user.whatsapp_connected) {
+            return res.status(403).json({ error: "WhatsApp not connected" });
+        }
+
+        const result = await whatsappService.sendTextMessage(
+            user.phone_number_id,
+            user.access_token,
+            to,
+            text
+        );
+
+        if (result.success) {
+            const messageLog = await Message.create({
+                user_id: user._id,
+                to,
+                direction: 'outgoing',
+                type: 'text',
+                body: text,
+                status: 'sent',
+                meta_message_id: result.data?.messages?.[0]?.id
+            });
+            return res.status(200).json(messageLog);
+        } else {
+            return res.status(500).json({ error: result.error });
+        }
+    } catch (err) {
+        console.error("Send Reply Error:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 export const getUsageDashboard = async (req, res) => {
     try {
         const userId = req.user.user_id;

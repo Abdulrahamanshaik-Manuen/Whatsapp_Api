@@ -45,8 +45,20 @@ export const verifyOTP = async (req, res) => {
 
 export const register = async (req, res) => {
     try {
-        const { name, phone, password, businessData } = req.body;
+        let { name, phone, password, businessData } = req.body;
         if (!name || !phone || !password) return res.status(400).json({ error: "All fields are required" });
+
+        // Normalize Phone: 
+        // 1. Remove all non-digit characters
+        let cleaned = phone.replace(/\D/g, '');
+        // 2. Handle defaults
+        if (cleaned.length === 10) {
+            phone = `+91${cleaned}`;
+        } else if (!phone.startsWith('+')) {
+            phone = `+${cleaned}`;
+        } else {
+            phone = `+${cleaned}`; // Ensure it starts with + even if it was already there
+        }
 
         // Check if phone was verified
         const otpRecord = await Otp.findOne({ phone, is_verified: true }).sort({ expires_at: -1 });
@@ -85,7 +97,7 @@ export const register = async (req, res) => {
         res.status(201).json({ 
             message: "User registered successfully", 
             token,
-            user: { id: user._id, name: user.name, phone: user.phone } 
+            user: { id: user._id, name: user.name, phone: user.phone, email: f.email } 
         });
     } catch (err) {
         console.error("Registration Error:", err);
@@ -95,8 +107,20 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        const { phone, password } = req.body;
+        let { phone, password } = req.body;
         if (!phone || !password) return res.status(400).json({ error: "Phone and password are required" });
+
+        // Normalize Phone: 
+        // 1. Remove all non-digit characters
+        let cleaned = phone.replace(/\D/g, '');
+        // 2. Handle defaults
+        if (cleaned.length === 10) {
+            phone = `+91${cleaned}`;
+        } else if (!phone.startsWith('+')) {
+            phone = `+${cleaned}`;
+        } else {
+            phone = `+${cleaned}`; // Ensure it starts with +
+        }
 
         const user = await User.findOne({ phone });
         if (!user) return res.status(401).json({ error: "Invalid credentials" });
@@ -113,8 +137,9 @@ export const login = async (req, res) => {
 
         // Check if onboarding is completed
         let hasProfile = false;
+        let profile = null;
         try {
-            const profile = await BusinessProfile.findOne({ user_id: user._id });
+            profile = await BusinessProfile.findOne({ user_id: user._id });
             hasProfile = !!profile;
         } catch (profileErr) {
             console.error("Profile Check Error:", profileErr);
@@ -123,7 +148,12 @@ export const login = async (req, res) => {
         res.status(200).json({ 
             message: "Login successful", 
             token, 
-            user: { id: user._id, name: user.name, phone: user.phone },
+            user: { 
+                id: user._id, 
+                name: user.name, 
+                phone: user.phone,
+                email: profile?.email || ''
+            },
             hasProfile
         });
     } catch (err) {
@@ -178,5 +208,18 @@ export const resetPassword = async (req, res) => {
     } catch (err) {
         console.error("Reset Password Error:", err);
         res.status(500).json({ error: "Failed to reset password" });
+    }
+};
+
+export const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.user_id).select('-password');
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const business = await BusinessProfile.findOne({ user_id: user._id });
+        
+        res.json({ user, business });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch user data" });
     }
 };

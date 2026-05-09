@@ -1,4 +1,5 @@
 import express from 'express';
+// Restart Trigger v1.2
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from '../config/db.js';
@@ -43,7 +44,10 @@ app.use((req, res, next) => {
   next();
 });
 
+import { oauthCallback } from '../controllers/whatsappController.js';
+
 // Routes
+app.get('/api/whatsapp/callback', oauthCallback);
 app.use('/api', routes);
 
 // Basic route

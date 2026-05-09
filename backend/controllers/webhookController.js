@@ -3,6 +3,7 @@ import Campaign from '../models/Campaign.js';
 import User from '../models/User.js';
 import Contact from '../models/Contact.js';
 import Template from '../models/Template.js';
+import { processAutomation } from '../services/automationService.js';
 
 export const verifyWebhook = (req, res) => {
     const mode = req.query['hub.mode'];
@@ -91,6 +92,9 @@ export const handleWebhookEvent = async (req, res) => {
                         meta_message_id
                     });
                     console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+
+                    // Trigger Automation Engine
+                    processAutomation(user._id, from, bodyText);
                 }
             }
 

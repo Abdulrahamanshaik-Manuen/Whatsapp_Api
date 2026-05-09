@@ -64,6 +64,22 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
         let meta_message_id = null;
         let status = 'failed';
 
+        // Resolve dynamic variables if any
+        let resolvedVariables = [...(variable_values || [])];
+        if (resolvedVariables.some(v => typeof v === 'string' && v.includes('{{contact.'))) {
+            const contact = await Contact.findOne({ phoneNumber: to, user_id });
+            if (contact) {
+                resolvedVariables = resolvedVariables.map(v => {
+                    if (typeof v === 'string' && v.includes('{{contact.')) {
+                        if (v.includes('{{contact.name}}')) return contact.name || '';
+                        if (v.includes('{{contact.phone}}')) return contact.phoneNumber || '';
+                        return v; // Fallback
+                    }
+                    return v;
+                });
+            }
+        }
+
         // Use whatsappService
         const result = await whatsappService.sendTemplateMessage(
             user.phone_number_id,
@@ -71,7 +87,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             to,
             template_name,
             'en_US',
-            variable_values || []
+            resolvedVariables
         );
 
         if (result.success) {
@@ -152,15 +168,24 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
         await Campaign.findByIdAndUpdate(campaign_id, { status: 'running' });
 
         // Add individual message jobs
-        const jobs = finalContacts.map(phone => ({
-            to: phone,
-            template_id,
-            template_name,
-            template_type,
-            variable_values,
-            user_id,
-            campaign_id
-        }));
+        const jobs = finalContacts.map(c => {
+            const phone = typeof c === 'object' ? c.phone : c;
+            const contactVars = (typeof c === 'object' && c.variables) ? c.variables : [];
+            
+            // Merge variables: contact-specific ones override global ones if they are present
+            // Or usually, for Excel, contactVars is the complete list for {{1}}, {{2}}...
+            const finalVars = contactVars.length > 0 ? contactVars : variable_values;
+
+            return {
+                to: phone,
+                template_id,
+                template_name,
+                template_type,
+                variable_values: finalVars,
+                user_id,
+                campaign_id
+            };
+        });
 
         for (const jobData of jobs) {
             await bulkMessageQueue.add('send-message', jobData, {

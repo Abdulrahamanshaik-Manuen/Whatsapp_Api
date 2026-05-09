@@ -17,9 +17,27 @@ const templateSchema = new mongoose.Schema({
         default: 'en_US'
     },
     content: {
-        type: String,
+        type: String, // This will store the BODY text
         required: true
     },
+    header: {
+        type: {
+            type: String, // TEXT, IMAGE, VIDEO, DOCUMENT
+            enum: ["TEXT", "IMAGE", "VIDEO", "DOCUMENT"]
+        },
+        text: String,
+        media_url: String, // For previewing images
+        handle: String
+    },
+    footer: {
+        type: String
+    },
+    buttons: [{
+        type: { type: String }, // QUICK_REPLY, CALL_TO_ACTION
+        text: String,
+        url: String,
+        phone_number: String
+    }],
     variables: [{
         type: String
     }],

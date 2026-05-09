@@ -1,0 +1,122 @@
+{
+  "name": "template_3",
+  "previous_category": "UTILITY",
+  "parameter_format": "POSITIONAL",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Welcome to Manuen Infotech - We're glad you're here!"
+    },
+    {
+      "type": "BODY",
+      "text": "Welcome to Manuen Infotech - We're glad you're here!"
+    }
+  ],
+  "language": "en_US",
+  "status": "APPROVED",
+  "category": "MARKETING",
+  "is_primary_device_delivery_only": false,
+  "id": "822879230886449"
+}
+---
+{
+  "name": "interior_design",
+  "parameter_format": "POSITIONAL",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "IMAGE",
+      "example": {
+        "header_handle": [
+          "https://scontent.whatsapp.net/v/t61.29466-34/644763541_951251137831135_853276712827768945_n.jpg?ccb=1-7&_nc_sid=8b1bef&_nc_ohc=lPOdtRN9SRYQ7kNvwHYw9t9&_nc_oc=AdoLc92kxEuQB9snHixii6UJy5NRAf8Atn0R6OemJgZjQMzpUVahIqSUNRFiZcAzxLaMrmtQrj9J9WllHKvVwyUp&_nc_zt=3&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&_nc_gid=k3_HZIyZrCkBo5YcoClEug&_nc_tpa=Q5bMBQFYo9qRrOZEsjWAPN3caSbvH1DMRh8Pv8lxKLVT7QtxeDm94Qr89PGjDcK9OcbEys8pue9QPD-P&oh=01_Q5Aa4gFpPiUtCuKbZwbzwvarV8SvjC6FUzayLLGMwAT4I-JKFw&oe=6A23EEB8"
+        ]
+      }
+    },
+    {
+      "type": "BODY",
+      "text": "\"Hello Abdul Shaik! 🏠\n\nReady to transform your home into a dream space? Our premium interior design services are now available with exclusive offers.\n\nGet a flat 10% OFF on your first consultation today!\n\nTap the button below to see our latest portfolio."
+    },
+    {
+      "type": "FOOTER",
+      "text": "\"Limited time offer. Terms & Conditions apply.\""
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "PHONE_NUMBER",
+          "text": "Call Expert",
+          "phone_number": "+919063485668"
+        }
+      ]
+    }
+  ],
+  "language": "en_US",
+  "status": "APPROVED",
+  "category": "MARKETING",
+  "is_primary_device_delivery_only": false,
+  "id": "951251134497802"
+}
+---
+{
+  "name": "template_3",
+  "previous_category": "UTILITY",
+  "parameter_format": "POSITIONAL",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Welcome to Manuen Infotech - We're glad you're here!"
+    },
+    {
+      "type": "BODY",
+      "text": "Welcome to Manuen Infotech - We're glad you're here!"
+    }
+  ],
+  "language": "en_US",
+  "status": "APPROVED",
+  "category": "MARKETING",
+  "is_primary_device_delivery_only": false,
+  "id": "822879230886449"
+}
+---
+{
+  "name": "interior_design",
+  "parameter_format": "POSITIONAL",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "IMAGE",
+      "example": {
+        "header_handle": [
+          "https://scontent.whatsapp.net/v/t61.29466-34/644763541_951251137831135_853276712827768945_n.jpg?ccb=1-7&_nc_sid=8b1bef&_nc_ohc=lPOdtRN9SRYQ7kNvwHYw9t9&_nc_oc=AdoLc92kxEuQB9snHixii6UJy5NRAf8Atn0R6OemJgZjQMzpUVahIqSUNRFiZcAzxLaMrmtQrj9J9WllHKvVwyUp&_nc_zt=3&_nc_ht=scontent.whatsapp.net&edm=AH51TzQEAAAA&_nc_gid=uQ-p4FcaQM6m-EP4wnBa0g&_nc_tpa=Q5bMBQEhVdtToMoLAOwOSYTkM9tq9tJaWjmqCeY5nnbpqzZLHnnJkYLN0fLcdGhrEWGWirGKWmcliZIT&oh=01_Q5Aa4gFVBK8zh5C2CeoAeOFLK6HKm8QO94GANPofJGqpSGAVNQ&oe=6A23EEB8"
+        ]
+      }
+    },
+    {
+      "type": "BODY",
+      "text": "\"Hello Abdul Shaik! 🏠\n\nReady to transform your home into a dream space? Our premium interior design services are now available with exclusive offers.\n\nGet a flat 10% OFF on your first consultation today!\n\nTap the button below to see our latest portfolio."
+    },
+    {
+      "type": "FOOTER",
+      "text": "\"Limited time offer. Terms & Conditions apply.\""
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "PHONE_NUMBER",
+          "text": "Call Expert",
+          "phone_number": "+919063485668"
+        }
+      ]
+    }
+  ],
+  "language": "en_US",
+  "status": "APPROVED",
+  "category": "MARKETING",
+  "is_primary_device_delivery_only": false,
+  "id": "951251134497802"
+}
+---

@@ -80,12 +80,6 @@ export const getTemplateStatusFromMeta = async (wabaId, accessToken, templateNam
 
 /**
  * Send a Template Message
- * @param {string} phone_number_id - Meta Phone Number ID
- * @param {string} accessToken - Access Token
- * @param {string} to - Recipient phone number
- * @param {string} templateName - Name of the template
- * @param {string} languageCode - Language code (e.g., en_US)
- * @param {Array} variables - Array of variable values
  */
 export const sendTemplateMessage = async (phone_number_id, accessToken, to, templateName, languageCode = 'en_US', variables = []) => {
     try {
@@ -129,5 +123,117 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
             success: false,
             error: error.response?.data?.error?.message || error.message
         };
+    }
+};
+
+export const sendTextMessage = async (phone_number_id, accessToken, to, text) => {
+    try {
+        const url = `${META_API_URL}/${phone_number_id}/messages`;
+        
+        const body = {
+            messaging_product: "whatsapp",
+            to,
+            type: "text",
+            text: { body: text }
+        };
+
+        const response = await axios.post(url, body, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        console.error('Meta Send Text Message Error:', error.response?.data || error.message);
+        return {
+            success: false,
+            error: error.response?.data?.error?.message || error.message
+        };
+    }
+};
+
+export const getAllTemplatesFromMeta = async (wabaId, accessToken) => {
+    try {
+        const url = `${META_API_URL}/${wabaId}/message_templates`;
+        
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        return {
+            success: true,
+            data: response.data.data // The array of templates
+        };
+    } catch (error) {
+        console.error('Meta Fetch All Templates Error:', error.response?.data || error.message);
+        return {
+            success: false,
+            error: error.response?.data?.error?.message || error.message
+        };
+    }
+};
+
+/**
+ * Upload a media sample to Meta to get a handle (h)
+ */
+export const uploadMediaSampleToMeta = async (appId, accessToken, fileBuffer, fileName, fileType) => {
+    try {
+        // 1. Create upload session
+        const sessionUrl = `https://graph.facebook.com/v17.0/${appId}/uploads`;
+        const sessionResponse = await axios.post(sessionUrl, null, {
+            params: {
+                file_name: fileName,
+                file_length: fileBuffer.length,
+                file_type: fileType,
+                access_token: accessToken
+            }
+        });
+
+        const uploadSessionId = sessionResponse.data.id;
+
+        // 2. Upload file content
+        const uploadUrl = `https://graph.facebook.com/v17.0/${uploadSessionId}`;
+        const uploadResponse = await axios.post(uploadUrl, fileBuffer, {
+            headers: {
+                'Authorization': `OAuth ${accessToken}`,
+                'file_offset': 0,
+                'Content-Type': 'application/octet-stream'
+            }
+        });
+
+        return {
+            success: true,
+            handle: uploadResponse.data.h
+        };
+    } catch (error) {
+        console.error('Meta Media Upload Error:', error.response?.data || error.message);
+        return {
+            success: false,
+            error: error.response?.data?.error?.message || error.message
+        };
+    }
+};
+
+/**
+ * Get the actual URL for a media handle (file ID)
+ */
+export const getMediaUrl = async (mediaId, accessToken) => {
+    try {
+        const url = `${META_API_URL}/${mediaId}`;
+        const response = await axios.get(url, {
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+            params: { fields: 'url' }
+        });
+        return response.data.url;
+    } catch (error) {
+        console.error('Meta Media URL Error:', error.response?.data || error.message);
+        return null;
     }
 };

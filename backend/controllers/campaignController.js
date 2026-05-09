@@ -12,12 +12,20 @@ const META_PRICING = {
     authentication: 0.15
 };
 
-const resolveContacts = async (contacts, group_ids, userId, template_type) => {
-    let finalContacts = [];
+const resolveContacts = async (contacts, group_ids, userId, template_type, rich_contacts = []) => {
+    let finalContacts = []; // Array of objects: { phone: string, variables: [] }
 
-    // Step 2: Add direct contacts
+    // Step 1: Add rich contacts (e.g. from Excel)
+    if (rich_contacts && Array.isArray(rich_contacts)) {
+        finalContacts.push(...rich_contacts.map(c => ({
+            phone: typeof c === 'object' ? c.phone : c,
+            variables: c.variables || []
+        })));
+    }
+
+    // Step 2: Add direct contacts (simple phone strings)
     if (contacts && Array.isArray(contacts)) {
-        finalContacts.push(...contacts);
+        finalContacts.push(...contacts.map(phone => ({ phone, variables: [] })));
     }
 
     // Step 3: Fetch group contacts
@@ -29,23 +37,34 @@ const resolveContacts = async (contacts, group_ids, userId, template_type) => {
 
         groups.forEach(group => {
             if (group.contacts && Array.isArray(group.contacts)) {
-                finalContacts.push(...group.contacts);
+                finalContacts.push(...group.contacts.map(phone => ({ phone, variables: [] })));
             }
         });
     }
 
-    // Step 4 & 5: Deduplicate
-    finalContacts = [...new Set(finalContacts)]
-        .filter(phone => phone && typeof phone === 'string' && phone.trim() !== '');
+    // Step 4 & 5: Deduplicate by phone
+    const seen = new Set();
+    finalContacts = finalContacts.filter(c => {
+        if (!c.phone || seen.has(c.phone)) return false;
+        seen.add(c.phone);
+        return true;
+    });
 
-    // Step 6: Consent Validation
+    // Step 6: Consent Validation (only for non-auth templates)
     if (template_type !== 'authentication' && finalContacts.length > 0) {
+        const phones = finalContacts.map(c => c.phone);
         const validContacts = await Contact.find({
-            phoneNumber: { $in: finalContacts },
+            phoneNumber: { $in: phones },
             consent: true
         }).select('phoneNumber -_id');
+
+        const validPhones = new Set(validContacts.map(c => c.phoneNumber));
         
-        finalContacts = validContacts.map(c => c.phoneNumber);
+        // Note: For Excel uploads, we might want to bypass consent if they are transactionals
+        // But for now, let's keep it strict or allow 'utility' templates to bypass
+        if (template_type === 'marketing') {
+            finalContacts = finalContacts.filter(c => validPhones.has(c.phone));
+        }
     }
 
     return finalContacts;
@@ -53,14 +72,14 @@ const resolveContacts = async (contacts, group_ids, userId, template_type) => {
 
 export const previewCampaign = async (req, res) => {
     try {
-        const { contacts, group_ids, template_type } = req.body;
+        const { contacts, group_ids, template_type, rich_contacts } = req.body;
         const userId = req.user.user_id;
-        
+
         if (!template_type) {
             return res.status(400).json({ error: "template_type is required." });
         }
 
-        const finalContacts = await resolveContacts(contacts, group_ids, userId, template_type);
+        const finalContacts = await resolveContacts(contacts, group_ids, userId, template_type, rich_contacts);
 
         if (finalContacts.length === 0) {
             return res.status(400).json({ error: "No valid contacts found after merging." });
@@ -68,7 +87,7 @@ export const previewCampaign = async (req, res) => {
 
         const total_contacts = finalContacts.length;
         const estimated_meta_cost = (META_PRICING[template_type] || 1.0) * total_contacts;
-        const estimated_platform_cost = 0; // Since hard limits apply
+        const estimated_platform_cost = 0; 
         const estimated_total_cost = estimated_meta_cost + estimated_platform_cost;
 
         res.json({
@@ -76,7 +95,7 @@ export const previewCampaign = async (req, res) => {
             estimated_meta_cost,
             estimated_platform_cost,
             estimated_total_cost,
-            preview_contacts: finalContacts.slice(0, 5) // Send a small preview
+            preview_contacts: finalContacts.slice(0, 5) 
         });
     } catch (err) {
         console.error("Preview Campaign Error:", err);
@@ -87,23 +106,22 @@ export const previewCampaign = async (req, res) => {
 export const createCampaign = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { campaign_name, template_id, template_name, template_type, variable_values, contacts, group_ids, scheduled_at } = req.body;
+        const { campaign_name, template_id, template_name, template_type, variable_values, contacts, group_ids, scheduled_at, rich_contacts } = req.body;
 
         if (!campaign_name || (!template_id && (!template_name || !template_type))) {
-            return res.status(400).json({ error: "Missing required campaign fields. Provide template_id or name/type." });
+            return res.status(400).json({ error: "Missing required campaign fields." });
         }
 
         let template;
         if (template_id) {
             template = await Template.findById(template_id);
             if (!template) return res.status(404).json({ error: "Template not found" });
-            if (template.status !== 'approved') return res.status(403).json({ error: "Template is not approved by Meta." });
         }
 
         const t_name = template ? template.name : template_name;
         const t_type = template ? template.category : template_type;
 
-        const finalContacts = await resolveContacts(contacts, group_ids, userId, t_type);
+        const finalContacts = await resolveContacts(contacts, group_ids, userId, t_type, rich_contacts);
 
         if (finalContacts.length === 0) {
             return res.status(400).json({ error: "No valid contacts selected for this campaign" });
@@ -112,28 +130,6 @@ export const createCampaign = async (req, res) => {
         const user = await User.findById(userId);
         if (!user || !user.whatsapp_connected) {
             return res.status(403).json({ error: "WhatsApp not connected" });
-        }
-
-        if (user.messages_used + finalContacts.length > user.message_limit) {
-            return res.status(403).json({ 
-                error: "Message limit exceeded",
-                upgrade_required: true,
-                message: `This campaign requires ${finalContacts.length} messages, but you only have ${user.message_limit - user.messages_used} left.`
-            });
-        }
-
-        // Determine Campaign Status and Schedule
-        let status = 'running';
-        let delay = 0;
-        if (scheduled_at) {
-            const scheduledTime = new Date(scheduled_at).getTime();
-            const now = Date.now();
-            if (scheduledTime > now) {
-                status = 'scheduled';
-                delay = scheduledTime - now;
-            } else {
-                return res.status(400).json({ error: "Scheduled time must be in the future" });
-            }
         }
 
         // Create Campaign
@@ -145,31 +141,27 @@ export const createCampaign = async (req, res) => {
             template_type: t_type,
             variable_values: variable_values || [],
             total_contacts: finalContacts.length,
-            status,
+            status: scheduled_at ? 'scheduled' : 'running',
             scheduled_at: scheduled_at || null
         });
 
-        // Add a single 'launch-campaign' job to the Queue
+        // Add to Queue
         await bulkMessageQueue.add('launch-campaign', {
             campaign_id: campaign._id,
-            finalContacts,
+            finalContacts, // Now objects: { phone, variables }
             template_id: template_id || null,
             template_name: t_name,
             template_type: t_type,
             variable_values: variable_values || [],
             user_id: userId
         }, {
-            delay,
+            delay: scheduled_at ? (new Date(scheduled_at).getTime() - Date.now()) : 0,
             attempts: 3,
             backoff: 5000,
             removeOnComplete: true
         });
 
-        res.status(201).json({ 
-            message: status === 'scheduled' ? "Campaign scheduled successfully" : "Campaign started successfully", 
-            total_recipients: finalContacts.length,
-            campaign 
-        });
+        res.status(201).json({ message: "Campaign initialized", campaign });
     } catch (err) {
         console.error("Create Campaign Error:", err);
         res.status(500).json({ error: "Failed to create campaign" });
@@ -191,7 +183,7 @@ export const getCampaignStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const campaign = await Campaign.findById(id);
-        
+
         if (!campaign) {
             return res.status(404).json({ error: "Campaign not found" });
         }

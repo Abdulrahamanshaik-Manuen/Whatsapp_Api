@@ -1,8 +1,10 @@
 import express from 'express';
+import multer from 'multer';
 import * as templateController from '../controllers/templateController.js';
 import { verifyToken, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
 // ── ADMIN ROUTES ─────────────────────────────────────────────────────────────
 // All routes starting with /admin require admin role
@@ -15,6 +17,8 @@ router.get('/admin/:id/sync', verifyToken, isAdmin, templateController.syncTempl
 
 // ── CLIENT ROUTES ───────────────────────────────────────────────────────
 router.get('/', verifyToken, templateController.getClientTemplates);
+router.get('/sync-all', verifyToken, templateController.syncAllTemplatesFromMeta);
 router.post('/request', verifyToken, templateController.requestCustomTemplate);
+router.post('/upload-sample', verifyToken, upload.single('file'), templateController.uploadSample);
 
 export default router;
