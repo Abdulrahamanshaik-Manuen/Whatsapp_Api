@@ -115,7 +115,7 @@ export const getDashboardStats = async (req, res) => {
             },
             connection: {
                 connected: user.whatsapp_connected,
-                phoneNumber: user.phone_number || 'Not connected',
+                phoneNumber: user.phone || 'Not connected',
                 wabaId: user.waba_id
             }
         });

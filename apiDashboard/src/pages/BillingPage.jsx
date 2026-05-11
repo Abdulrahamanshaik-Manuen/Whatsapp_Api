@@ -9,8 +9,8 @@ export default function BillingPage({ userData }) {
   const [isAnnual, setIsAnnual] = useState(true);
 
   const usageStats = [
-    { label: 'Monthly Messages', value: (userData?.messages_used || 0).toLocaleString(), total: (userData?.message_limit || 1000).toLocaleString(), color: 'indigo', icon: MessageSquare },
-    { label: 'Active Contacts', value: (userData?.messages_used || 0).toLocaleString(), total: 'Unlimited', color: 'emerald', icon: Users },
+    { label: 'Monthly Messages', value: (userData?.messages_used || 0).toLocaleString(), total: (userData?.message_limit || 1000).toLocaleString(), color: 'primary', icon: MessageSquare },
+    { label: 'Active Contacts', value: (userData?.messages_used || 0).toLocaleString(), total: 'Unlimited', color: 'secondary', icon: Users },
     { label: 'Usage Percentage', value: `${userData?.message_limit > 0 ? Math.round((userData.messages_used / userData.message_limit) * 100) : 0}%`, total: '100%', color: 'amber', icon: Activity },
   ];
 
@@ -28,7 +28,7 @@ export default function BillingPage({ userData }) {
       price: isAnnual ? '99' : '119',
       desc: 'Advanced features for scaling your sales & support.',
       features: ['Unlimited Contacts', '10,000 Messages / month', '10 Team Members', 'Pro Analytics Dashboard', 'Priority Support', 'Webhook Access'],
-      color: 'indigo',
+      color: 'primary',
       icon: Crown,
       popular: true
     },
@@ -47,7 +47,7 @@ export default function BillingPage({ userData }) {
       {/* Header & Toggle */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Billing & <span className="text-indigo-600">Plans</span></h1>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Billing & <span className="text-primary">Plans</span></h1>
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest pl-1">Manage your subscription and view invoices</p>
         </div>
 
@@ -57,11 +57,11 @@ export default function BillingPage({ userData }) {
             onClick={() => setIsAnnual(!isAnnual)}
             className="w-16 h-8 bg-slate-900 rounded-full relative p-1 transition-all"
           >
-            <div className={`w-6 h-6 bg-indigo-500 rounded-full transition-all ${isAnnual ? 'translate-x-8' : 'translate-x-0'}`}></div>
+            <div className={`w-6 h-6 bg-primary rounded-full transition-all ${isAnnual ? 'translate-x-8' : 'translate-x-0'}`}></div>
           </button>
           <div className="flex items-center gap-2 px-4">
             <span className={`text-[10px] font-black uppercase tracking-widest ${isAnnual ? 'text-slate-900' : 'text-slate-400'}`}>Yearly</span>
-            <span className="bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Save 20%</span>
+            <span className="bg-secondary text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">Save 20%</span>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function BillingPage({ userData }) {
         {usageStats.map((stat, i) => (
           <div key={i} className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/20 space-y-6">
             <div className="flex items-center justify-between">
-              <div className={`w-10 h-10 bg-${stat.color}-50 rounded-xl flex items-center justify-center text-${stat.color}-600`}>
+              <div className={`w-10 h-10 ${stat.color === 'primary' ? 'bg-primary/10 text-primary' : stat.color === 'secondary' ? 'bg-secondary/10 text-secondary' : 'bg-amber-50 text-amber-600'} rounded-xl flex items-center justify-center`}>
                 <stat.icon size={20} />
               </div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
@@ -82,7 +82,7 @@ export default function BillingPage({ userData }) {
               </div>
               <div className="w-full h-2 bg-slate-50 rounded-full overflow-hidden">
                 <div
-                  className={`h-full bg-${stat.color}-500 rounded-full transition-all duration-1000`}
+                  className={`h-full ${stat.color === 'primary' ? 'bg-primary' : stat.color === 'secondary' ? 'bg-secondary' : 'bg-amber-500'} rounded-full transition-all duration-1000`}
                   style={{ width: stat.total === 'Unlimited' ? '100%' : `${(parseInt(stat.value.replace(',', '')) / parseInt(stat.total.replace(',', ''))) * 100}%` }}
                 ></div>
               </div>
@@ -96,7 +96,7 @@ export default function BillingPage({ userData }) {
         {plans.map((plan, i) => (
           <div key={i} className={`relative p-10 rounded-[3.5rem] border ${plan.popular ? 'bg-slate-900 text-white border-slate-800 shadow-2xl scale-105 z-10' : 'bg-white text-slate-900 border-slate-100 shadow-xl shadow-slate-200/20 hover:scale-[1.02] transition-all duration-500'}`}>
             {plan.popular && (
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl shadow-indigo-600/20">
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl shadow-primary/20">
                 Most Popular
               </div>
             )}
@@ -123,7 +123,7 @@ export default function BillingPage({ userData }) {
               <ul className="space-y-5">
                 {plan.features.map((feat, j) => (
                   <li key={j} className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.popular ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.popular ? 'bg-secondary/20 text-secondary' : 'bg-secondary/10 text-secondary'}`}>
                       <Check size={12} strokeWidth={4} />
                     </div>
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${plan.popular ? 'text-slate-300' : 'text-slate-500'}`}>{feat}</span>
@@ -131,7 +131,7 @@ export default function BillingPage({ userData }) {
                 ))}
               </ul>
 
-              <button className={`w-full py-5 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all ${plan.popular ? 'bg-white text-slate-900 hover:bg-indigo-500 hover:text-white' : 'bg-indigo-600 text-white hover:bg-slate-900 shadow-xl shadow-indigo-600/10 active:scale-95'}`}>
+              <button className={`w-full py-5 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all ${plan.popular ? 'bg-white text-slate-900 hover:bg-primary hover:text-white' : 'bg-primary text-white hover:brightness-110 shadow-xl shadow-primary/10 active:scale-95'}`}>
                 {plan.price === 'Custom' ? 'Contact Sales' : 'Upgrade Now'}
               </button>
             </div>
@@ -150,7 +150,7 @@ export default function BillingPage({ userData }) {
               </div>
               <h4 className="text-xl font-black text-slate-800 tracking-tight">Billing History</h4>
             </div>
-            <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">View All</button>
+            <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">View All</button>
           </div>
           <div className="space-y-4">
             {[
@@ -158,7 +158,7 @@ export default function BillingPage({ userData }) {
               { date: 'Apr 01, 2026', amount: '$99.00', status: 'Paid', id: '#INV-3821' },
               { date: 'Mar 01, 2026', amount: '$49.00', status: 'Paid', id: '#INV-3710' },
             ].map((inv, i) => (
-              <div key={i} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-indigo-200 transition-all">
+              <div key={i} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-primary/20 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-300">
                     <Receipt size={18} />
@@ -170,7 +170,7 @@ export default function BillingPage({ userData }) {
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="text-xs font-black text-slate-900">{inv.amount}</span>
-                  <button className="w-10 h-10 bg-white text-slate-300 rounded-xl flex items-center justify-center hover:text-indigo-600 transition-all border border-slate-100">
+                  <button className="w-10 h-10 bg-white text-slate-300 rounded-xl flex items-center justify-center hover:text-primary transition-all border border-slate-100">
                     <Download size={18} />
                   </button>
                 </div>
@@ -183,7 +183,7 @@ export default function BillingPage({ userData }) {
         <div className="p-10 bg-white rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/20 flex flex-col justify-between">
           <div className="space-y-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                 <CreditCard size={20} />
               </div>
               <h4 className="text-xl font-black text-slate-800 tracking-tight">Payment Method</h4>
@@ -195,7 +195,7 @@ export default function BillingPage({ userData }) {
                   <div className="w-14 h-10 bg-white/10 rounded-lg flex items-center justify-center border border-white/5">
                     <span className="text-[10px] font-black tracking-widest">VISA</span>
                   </div>
-                  <ShieldCheck size={24} className="text-emerald-400" />
+                  <ShieldCheck size={24} className="text-secondary" />
                 </div>
                 <div>
                   <p className="text-lg font-black tracking-widest select-all opacity-80">•••• •••• •••• 4242</p>
@@ -213,7 +213,7 @@ export default function BillingPage({ userData }) {
               </div>
             </div>
           </div>
-          <button className="mt-8 w-full py-5 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-3xl hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-slate-100 flex items-center justify-center gap-2">
+          <button className="mt-8 w-full py-5 bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-3xl hover:bg-primary/10 hover:text-primary transition-all border border-slate-100 flex items-center justify-center gap-2">
             Change Payment Method <ExternalLink size={14} />
           </button>
         </div>

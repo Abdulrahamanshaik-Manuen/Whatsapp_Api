@@ -7,7 +7,7 @@ export default function RegLeftPanel() {
       style={{
         width: '45%',
         minWidth: '460px',
-        background: 'linear-gradient(145deg, #002a52 0%, #003B6D 60%, #004f94 100%)',
+        background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)',
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
@@ -30,7 +30,7 @@ export default function RegLeftPanel() {
       <div style={{ marginBottom:'28px', position:'relative', zIndex:1 }}>
         <h1 style={{ fontFamily:'Manrope, sans-serif', fontSize:'2rem', fontWeight:900, lineHeight:1.2, color:'#fff', margin:'0 0 10px 0' }}>
           Grow Your Business<br />
-          With <span style={{ color:'#63C132' }}>Smart Solutions</span>
+          With <span className="text-secondary">Smart Solutions</span>
         </h1>
         <p style={{ color:'rgba(255,255,255,0.55)', fontSize:'13px', lineHeight:1.7, margin:0, maxWidth:'300px', fontWeight:500 }}>
           Manage customers, run campaigns, analyze performance and scale your business with our powerful platform.
@@ -48,7 +48,7 @@ export default function RegLeftPanel() {
               <p style={{ margin:0, fontSize:'9px', color:'rgba(255,255,255,0.4)', fontWeight:500 }}>Last 7 days</p>
             </div>
           </div>
-          <span style={{ fontSize:'9px', fontWeight:700, color:'#63C132', background:'rgba(99,193,50,0.15)', padding:'2px 8px', borderRadius:'99px' }}>● Active</span>
+          <span className="text-[9px] font-bold text-secondary bg-secondary/15 px-2 py-0.5 rounded-full ring-1 ring-secondary/30">● Active</span>
         </div>
 
         {/* Chat bubbles */}
@@ -65,10 +65,10 @@ export default function RegLeftPanel() {
                 background: msg.from==='bot' ? 'rgba(99,193,50,0.22)' : 'rgba(255,255,255,0.11)',
                 fontSize:'10px', color:'rgba(255,255,255,0.9)', fontWeight:500, lineHeight:1.4,
               }}>
-                {msg.from==='bot' && <Tag size={9} style={{ display:'inline', marginRight:'4px', verticalAlign:'middle', color:'#63C132' }} />}
+                {msg.from==='bot' && <Tag size={9} className="inline mr-1 align-middle text-secondary" />}
                 {msg.text}
                 <span style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:'2px', fontSize:'8px', color:'rgba(255,255,255,0.35)', marginTop:'2px' }}>
-                  {msg.time} {msg.ticks && <CheckCheck size={10} style={{ color:'#63C132' }} />}
+                  {msg.time} {msg.ticks && <CheckCheck size={10} className="text-secondary" />}
                 </span>
               </div>
             </div>
@@ -95,8 +95,8 @@ export default function RegLeftPanel() {
         <div style={{ display:'flex', gap:'32px', marginBottom:'20px' }}>
           {[['Secure', ShieldCheck],['Reliable', Zap],['Scalable', BarChart2]].map(([label, Icon]) => (
             <div key={label} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
-              <div style={{ width:'38px', height:'38px', borderRadius:'50%', background:'rgba(99,193,50,0.12)', border:'1px solid rgba(99,193,50,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <Icon size={16} color="#63C132" />
+              <div className="w-10 h-10 rounded-full bg-secondary/12 border border-secondary/25 flex items-center justify-center">
+                <Icon size={16} className="text-secondary" />
               </div>
               <span style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.12em', color:'rgba(255,255,255,0.45)' }}>{label}</span>
             </div>

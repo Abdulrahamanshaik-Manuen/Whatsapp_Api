@@ -39,6 +39,6 @@ export default function App() {
 
     // Default to Login for now if not landing or register
     if (activePath === '/') return <LandingPage activePath={activePath} onNavigate={navigateTo} />;
-    
+
     return <LoginPage onNavigate={navigateTo} />;
 }

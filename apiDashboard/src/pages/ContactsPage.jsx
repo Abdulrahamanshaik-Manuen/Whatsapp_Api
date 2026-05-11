@@ -240,7 +240,7 @@ export default function ContactsPage() {
           <div className="space-y-2">
             <h2 className="text-3xl font-black text-slate-800 tracking-tight">Contact Manager</h2>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
-              <Users size={14} className="text-indigo-600" />
+              <Users size={14} className="text-primary" />
               Manage your WhatsApp audience and leads
             </p>
           </div>
@@ -249,14 +249,14 @@ export default function ContactsPage() {
             <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-2.5 rounded-xl transition-all ${viewMode === 'table' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`p-2.5 rounded-xl transition-all ${viewMode === 'table' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 title="Table View"
               >
                 <List size={18} />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 title="Grid View"
               >
                 <LayoutGrid size={18} />
@@ -278,9 +278,9 @@ export default function ContactsPage() {
                 <FileUp size={16} />
                 Import CSV
               </button>
-              <button
+               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/25 active:scale-95"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95"
               >
                 <UserPlus size={16} />
                 Add Contact
@@ -291,9 +291,9 @@ export default function ContactsPage() {
 
         {/* Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
               <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                   <Users size={24} />
                 </div>
                 <div>
@@ -302,9 +302,9 @@ export default function ContactsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
               <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
@@ -350,9 +350,9 @@ export default function ContactsPage() {
               <input
                 type="text"
                 placeholder="Search by name or phone number..."
-                value={searchQuery}
+                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
               />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
@@ -422,8 +422,8 @@ export default function ContactsPage() {
                       contacts.map((contact) => (
                         <tr key={contact._id} className="group hover:bg-slate-50/50 transition-all duration-300">
                           <td className="px-6 py-5">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg shadow-indigo-600/20">
+                             <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg shadow-primary/20">
                                 {contact.name.charAt(0).toUpperCase()}
                               </div>
                               <div>
@@ -435,9 +435,9 @@ export default function ContactsPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-5">
+                           <td className="px-6 py-5">
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                              <div className="w-6 h-6 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
                                 <Phone size={12} />
                               </div>
                               <span className="text-xs font-black text-slate-800">+{contact.phoneNumber}</span>
@@ -445,8 +445,8 @@ export default function ContactsPage() {
                           </td>
                           <td className="px-6 py-5">
                             <div className="flex flex-col gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                               <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
                                   {contact.consent_status}
                                 </span>
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
@@ -470,9 +470,9 @@ export default function ContactsPage() {
                           </td>
                           <td className="px-6 py-5 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <a
+                               <a
                                 href={`tel:${contact.phoneNumber}`}
-                                className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                className="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary hover:text-white transition-all shadow-sm"
                                 title="Call Contact"
                               >
                                 <Phone size={16} />
@@ -516,18 +516,18 @@ export default function ContactsPage() {
               ) : (
                 contacts.map((contact) => (
                   <div key={contact._id} className="group bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-indigo-600/10 transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4">
-                      <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                     <div className="absolute top-0 right-0 p-4">
+                      <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
                         {contact.consent_status}
                       </span>
                     </div>
-                    <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="w-16 h-16 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-600/30 group-hover:scale-110 transition-transform">
+                     <div className="flex flex-col items-center text-center space-y-4">
+                      <div className="w-16 h-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-white font-black text-xl shadow-xl shadow-primary/30 group-hover:scale-110 transition-transform">
                         {contact.name.charAt(0).toUpperCase()}
                       </div>
-                      <div>
+                       <div>
                         <h3 className="text-sm font-black text-slate-800 mb-1">{contact.name}</h3>
-                        <p className="text-xs font-black text-indigo-600">+{contact.phoneNumber}</p>
+                        <p className="text-xs font-black text-primary">+{contact.phoneNumber}</p>
                         {contact.location && (
                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 flex items-center justify-center gap-1">
                             <MapPin size={10} /> {contact.location}
@@ -536,9 +536,9 @@ export default function ContactsPage() {
                       </div>
 
                       <div className="flex items-center gap-2 w-full pt-2">
-                        <a
+                         <a
                           href={`tel:${contact.phoneNumber}`}
-                          className="flex-1 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-500 transition-all border border-slate-100"
+                          className="flex-1 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-secondary/10 hover:text-secondary transition-all border border-slate-100"
                         >
                           <Phone size={16} />
                         </a>
@@ -565,9 +565,9 @@ export default function ContactsPage() {
 
       {/* Quick Chat Modal */}
       {showChatModal && selectedContactForChat && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-[450px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-indigo-600 text-white">
+            <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-primary text-white">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-black">
                   {selectedContactForChat.name.charAt(0).toUpperCase()}
@@ -594,9 +594,9 @@ export default function ContactsPage() {
                 <textarea
                   rows="4"
                   placeholder="Type your message here..."
-                  value={chatMessage}
+                   value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all placeholder:text-slate-300 resize-none"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300 resize-none"
                 ></textarea>
               </div>
               <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
@@ -611,10 +611,10 @@ export default function ContactsPage() {
               >
                 Cancel
               </button>
-              <button
+               <button
                 onClick={handleSendMessage}
                 disabled={submitting || !chatMessage.trim()}
-                className="flex-[2] py-3.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-[2] py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 Send Message
@@ -630,8 +630,8 @@ export default function ContactsPage() {
           <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="flex flex-col max-h-[85vh]">
               <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+                 <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
                     <UserPlus size={24} />
                   </div>
                   <div>
@@ -653,9 +653,9 @@ export default function ContactsPage() {
                   <input
                     type="text"
                     placeholder="e.g., Abdul Shaik"
-                    value={newContact.name}
+                     value={newContact.name}
                     onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
                   />
                 </div>
                 <div className="space-y-2">
@@ -663,9 +663,9 @@ export default function ContactsPage() {
                   <input
                     type="text"
                     placeholder="e.g., 919876543210"
-                    value={newContact.phoneNumber}
+                     value={newContact.phoneNumber}
                     onChange={(e) => setNewContact({ ...newContact, phoneNumber: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -674,9 +674,9 @@ export default function ContactsPage() {
                     <input
                       type="email"
                       placeholder="shaik@manuen.com"
-                      value={newContact.email}
+                       value={newContact.email}
                       onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -684,9 +684,9 @@ export default function ContactsPage() {
                     <input
                       type="text"
                       placeholder="City, Country"
-                      value={newContact.location}
+                       value={newContact.location}
                       onChange={(e) => setNewContact({ ...newContact, location: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                     />
                   </div>
                 </div>
@@ -695,9 +695,9 @@ export default function ContactsPage() {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consent Source</label>
                     <select
-                      value={newContact.consent_source}
+                       value={newContact.consent_source}
                       onChange={(e) => setNewContact({ ...newContact, consent_source: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                     >
                       <option value="web">Web</option>
                       <option value="store">Store</option>
@@ -708,9 +708,9 @@ export default function ContactsPage() {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consent Status</label>
                     <select
-                      value={newContact.consent_status}
+                       value={newContact.consent_status}
                       onChange={(e) => setNewContact({ ...newContact, consent_status: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600/10"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                     >
                       <option value="verified">Verified</option>
                       <option value="unverified">Unverified</option>
@@ -719,12 +719,12 @@ export default function ContactsPage() {
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${newContact.consent ? 'bg-emerald-500' : 'bg-slate-300'}`} onClick={() => setNewContact({ ...newContact, consent: !newContact.consent })}>
+                   <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${newContact.consent ? 'bg-secondary' : 'bg-slate-300'}`} onClick={() => setNewContact({ ...newContact, consent: !newContact.consent })}>
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newContact.consent ? 'left-5' : 'left-1'}`}></div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Marketing Consent</p>
-                    <p className="text-[9px] text-emerald-600/70 font-bold uppercase tracking-widest">User has opted-in for messages</p>
+                    <p className="text-[10px] font-black text-secondary uppercase tracking-widest">Marketing Consent</p>
+                    <p className="text-[9px] text-secondary/70 font-bold uppercase tracking-widest">User has opted-in for messages</p>
                   </div>
                 </div>
               </div>
@@ -736,10 +736,10 @@ export default function ContactsPage() {
                 >
                   Cancel
                 </button>
-                <button
+                 <button
                   onClick={handleSaveContact}
                   disabled={submitting}
-                  className="flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
                   Save Contact
@@ -755,8 +755,8 @@ export default function ContactsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+               <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
                   <FileUp size={24} />
                 </div>
                 <div>
@@ -772,8 +772,8 @@ export default function ContactsPage() {
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
-              <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer relative group">
+             <div className="p-8 space-y-6">
+              <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer relative group">
                 <input
                   type="file"
                   accept=".csv,.xlsx"
@@ -781,11 +781,11 @@ export default function ContactsPage() {
                   onChange={handleFileUpload}
                   disabled={submitting}
                 />
-                {submitting ? (
-                  <Loader2 size={40} className="animate-spin text-indigo-600" />
+                 {submitting ? (
+                  <Loader2 size={40} className="animate-spin text-primary" />
                 ) : (
                   <>
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-indigo-400 transition-colors">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-primary transition-colors">
                       <Download size={32} />
                     </div>
                     <div className="text-center">

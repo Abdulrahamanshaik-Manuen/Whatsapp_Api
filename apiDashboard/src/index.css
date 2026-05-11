@@ -1,71 +1,86 @@
 @import "tailwindcss";
 
 @theme {
-  /* Exact Colors from your Logo */
-  --color-primary: #003B6D;
-  /* Deep Navy Blue */
-  --color-secondary: #63C132;
-  /* Exact Brand Green */
-  --color-background: #f9f9fd;
-  --color-on-background: #1a1c1f;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #003B6D;
-  --color-secondary-container: #e6f7d4;
-  /* Tint of brand green */
-  --color-surface-container-low: #f3f3f7;
-  --color-outline-variant: #c2c7d0;
+  /* Brand Identity - Strict Logo Colors */
+  --color-primary: #003B6D;      /* Logo Navy */
+  --color-primary-light: #004f94;
+  --color-primary-dark: #002a52;
+  
+  --color-secondary: #63C132;    /* Logo Green */
+  --color-secondary-light: #7ed94f;
+  --color-secondary-dark: #4e9a26;
+  
+  /* Refined Palette */
+  --color-background: #F8FAFC;
+  --color-on-background: #0F172A;
+  --color-on-primary: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-border: #E2E8F0;
 
-  /* Layout Tokens */
+  /* Typography */
   --font-sans: "Inter", sans-serif;
+  --font-display: "Outfit", sans-serif;
   --font-manrope: "Manrope", sans-serif;
 
-  --radius-lg: 8px;
+  /* Elevation */
+  --shadow-premium: 0 10px 30px -10px rgba(0, 59, 109, 0.15);
+  --shadow-glow: 0 0 20px rgba(99, 193, 50, 0.3);
+
+  /* Radius */
   --radius-xl: 12px;
   --radius-2xl: 16px;
-
-  /* Emerald Override for Registration Flow */
-  --color-emerald-50: #eef8e6;
-  --color-emerald-100: #e1f6ce;
-  --color-emerald-200: #c5eda6;
-  --color-emerald-300: #9fe075;
-  --color-emerald-400: #63C132;
-  --color-emerald-500: #63C132;
-  --color-emerald-600: #52a329;
-  --color-emerald-700: #38781d;
-  --color-emerald-800: #2f5f1c;
-  --color-emerald-900: #294f1a;
-  --color-emerald-950: #132c0b;
+  --radius-3xl: 24px;
 }
 
 @layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
   body {
-    @apply bg-background text-on-background font-sans text-sm antialiased;
+    @apply bg-background text-on-background font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
-
-  /* Highly compact font hierarchy */
-  .headline-xl {
-    @apply font-manrope text-2xl md:text-3xl font-black tracking-tight;
+  /* Professional Layout Utilities */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-premium;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-premium transition-all duration-300;
   }
 
-  .headline-lg {
-    @apply font-manrope text-xl md:text-2xl font-bold tracking-tight;
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm;
   }
 
-  .body-lg {
-    @apply font-sans text-sm md:text-base font-medium;
-  }
-
-  .body-md {
-    @apply font-sans text-xs md:text-sm font-normal;
+  .btn-primary {
+    @apply bg-primary text-white font-display font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all;
   }
 
   .btn-secondary {
-    @apply bg-secondary text-white font-manrope text-xs font-bold px-5 py-2 rounded-lg hover:shadow-md hover:brightness-105 transition-all;
+    @apply bg-secondary text-white font-display font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-secondary/20 hover:-translate-y-0.5 transition-all;
+  }
+
+  /* Compact typography hierarchy */
+  .h1-display {
+    @apply font-display text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.1];
+  }
+
+  .h2-display {
+    @apply font-display text-2xl md:text-3xl font-black tracking-tight;
   }
 }
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -83,10 +98,6 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    @apply bg-slate-200 rounded-full hover:bg-slate-300;
   }
 }

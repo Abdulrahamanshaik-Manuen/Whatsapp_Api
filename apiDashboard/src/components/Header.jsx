@@ -7,12 +7,6 @@ export default function Header({ toggleSidebar, onNavigate }) {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -29,16 +23,10 @@ export default function Header({ toggleSidebar, onNavigate }) {
         >
           <Menu size={22} />
         </button>
-        <div>
-          <h2 className="text-lg md:text-xl font-black text-slate-900 flex items-center gap-2 tracking-tight">
-            {getGreeting()}, {user.name?.split(' ')[0] || 'Venishetty'}
-          </h2>
-          <p className="text-slate-500 text-[10px] md:text-[11px] font-bold uppercase tracking-widest leading-none mt-1 opacity-60">Here's what's happening today.</p>
-        </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-600 text-sm font-bold rounded-xl hover:bg-indigo-100 transition-all border border-indigo-100">
+        <button className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary text-sm font-bold rounded-xl hover:bg-primary/10 transition-all border border-primary/10">
           <Zap size={16} fill="currentColor" />
           Upgrade Plan
         </button>
@@ -55,7 +43,7 @@ export default function Header({ toggleSidebar, onNavigate }) {
             className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{user.name || 'Store Owner'}</p>
+              <p className="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors">{user.name || 'Store Owner'}</p>
               <p className="text-[10px] text-slate-500">{user.email || 'owner@storename.com'}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center font-bold shadow-lg group-hover:scale-105 transition-transform">

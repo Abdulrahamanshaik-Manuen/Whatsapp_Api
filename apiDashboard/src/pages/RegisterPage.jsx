@@ -14,13 +14,13 @@ function StepDots({ current }) {
         const done = current > n, active = current === n;
         return (
           <React.Fragment key={n}>
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all ${done ? 'bg-[#63C132] border-[#63C132] text-white' :
-                active ? 'bg-[#63C132] border-[#63C132] text-white shadow-lg shadow-[#63C132]/40' :
-                  'bg-white border-slate-300 text-slate-400'
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all ${done ? 'bg-secondary border-secondary text-white' :
+              active ? 'bg-secondary border-secondary text-white shadow-lg shadow-secondary/40' :
+                'bg-white border-slate-300 text-slate-400'
               }`}>
               {done ? <CheckCircle2 size={15} /> : n}
             </div>
-            {i < 4 && <div className={`h-0.5 flex-1 min-w-[32px] sm:min-w-[48px] transition-all ${current > n ? 'bg-[#63C132]' : 'bg-slate-200'}`} />}
+            {i < 4 && <div className={`h-0.5 flex-1 min-w-[32px] sm:min-w-[48px] transition-all ${current > n ? 'bg-secondary' : 'bg-slate-200'}`} />}
           </React.Fragment>
         );
       })}
@@ -43,7 +43,7 @@ function Field({ label, id, icon: Icon, type = 'text', placeholder, value, onCha
         <input
           id={id} type={isPass ? (show ? 'text' : 'password') : type}
           placeholder={placeholder} value={value} onChange={onChange}
-          className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/10 transition-all"
+          className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all"
         />
         {isPass && (
           <button type="button" onClick={() => setShow(s => !s)}
@@ -71,7 +71,7 @@ function OtpBoxes({ otp, setOtp }) {
       {otp.map((d, i) => (
         <input key={i} ref={refs[i]} value={d} maxLength={1} inputMode="numeric"
           onChange={e => change(i, e.target.value)} onKeyDown={e => keydown(i, e)}
-          className="w-11 h-13 text-center text-lg font-black border-2 border-slate-200 rounded-xl text-[#003B6D] bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/20 transition-all"
+          className="w-11 h-13 text-center text-lg font-black border-2 border-slate-200 rounded-xl text-primary bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all"
         />
       ))}
     </div>
@@ -82,7 +82,7 @@ function OtpBoxes({ otp, setOtp }) {
 function PrimaryBtn({ onClick, loading, label, loadLabel }) {
   return (
     <button onClick={onClick} disabled={loading}
-      className="w-full bg-[#63C132] text-white font-manrope font-bold text-sm py-3 rounded-xl shadow-lg shadow-[#63C132]/30 hover:brightness-110 hover:-translate-y-0.5 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+      className="w-full bg-secondary text-white font-manrope font-bold text-sm py-3 rounded-xl shadow-lg shadow-secondary/30 hover:brightness-110 hover:-translate-y-0.5 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
       {loading ? <><Loader2 size={15} className="animate-spin" />{loadLabel}</> : <>{label}<ChevronRight size={15} /></>}
     </button>
   );
@@ -90,7 +90,7 @@ function PrimaryBtn({ onClick, loading, label, loadLabel }) {
 
 function BackBtn({ onClick }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#003B6D] font-bold transition-colors mt-1">
+    <button onClick={onClick} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary font-bold transition-colors mt-1">
       <ArrowLeft size={14} /> Back
     </button>
   );
@@ -182,32 +182,29 @@ export default function RegisterPage({ onNavigate }) {
   const connectWA = () => withLoad(async () => {
     if (!f.waba_id.trim() || !f.phone_number_id.trim() || !f.access_token.trim()) throw new Error('All WhatsApp credentials are required.');
     const token = localStorage.getItem('token');
-    const r = await fetch(`${API}/whatsapp/connect`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ waba_id: f.waba_id, phone_number_id: f.phone_number_id, access_token: f.access_token }) });
+    const r = await fetch(`${API}/business/whatsapp`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ waba_id: f.waba_id, phone_number_id: f.phone_number_id, access_token: f.access_token }) });
     const d = await r.json(); if (!r.ok) throw new Error(d.error || d.message || 'Connection failed');
-    onNavigate('/login?reg_success=true');
+    next();
   });
 
-  const skipStep5 = () => {
-    onNavigate('/login?reg_success=true');
-  };
+  const skipStep5 = () => next();
 
-  // ── Success Screen ────────────────────────────────────────────────────────
-  if (step === 6) return (
+  if (step > 5) return (
     <div className="min-h-screen flex items-center justify-center bg-[#f9f9fd]">
       <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-md w-full text-center space-y-5">
-        <div className="w-20 h-20 bg-[#63C132]/10 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle2 size={40} className="text-[#63C132]" />
+        <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle2 size={40} className="text-secondary" />
         </div>
         <div>
-          <h2 className="font-manrope text-2xl font-black text-[#003B6D]">You're All Set! 🎉</h2>
+          <h2 className="font-manrope text-2xl font-black text-primary">You're All Set! 🎉</h2>
           <p className="text-slate-500 text-sm mt-2 leading-relaxed">Your WhatsApp CRM is fully configured and ready to use.</p>
         </div>
-        <div className="bg-[#63C132]/5 border border-[#63C132]/20 rounded-xl p-4 flex items-center gap-3 text-left">
-          <ShieldCheck size={18} className="text-[#63C132] shrink-0" />
-          <p className="text-xs text-slate-600"><span className="font-bold text-[#003B6D]">WhatsApp Connected</span> — You can now send campaigns and messages.</p>
+        <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-4 flex items-center gap-3 text-left">
+          <ShieldCheck size={18} className="text-secondary shrink-0" />
+          <p className="text-xs text-slate-600"><span className="font-bold text-primary">WhatsApp Connected</span> — You can now send campaigns and messages.</p>
         </div>
         <button onClick={() => onNavigate('/dashboard')}
-          className="w-full bg-[#63C132] text-white font-manrope font-bold py-3 rounded-xl shadow-lg shadow-[#63C132]/30 hover:brightness-110 transition-all">
+          className="w-full bg-secondary text-white font-manrope font-bold py-3 rounded-xl shadow-lg shadow-secondary/30 hover:brightness-110 transition-all">
           Go to Dashboard
         </button>
       </div>
@@ -222,7 +219,7 @@ export default function RegisterPage({ onNavigate }) {
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-10 lg:px-16 overflow-y-auto">
         <div className="w-full max-w-md">
-          <p className="text-xs font-bold mb-3" style={{ color: '#003B6D' }}>Step {step} of 5</p>
+          <p className="text-xs font-bold mb-3" style={{ color: 'var(--color-primary)' }}>Step {step} of 5</p>
           <StepDots current={step} />
 
           {error && (
@@ -235,7 +232,7 @@ export default function RegisterPage({ onNavigate }) {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h2 className="font-manrope text-xl font-black text-[#003B6D]">Enter Your Phone Number</h2>
+                <h2 className="font-manrope text-xl font-black text-primary">Enter Your Phone Number</h2>
                 <p className="text-slate-500 text-sm mt-1">We will send you a verification code to this number.</p>
               </div>
               <div className="space-y-1">
@@ -247,12 +244,12 @@ export default function RegisterPage({ onNavigate }) {
                   <div className="relative flex-1">
                     <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input type="tel" placeholder="Enter your phone number" value={f.phone} onChange={set('phone')}
-                      className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/10 transition-all" />
+                      className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all" />
                   </div>
                 </div>
               </div>
-              <div className="bg-[#63C132]/5 border border-[#63C132]/20 rounded-xl p-3 flex items-start gap-2 text-xs text-slate-600">
-                <ShieldCheck size={14} className="text-[#63C132] shrink-0 mt-0.5" /> Make sure your phone number is active. Standard SMS charges may apply.
+              <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-3 flex items-start gap-2 text-xs text-slate-600">
+                <ShieldCheck size={14} className="text-secondary shrink-0 mt-0.5" /> Make sure your phone number is active. Standard SMS charges may apply.
               </div>
               <PrimaryBtn onClick={sendOtp} loading={loading} label="Send OTP" loadLabel="Sending…" />
             </div>
@@ -262,15 +259,15 @@ export default function RegisterPage({ onNavigate }) {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h2 className="font-manrope text-xl font-black text-[#003B6D]">Verify OTP</h2>
-                <p className="text-slate-500 text-sm mt-1">Enter the 6-digit code sent to <span className="font-bold text-[#003B6D]">{f.phone}</span></p>
+                <h2 className="font-manrope text-xl font-black text-primary">Verify OTP</h2>
+                <p className="text-slate-500 text-sm mt-1">Enter the 6-digit code sent to <span className="font-bold text-primary">{f.phone}</span></p>
               </div>
               <OtpBoxes otp={otp} setOtp={setOtp} />
               <p className="text-center text-xs text-slate-400">
                 Didn't receive the code?{' '}
                 {timer > 0
-                  ? <span className="text-[#63C132] font-bold">Resend OTP ({String(Math.floor(timer / 60)).padStart(2, '0')}:{String(timer % 60).padStart(2, '0')})</span>
-                  : <button onClick={sendOtp} className="text-[#63C132] font-bold hover:underline">Resend OTP</button>
+                  ? <span className="text-secondary font-bold">Resend OTP ({String(Math.floor(timer / 60)).padStart(2, '0')}:{String(timer % 60).padStart(2, '0')})</span>
+                  : <button onClick={sendOtp} className="text-secondary font-bold hover:underline">Resend OTP</button>
                 }
               </p>
               <PrimaryBtn onClick={verifyOtp} loading={loading} label="Verify & Continue" loadLabel="Verifying…" />
@@ -282,7 +279,7 @@ export default function RegisterPage({ onNavigate }) {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <h2 className="font-manrope text-xl font-black text-[#003B6D]">Create Your Account</h2>
+                <h2 className="font-manrope text-xl font-black text-primary">Create Your Account</h2>
                 <p className="text-slate-500 text-sm mt-1">Set up your login credentials to continue.</p>
               </div>
               <Field label="Full Name" id="name" icon={User} placeholder="Enter your full name" value={f.name} onChange={set('name')} />
@@ -297,7 +294,7 @@ export default function RegisterPage({ onNavigate }) {
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <h2 className="font-manrope text-xl font-black text-[#003B6D]">Business Profile</h2>
+                <h2 className="font-manrope text-xl font-black text-primary">Business Profile</h2>
                 <p className="text-slate-500 text-sm mt-1">Tell us about your business.</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -307,7 +304,7 @@ export default function RegisterPage({ onNavigate }) {
                   <div className="relative">
                     <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <select value={f.business_category} onChange={set('business_category')}
-                      className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/10 appearance-none transition-all">
+                      className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 appearance-none transition-all">
                       <option value="">Select category</option>
                       {CATS.map(c => <option key={c}>{c}</option>)}
                     </select>
@@ -318,13 +315,13 @@ export default function RegisterPage({ onNavigate }) {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700">Business Description <span className="text-slate-400 font-normal">(Optional)</span></label>
                 <textarea rows={2} placeholder="Briefly describe your business" value={f.business_description} onChange={set('business_description')}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/10 resize-none transition-all" />
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 resize-none transition-all" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700">Business Logo <span className="text-slate-400 font-normal">(Optional)</span></label>
-                <div 
+                <div
                   onClick={() => logoRef.current?.click()}
-                  className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center space-y-2 hover:border-[#63C132] transition-colors cursor-pointer overflow-hidden group"
+                  className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center space-y-2 hover:border-secondary transition-colors cursor-pointer overflow-hidden group"
                 >
                   <input type="file" ref={logoRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
                   {f.logo_url && f.logo_url.startsWith('data:') ? (
@@ -335,20 +332,20 @@ export default function RegisterPage({ onNavigate }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mx-auto group-hover:bg-[#63C132]/10 transition-colors">
-                      <Briefcase size={18} className="text-slate-400 group-hover:text-[#63C132]" />
+                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mx-auto group-hover:bg-secondary/10 transition-colors">
+                      <Briefcase size={18} className="text-slate-400 group-hover:text-secondary" />
                     </div>
                   )}
-                  <p className="text-xs font-bold text-[#63C132]">Click to Upload Logo</p>
+                  <p className="text-xs font-bold text-secondary">Click to Upload Logo</p>
                   <p className="text-[11px] text-slate-400">PNG, JPG up to 2MB</p>
                   <input type="text" placeholder="Or paste image URL…" value={f.logo_url} onChange={set('logo_url')}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-[#63C132] transition-all" />
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-secondary transition-all" />
                 </div>
               </div>
               <div className="flex items-center justify-between pt-1">
                 <BackBtn onClick={back} />
                 <button onClick={saveBusiness} disabled={loading}
-                  className="bg-[#63C132] text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-[#63C132]/30 hover:brightness-110 transition-all disabled:opacity-60 flex items-center gap-2">
+                  className="bg-secondary text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-secondary/30 hover:brightness-110 transition-all disabled:opacity-60 flex items-center gap-2">
                   {loading ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <>Save &amp; Continue<ChevronRight size={14} /></>}
                 </button>
               </div>
@@ -359,16 +356,16 @@ export default function RegisterPage({ onNavigate }) {
           {step === 5 && (
             <div className="space-y-5">
               <div>
-                <h2 className="font-manrope text-xl font-black text-[#003B6D]">Connect Your Platform <span className="text-slate-400 text-sm font-normal">(Optional)</span></h2>
+                <h2 className="font-manrope text-xl font-black text-primary">Connect Your Platform <span className="text-slate-400 text-sm font-normal">(Optional)</span></h2>
                 <p className="text-slate-500 text-sm mt-1">Connect your platform to start managing your communication and campaigns.</p>
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#003B6D]/5 rounded-xl flex items-center justify-center">
-                    <Link2 size={18} className="text-[#003B6D]" />
+                  <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center">
+                    <Link2 size={18} className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-[#003B6D]">Connect Your Account</p>
+                    <p className="text-sm font-black text-primary">Connect Your Account</p>
                     <p className="text-xs text-slate-500">Securely connect your account to unlock all features and start using the platform.</p>
                   </div>
                 </div>
@@ -379,7 +376,7 @@ export default function RegisterPage({ onNavigate }) {
                   <div className="relative">
                     <Lock size={14} className="absolute left-3 top-3 text-slate-400" />
                     <textarea rows={2} placeholder="Paste your Meta System User Token…" value={f.access_token} onChange={set('access_token')}
-                      className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-xs font-mono bg-white focus:outline-none focus:border-[#63C132] focus:ring-2 focus:ring-[#63C132]/10 resize-none transition-all" />
+                      className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-xs font-mono bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 resize-none transition-all" />
                   </div>
                 </div>
               </div>
@@ -394,7 +391,7 @@ export default function RegisterPage({ onNavigate }) {
 
           <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{' '}
-            <button onClick={() => onNavigate('/login')} className="text-[#003B6D] font-bold hover:underline">Sign in</button>
+            <button onClick={() => onNavigate('/login')} className="text-primary font-bold hover:underline">Sign in</button>
           </p>
         </div>
       </div>

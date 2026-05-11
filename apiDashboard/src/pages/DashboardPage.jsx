@@ -13,25 +13,25 @@ import WhatsAppSetupPage from './WhatsAppSetupPage';
 import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
 
-export default function DashboardPage({ onNavigate, initialPath }) {
-  const tabPathMap = {
-    'Dashboard': '/dashboard',
-    'Campaigns': '/campaigns',
-    'Contacts': '/contacts',
-    'Messages': '/messages',
-    'Message History': '/history',
-    'Analytics': '/analytics',
-    'Templates': '/templates',
-    'Automations': '/automations',
-    'WhatsApp Setup': '/setup',
-    'Billing & Plan': '/billing',
-    'Settings': '/settings'
-  };
+const tabPathMap = {
+  'Dashboard': '/dashboard',
+  'Campaigns': '/campaigns',
+  'Contacts': '/contacts',
+  'Messages': '/messages',
+  'Message History': '/history',
+  'Analytics': '/analytics',
+  'Templates': '/templates',
+  'Automations': '/automations',
+  'WhatsApp Setup': '/setup',
+  'Billing & Plan': '/billing',
+  'Settings': '/settings'
+};
 
-  // Reverse map for initialization
-  const pathToTabMap = Object.fromEntries(
-    Object.entries(tabPathMap).map(([tab, path]) => [path, tab])
-  );
+const pathToTabMap = Object.fromEntries(
+  Object.entries(tabPathMap).map(([tab, path]) => [path, tab])
+);
+
+export default function DashboardPage({ onNavigate, initialPath }) {
 
   const [activeTab, setActiveTab] = useState(() => {
     if (initialPath && pathToTabMap[initialPath]) {
@@ -61,12 +61,21 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   };
 
   useEffect(() => {
+    if (initialPath && pathToTabMap[initialPath]) {
+      const targetTab = pathToTabMap[initialPath];
+      if (targetTab !== activeTab) {
+        setActiveTab(targetTab);
+      }
+    }
+  }, [initialPath, activeTab]);
+
+  useEffect(() => {
     fetchUserData();
   }, []);
 
   useEffect(() => {
     localStorage.setItem('activeDashboardTab', activeTab);
-    
+
     // Update URL if it doesn't match the current tab
     const targetPath = tabPathMap[activeTab];
     if (targetPath && window.location.pathname !== targetPath) {
@@ -80,28 +89,29 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     <div className="flex h-screen bg-[#F5F7FA] font-['Inter',_sans-serif] overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={toggleSidebar}
         />
       )}
-      
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        isOpen={isSidebarOpen} 
+
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         onNavigate={onNavigate}
       />
-      
+
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
         <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />
-        
+
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
-            <DashboardContent 
-              activeTab={activeTab} 
-              onNavigate={onNavigate} 
+            <DashboardContent
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              onNavigate={onNavigate}
               userData={userData}
               businessData={businessData}
             />
@@ -124,21 +134,21 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           ) : activeTab === 'Billing & Plan' ? (
             <BillingPage userData={userData} />
           ) : activeTab === 'Settings' ? (
-            <SettingsPage 
-              userData={userData} 
-              businessData={businessData} 
-              onUpdate={fetchUserData} 
+            <SettingsPage
+              userData={userData}
+              businessData={businessData}
+              onUpdate={fetchUserData}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center bg-white h-full">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                 <div className="animate-pulse font-black text-2xl">?</div>
+                <div className="animate-pulse font-black text-2xl">?</div>
               </div>
               <h2 className="text-xl font-black text-slate-800 tracking-tight">{activeTab}</h2>
               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Coming Soon</p>
-              <button 
+              <button
                 onClick={() => setActiveTab('Dashboard')}
-                className="mt-6 text-indigo-600 text-sm font-bold hover:underline"
+                className="mt-6 text-primary text-sm font-bold hover:underline"
               >
                 Back to Dashboard
               </button>

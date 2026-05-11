@@ -11,8 +11,8 @@ const API_BASE_URL = 'http://localhost:5000/api';
 // Reusable StatCard following CampaignsPage style
 const StatCard = ({ label, value, color, icon: Icon }) => {
   const colors = {
-    indigo: 'from-indigo-500/10 to-purple-500/10 text-indigo-600 border-indigo-100',
-    emerald: 'from-emerald-500/10 to-teal-500/10 text-emerald-600 border-emerald-100',
+    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
+    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
     blue: 'from-blue-500/10 to-cyan-500/10 text-blue-600 border-blue-100',
     purple: 'from-purple-500/10 to-pink-500/10 text-purple-600 border-purple-100',
     orange: 'from-orange-500/10 to-amber-500/10 text-orange-600 border-orange-100',
@@ -28,7 +28,7 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
         </div>
         <div>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
-          <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">{value}</p>
+          <p className="text-2xl font-black text-primary tracking-tight leading-none">{value}</p>
         </div>
       </div>
     </div>
@@ -70,8 +70,8 @@ export default function MessagesPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'sent': return 'bg-blue-100 text-blue-600 border-blue-200';
-      case 'delivered': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-      case 'read': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+      case 'delivered': return 'bg-secondary/10 text-secondary border-secondary/20';
+      case 'read': return 'bg-primary/5 text-primary border-primary/10';
       case 'failed': return 'bg-rose-100 text-rose-600 border-rose-200';
       default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
@@ -105,12 +105,12 @@ export default function MessagesPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-           <StatCard label="Total Sent" value={stats.total} color="indigo" icon={Send} />
-           <StatCard label="Delivered" value={stats.delivered} color="emerald" icon={CheckCircle2} />
-           <StatCard label="Read" value={stats.read} color="blue" icon={CheckCheck} />
-           <StatCard label="Failed" value={stats.failed} color="rose" icon={AlertCircle} />
-        </div>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <StatCard label="Total Sent" value={stats.total} color="primary" icon={Send} />
+            <StatCard label="Delivered" value={stats.delivered} color="secondary" icon={CheckCircle2} />
+            <StatCard label="Read" value={stats.read} color="blue" icon={CheckCheck} />
+            <StatCard label="Failed" value={stats.failed} color="rose" icon={AlertCircle} />
+         </div>
 
         {/* Filters & Table Card */}
         <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-6 space-y-6">
@@ -122,7 +122,7 @@ export default function MessagesPage() {
                   placeholder="Search by phone number..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all"
+                   className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
                 />
               </div>
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto no-scrollbar py-1">
@@ -131,7 +131,7 @@ export default function MessagesPage() {
                     key={status}
                     onClick={() => setStatusFilter(status)}
                     className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[100px] text-center ${statusFilter === status
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
                       : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
                       }`}
                   >
@@ -180,7 +180,7 @@ export default function MessagesPage() {
                       <tr key={msg._id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-black">
+                            <div className="w-8 h-8 rounded-xl bg-primary/5 text-primary flex items-center justify-center text-[10px] font-black">
                               {msg.to?.slice(-2)}
                             </div>
                             <span className="text-xs font-black text-slate-700 tracking-tight">{msg.to}</span>
@@ -207,7 +207,7 @@ export default function MessagesPage() {
                            </div>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <button className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                           <button className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-xl transition-all opacity-0 group-hover:opacity-100">
                             <MoreVertical size={16} />
                           </button>
                         </td>
@@ -225,9 +225,9 @@ export default function MessagesPage() {
               </p>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                   onClick={() => setPage(prev => Math.max(1, prev - 1))}
                   disabled={page === 1}
-                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-indigo-600 hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -235,9 +235,9 @@ export default function MessagesPage() {
                    <span className="text-[10px] font-black text-slate-800">Page {page} of {pagination.pages}</span>
                 </div>
                 <button 
-                  onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
+                   onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
                   disabled={page === pagination.pages}
-                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-indigo-600 hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronRight size={16} />
                 </button>

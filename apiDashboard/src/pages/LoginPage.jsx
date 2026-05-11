@@ -104,7 +104,7 @@ export default function LoginPage({ onNavigate }) {
         style={{
           width: '45%',
           minWidth: '460px',
-          background: 'linear-gradient(145deg, #002a52 0%, #003B6D 60%, #004f94 100%)',
+          background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -126,7 +126,7 @@ export default function LoginPage({ onNavigate }) {
         <div style={{ flexShrink: 0, marginBottom: '20px', position: 'relative', zIndex: 1 }}>
           <h1 style={{ fontFamily: 'Manrope, sans-serif', fontSize: '2rem', fontWeight: 900, lineHeight: 1.15, color: '#fff', margin: '0 0 8px 0' }}>
             Grow Your Business<br />
-            With <span style={{ color: '#63C132' }}>Smart Solutions</span>
+            With <span className="text-secondary">Smart Solutions</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: 1.6, margin: 0, maxWidth: '300px', fontWeight: 500 }}>
             Manage customers, run campaigns, and analyze performance.
@@ -138,20 +138,20 @@ export default function LoginPage({ onNavigate }) {
           <div style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#63C132', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendingUp size={14} color="#fff" /></div>
+                <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center"><TrendingUp size={14} color="#fff" /></div>
                 <p style={{ margin: 0, fontSize: '11px', fontWeight: 800, color: '#fff' }}>Live Performance</p>
               </div>
-              <span style={{ fontSize: '8px', fontWeight: 700, color: '#63C132', background: 'rgba(99,193,50,0.15)', padding: '2px 8px', borderRadius: '99px' }}>● ACTIVE</span>
+              <span className="text-[8px] font-700 text-secondary bg-secondary/15 px-2 py-0.5 rounded-full">● ACTIVE</span>
             </div>
 
             <div style={{ padding: '0 16px 14px', height: '80px' }}>
               <svg width="100%" height="100%" viewBox="0 0 200 60" preserveAspectRatio="none">
-                <path d="M0,50 Q25,45 50,30 T100,20 T150,35 T200,10" fill="none" stroke="#63C132" strokeWidth="3" strokeLinecap="round" />
+                <path d="M0,50 Q25,45 50,30 T100,20 T150,35 T200,10" fill="none" className="stroke-secondary" strokeWidth="3" strokeLinecap="round" />
                 <path d="M0,50 Q25,45 50,30 T100,20 T150,35 T200,10 L200,60 L0,60 Z" fill="url(#grad2)" opacity="0.15" />
                 <defs>
                   <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: '#63C132', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: '#63C132', stopOpacity: 0 }} />
+                    <stop offset="0%" className="stop-secondary" stopOpacity="1" />
+                    <stop offset="100%" className="stop-secondary" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -184,8 +184,8 @@ export default function LoginPage({ onNavigate }) {
           <div style={{ display: 'flex', gap: '32px', marginBottom: '20px' }}>
             {[['Secure', ShieldCheck], ['Reliable', Zap], ['Scalable', BarChart3]].map(([label, Icon]) => (
               <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(99,193,50,0.12)', border: '1px solid rgba(99,193,50,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={16} color="#63C132" />
+                <div className="w-10 h-10 rounded-full bg-secondary/12 border border-secondary/25 flex items-center justify-center">
+                  <Icon size={16} className="text-secondary" />
                 </div>
                 <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.45)' }}>{label}</span>
               </div>
@@ -198,7 +198,7 @@ export default function LoginPage({ onNavigate }) {
       <div className="flex-1 flex flex-col p-8 lg:p-12 xl:p-24 relative justify-center bg-[#FAFAFB] h-full overflow-y-auto no-scrollbar">
         <div className="absolute top-10 right-12 text-sm font-medium">
           <span className="text-slate-400">Don't have an account? </span>
-          <button onClick={() => onNavigate('/register')} className="text-[#003B6D] font-bold hover:underline ml-1">Sign up</button>
+          <button onClick={() => onNavigate('/register')} className="text-primary font-bold hover:underline ml-1">Sign up</button>
         </div>
 
         <div className="max-w-[400px] w-full mx-auto">
@@ -225,7 +225,7 @@ export default function LoginPage({ onNavigate }) {
                   placeholder="Enter mobile number"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-[#63C132] focus:ring-[4px] focus:ring-[#63C132]/5 transition-all placeholder:text-slate-300 text-slate-800 font-medium text-sm"
+                  className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-secondary focus:ring-[4px] focus:ring-secondary/5 transition-all placeholder:text-slate-300 text-slate-800 font-medium text-sm"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function LoginPage({ onNavigate }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-sm font-bold text-slate-700 block">Password</label>
-                <button type="button" onClick={() => onNavigate('/forgot-password')} className="text-xs font-bold text-[#003B6D] hover:underline">Forgot Password?</button>
+                <button type="button" onClick={() => onNavigate('/forgot-password')} className="text-xs font-bold text-primary hover:underline">Forgot Password?</button>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -244,7 +244,7 @@ export default function LoginPage({ onNavigate }) {
                   placeholder="Enter your password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-12 py-3.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-[#63C132] focus:ring-[4px] focus:ring-[#63C132]/5 transition-all placeholder:text-slate-300 text-slate-800 font-medium text-sm"
+                  className="w-full pl-12 pr-12 py-3.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-secondary focus:ring-[4px] focus:ring-secondary/5 transition-all placeholder:text-slate-300 text-slate-800 font-medium text-sm"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -253,14 +253,14 @@ export default function LoginPage({ onNavigate }) {
             </div>
 
             <div className="flex items-center gap-3 ml-1">
-              <div onClick={() => setRememberMe(!rememberMe)} className={`w-5 h-5 rounded-[6px] border-2 cursor-pointer transition-all flex items-center justify-center ${rememberMe ? 'bg-[#63C132] border-[#63C132]' : 'bg-white border-slate-200'}`}>
+              <div onClick={() => setRememberMe(!rememberMe)} className={`w-5 h-5 rounded-[6px] border-2 cursor-pointer transition-all flex items-center justify-center ${rememberMe ? 'bg-secondary border-secondary' : 'bg-white border-slate-200'}`}>
                 {rememberMe && <ShieldCheck className="text-white" size={14} strokeWidth={3} />}
               </div>
               <span className="text-sm font-semibold text-slate-600 cursor-pointer select-none" onClick={() => setRememberMe(!rememberMe)}>Remember me</span>
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full bg-[#63C132] text-white font-bold py-4 rounded-xl shadow-lg active:brightness-90 transition-all disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-2 text-base mt-2">
+              className="w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg hover:brightness-110 transition-all disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-2 text-base mt-2">
               {loading ? <Loader2 className="animate-spin" size={20} /> : "Login"}
             </button>
           </form>

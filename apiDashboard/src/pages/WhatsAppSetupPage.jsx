@@ -110,20 +110,20 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
       {/* Header & Stepper */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
         <div className="space-y-2">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">WhatsApp <span className="text-indigo-600">Setup</span></h1>
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest pl-1">Link your official business API in minutes</p>
-        </div>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight">WhatsApp <span className="text-primary">Setup</span></h1>
+        <p className="text-slate-400 text-sm font-bold uppercase tracking-widest pl-1">Link your official business API in minutes</p>
+      </div>
 
         {/* Custom Stepper */}
         <div className="flex items-center gap-4 bg-white p-4 rounded-[2.5rem] shadow-xl shadow-slate-200/20 border border-slate-100 overflow-x-auto no-scrollbar">
           {steps.map((step, i) => (
             <React.Fragment key={step.id}>
-              <div 
+               <div 
                 onClick={() => setActiveStep(step.id)}
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl cursor-pointer transition-all ${activeStep === step.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                className={`flex items-center gap-3 px-6 py-3 rounded-2xl cursor-pointer transition-all ${activeStep === step.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:bg-slate-50'}`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs ${activeStep === step.id ? 'bg-white/20' : 'bg-slate-100'}`}>
-                  {activeStep > step.id ? <CheckCircle2 size={16} className="text-emerald-500" /> : step.id}
+                  {activeStep > step.id ? <CheckCircle2 size={16} className="text-secondary" /> : step.id}
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] font-black uppercase tracking-widest leading-none">{step.title}</p>
@@ -141,8 +141,8 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
         <div className="xl:col-span-2 space-y-10">
           {activeStep === 1 && (
             <div className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-2xl shadow-slate-200/40 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex items-center gap-4 mb-2">
-                <div className="w-16 h-16 bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600">
+               <div className="flex items-center gap-4 mb-2">
+                <div className="w-16 h-16 bg-primary/10 rounded-[1.5rem] flex items-center justify-center text-primary">
                   <Globe size={32} />
                 </div>
                 <div>
@@ -151,9 +151,9 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                 </div>
               </div>
 
-              <div className="p-12 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center text-center space-y-8">
+               <div className="p-12 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center text-center space-y-8">
                 <div className="w-20 h-20 bg-white rounded-[2rem] shadow-xl flex items-center justify-center">
-                  <Lock size={32} className="text-indigo-600" />
+                  <Lock size={32} className="text-primary" />
                 </div>
                 <div className="space-y-3 max-w-sm">
                   <h4 className="text-xl font-black text-slate-800">One-Click Onboarding</h4>
@@ -183,20 +183,20 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Phone Number ID</label>
                     <input 
                       type="text" 
-                      value={settings.phone_number_id}
+                       value={settings.phone_number_id}
                       onChange={e => setSettings({...settings, phone_number_id: e.target.value})}
                       placeholder="Paste Phone ID from Meta" 
-                      className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                      className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-300"
                     />
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Business Account ID (WABA)</label>
                     <input 
                       type="text" 
-                      value={settings.waba_id}
+                       value={settings.waba_id}
                       onChange={e => setSettings({...settings, waba_id: e.target.value})}
                       placeholder="Paste WABA ID from Meta" 
-                      className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                      className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-300"
                     />
                   </div>
                   <div className="md:col-span-2 space-y-3">
@@ -204,18 +204,18 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                     <div className="relative">
                       <input 
                         type="password" 
-                        value={settings.access_token}
+                         value={settings.access_token}
                         onChange={e => setSettings({...settings, access_token: e.target.value})}
                         placeholder="Paste Token from Meta" 
-                        className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all placeholder:text-slate-300"
+                        className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-300"
                       />
                     </div>
                   </div>
                   <div className="md:col-span-2 flex justify-end">
-                    <button 
+                     <button 
                       onClick={handleSaveSettings}
                       disabled={loading}
-                      className="px-12 py-5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center gap-3"
+                      className="px-12 py-5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center gap-3"
                     >
                       {loading ? 'Connecting...' : 'Save & Connect WhatsApp'} <ArrowRight size={18} />
                     </button>
@@ -228,7 +228,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
           {activeStep === 2 && (
             <div className="bg-white rounded-[3rem] p-12 border border-slate-100 shadow-2xl shadow-slate-200/40 space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                <div className="flex items-center gap-4 mb-2">
-                <div className={`w-16 h-16 ${liveStatus?.whatsapp_connected || userData?.whatsapp_connected ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} rounded-[1.5rem] flex items-center justify-center`}>
+                <div className={`w-16 h-16 ${liveStatus?.whatsapp_connected || userData?.whatsapp_connected ? 'bg-secondary/10 text-secondary' : 'bg-amber-50 text-amber-600'} rounded-[1.5rem] flex items-center justify-center`}>
                   <Smartphone size={32} />
                 </div>
                 <div>
@@ -240,11 +240,11 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
               </div>
 
               <div className="flex flex-col items-center py-10 space-y-8 bg-slate-50/50 rounded-[3rem] border border-dashed border-slate-200">
-                <div className="w-48 h-48 bg-white p-4 rounded-[2rem] shadow-xl border border-slate-100 relative group overflow-hidden">
-                  <div className={`absolute inset-0 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-emerald-500/5' : 'bg-slate-500/5'} animate-pulse`}></div>
+                 <div className="w-48 h-48 bg-white p-4 rounded-[2rem] shadow-xl border border-slate-100 relative group overflow-hidden">
+                  <div className={`absolute inset-0 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-secondary/5' : 'bg-slate-500/5'} animate-pulse`}></div>
                   <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${liveStatus?.phone_number_id || userData?.phone_number_id || 'pending'}`} alt="QR Code" className="w-full h-full relative z-10 opacity-40 grayscale" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center p-6 space-y-2">
-                    {(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? <CheckCircle2 size={40} className="text-emerald-500" /> : <Info size={40} className="text-slate-300" />}
+                   <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center p-6 space-y-2">
+                    {(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? <CheckCircle2 size={40} className="text-secondary" /> : <Info size={40} className="text-slate-300" />}
                     <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
                       {(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'Verified' : 'Pending'}
                     </p>
@@ -260,9 +260,9 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                       : 'Please enter your credentials in Step 1 to activate your WhatsApp instance.'}
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className={`flex items-center gap-2 px-6 py-3 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'} rounded-2xl border`}>
-                    <div className={`w-2 h-2 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-emerald-500 animate-ping' : 'bg-slate-300'} rounded-full`}></div>
+                 <div className="flex items-center gap-4">
+                  <div className={`flex items-center gap-2 px-6 py-3 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-slate-100 text-slate-400 border-slate-200'} rounded-2xl border`}>
+                    <div className={`w-2 h-2 ${(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'bg-secondary animate-ping' : 'bg-slate-300'} rounded-full`}></div>
                     <span className="text-[10px] font-black uppercase tracking-widest">
                       {(liveStatus?.whatsapp_connected || userData?.whatsapp_connected) ? 'Connected' : 'Disconnected'}
                     </span>
@@ -273,9 +273,9 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                 </div>
               </div>
 
-              <div className="flex justify-between pt-6">
+               <div className="flex justify-between pt-6">
                 <button onClick={() => setActiveStep(1)} className="px-10 py-5 bg-white text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-slate-50 transition-all border border-slate-200">Back</button>
-                <button onClick={() => setActiveStep(3)} className="px-12 py-5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20">Next Step</button>
+                <button onClick={() => setActiveStep(3)} className="px-12 py-5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-3xl hover:brightness-110 transition-all shadow-xl shadow-primary/20">Next Step</button>
               </div>
             </div>
           )}
@@ -296,18 +296,18 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Webhook Callback URL</label>
                   <div className="flex gap-3">
-                    <input 
+                     <input 
                       readOnly
                       value={liveStatus?.webhook_url || userData?.webhook_url || `${API_BASE}/api/webhook`} 
-                      className="flex-1 px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-black text-indigo-600 select-all focus:outline-none"
+                      className="flex-1 px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-black text-primary select-all focus:outline-none"
                     />
-                    <button 
+                     <button 
                       onClick={() => {
                         const url = liveStatus?.webhook_url || userData?.webhook_url || `${API_BASE}/api/webhook`;
                         navigator.clipboard.writeText(url);
                         alert('Copied to clipboard!');
                       }}
-                      className="px-6 py-5 bg-white text-slate-400 rounded-3xl border border-slate-200 hover:text-indigo-600 transition-all"
+                      className="px-6 py-5 bg-white text-slate-400 rounded-3xl border border-slate-200 hover:text-primary transition-all"
                     >
                       <Copy size={20} />
                     </button>
@@ -317,18 +317,18 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Verify Token</label>
                   <div className="flex gap-3">
-                    <input 
+                     <input 
                       readOnly
                       value={liveStatus?.verify_token || userData?.verify_token || "whatsapp_token"} 
-                      className="flex-1 px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-black text-indigo-600 select-all focus:outline-none"
+                      className="flex-1 px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-black text-primary select-all focus:outline-none"
                     />
-                    <button 
+                     <button 
                       onClick={() => {
                         const token = liveStatus?.verify_token || userData?.verify_token || "whatsapp_token";
                         navigator.clipboard.writeText(token);
                         alert('Copied to clipboard!');
                       }}
-                      className="px-6 py-5 bg-white text-slate-400 rounded-3xl border border-slate-200 hover:text-indigo-600 transition-all"
+                      className="px-6 py-5 bg-white text-slate-400 rounded-3xl border border-slate-200 hover:text-primary transition-all"
                     >
                       <Copy size={20} />
                     </button>
@@ -342,11 +342,11 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                   <div className="relative z-10 space-y-6">
                     <h5 className="text-lg font-black tracking-tight">Security Check Required</h5>
                     <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-md">Copy the credentials above and paste them into your Meta Developer App → WhatsApp → Configuration section.</p>
-                    <a 
+                     <a 
                       href="https://developers.facebook.com/apps/" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-indigo-400 text-xs font-black uppercase tracking-widest hover:text-indigo-300 transition-all"
+                      className="flex items-center gap-2 text-primary-light text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
                     >
                       Go to Meta Dashboard <ExternalLink size={14} />
                     </a>
@@ -356,9 +356,9 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
 
               <div className="flex justify-between pt-6">
                 <button onClick={() => setActiveStep(2)} className="px-10 py-5 bg-white text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-3xl hover:bg-slate-50 transition-all border border-slate-200">Back</button>
-                <button 
+                 <button 
                   onClick={() => userData?.whatsapp_connected ? alert('WhatsApp CRM is already active!') : alert('Please finish the setup in Step 1 & 2 first!')} 
-                  className={`px-16 py-5 ${userData?.whatsapp_connected ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} text-white text-[11px] font-black uppercase tracking-widest rounded-3xl transition-all shadow-xl active:scale-95`}
+                  className={`px-16 py-5 ${userData?.whatsapp_connected ? 'bg-gradient-to-r from-secondary to-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} text-white text-[11px] font-black uppercase tracking-widest rounded-3xl transition-all shadow-xl active:scale-95`}
                 >
                   Complete Setup
                 </button>
@@ -369,15 +369,15 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
 
         {/* Sidebar Help */}
         <div className="space-y-8">
-          <div className="p-10 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
+           <div className="p-10 bg-gradient-to-br from-primary to-primary-dark rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/20 transition-all duration-700"></div>
             <div className="relative z-10 space-y-6">
               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
-                <Shield size={24} className="text-indigo-200" />
+                <Shield size={24} className="text-primary-light" />
               </div>
               <div className="space-y-2">
                 <h4 className="text-2xl font-black leading-tight">Official Meta<br />Business Partner</h4>
-                <p className="text-indigo-100 text-[10px] font-bold uppercase tracking-widest opacity-80 leading-relaxed">Your data is secured with Enterprise Grade Encryption</p>
+                <p className="text-primary-light text-[10px] font-bold uppercase tracking-widest opacity-80 leading-relaxed">Your data is secured with Enterprise Grade Encryption</p>
               </div>
             </div>
           </div>
@@ -398,8 +398,8 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
               ].map((item, i) => (
                 <li key={i} className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{item.title}</span>
-                  {item.status ? (
-                    <div className="w-5 h-5 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500">
+                   {item.status ? (
+                    <div className="w-5 h-5 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
                       <CheckCircle2 size={12} />
                     </div>
                   ) : (

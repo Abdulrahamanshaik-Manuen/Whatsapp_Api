@@ -1,82 +1,100 @@
 import React from 'react';
-import { ShieldCheck, MessageSquare, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, MessageSquare, TrendingUp, CheckCircle2, Zap } from 'lucide-react';
 
 const Hero = ({ onNavigate }) => {
     return (
-        <section className="relative bg-gradient-to-b from-blue-50 to-white overflow-hidden">
-            <div className="max-w-7xl mx-auto px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center relative z-10">
-                <div className="space-y-5">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 text-primary font-bold text-[10px] uppercase tracking-wider mb-2 border border-primary/10">
-                        <ShieldCheck size={12} />
-                        Trusted by 100+ Global Enterprises
+        <section className="relative bg-white overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-32">
+            {/* Ambient Background Elements */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-secondary/10 rounded-full blur-[100px]"></div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+                <div className="space-y-8">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-primary font-display font-bold text-[11px] uppercase tracking-widest">
+                        <Zap size={14} className="text-secondary" />
+                        Next-Gen WhatsApp CRM Solutions
                     </div>
                     
-                    <h1 className="font-manrope text-3xl md:text-4xl xl:text-5xl text-primary leading-[1.1] font-black tracking-tight">
-                        Power Your Business Communication with WhatsApp
+                    <h1 className="h1-display text-primary">
+                        Elevate Your Customer <span className="text-secondary italic">Experience</span> on WhatsApp
                     </h1>
                     
-                    <p className="text-sm md:text-base text-slate-500 max-w-md leading-relaxed font-medium">
-                        Manage customers, send bulk campaigns, and automate communication using our secure WhatsApp CRM platform.
+                    <p className="text-base md:text-lg text-slate-500 max-w-lg leading-relaxed font-medium">
+                        Seamlessly manage communications, broadcast powerful campaigns, and automate growth with MANUEN's enterprise-grade platform.
                     </p>
                     
-                    <div className="flex flex-col gap-5 pt-2">
-                        <div className="flex flex-wrap gap-3">
-                            <button 
-                                onClick={() => onNavigate('/login')}
-                                className="bg-secondary text-white font-manrope text-xs font-bold px-7 py-3.5 rounded-lg shadow-lg hover:-translate-y-1 hover:brightness-110 transition-all duration-300"
-                            >
-                                Get Started
-                            </button>
-                            <button 
-                                className="border-2 border-primary text-primary font-manrope text-xs font-bold px-7 py-3.5 rounded-lg hover:bg-primary/5 transition-all duration-300"
-                            >
-                                Request Demo
-                            </button>
+                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                        <button 
+                            onClick={() => onNavigate('/login')}
+                            className="btn-secondary px-10 py-4 text-sm"
+                        >
+                            Get Started Free
+                        </button>
+                        <button 
+                            className="px-10 py-4 rounded-xl border-2 border-primary text-primary font-display font-bold text-sm hover:bg-primary/5 transition-all shadow-sm"
+                        >
+                            Explore Solutions
+                        </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 border-t border-slate-100">
+                        <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            <CheckCircle2 size={16} className="text-secondary" /> 
+                            No Setup Fee
                         </div>
-                        <div className="flex flex-wrap gap-x-5 gap-y-2 text-slate-500 text-[10px] font-black uppercase tracking-widest">
-                            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-secondary" /> No coding required</span>
-                            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-secondary" /> Setup in minutes</span>
+                        <div className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            <CheckCircle2 size={16} className="text-secondary" /> 
+                            Official Meta API
                         </div>
                     </div>
                 </div>
 
-                <div className="relative">
-                    {/* Floating Elements - Now Static */}
-                    <div className="absolute -top-8 -left-8 z-30 bg-white p-3 rounded-xl shadow-xl border border-slate-100 flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                            <MessageSquare size={16} />
-                        </div>
-                        <div>
-                            <p className="text-[8px] text-slate-500 font-black uppercase">New Inquiry</p>
-                            <p className="text-[11px] font-bold">How can we help?</p>
+                <div className="relative lg:ml-4">
+                    {/* Floating UI Elements */}
+                    <div className="absolute -top-10 -left-10 z-30 glass-panel p-5 rounded-2xl animate-bounce-slow">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-white shadow-glow">
+                                <MessageSquare size={20} fill="currentColor" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Live Chat</p>
+                                <p className="text-xs font-black text-primary">Active Customer Session</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="absolute top-1/2 -right-10 z-30 bg-white p-4 rounded-xl shadow-xl border border-slate-100 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                            <TrendingUp size={20} />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase">Engagement</p>
-                            <p className="text-xs font-bold">+24% Open Rate</p>
+                    <div className="absolute top-1/2 -right-12 z-30 glass-panel p-6 rounded-2xl shadow-2xl hidden xl:block">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                <TrendingUp size={24} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Performance</p>
+                                <p className="text-sm font-black text-primary">+38% Conversion</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
-                        <img 
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnoa4b6WrJ89lK0gsGfnKE0AN5jbIGQpDLht9U1mMssyGvUVlXX-Eh0_EuPZv7p_zFyRfWsOU6aLvc2eGNyupWy4sgp0ff0sbSHvbdPzk8sYHpXqBXpxxAQRX0IY99FTgRI3Q_--0aWeGZxyMFBa9t5pKDjxglRN58JOkdT5TsszB1ETvg8KfOerseZgt0OeULXVLWgeg0IW9lGNyF1ThUbfdL2oNn-6dGo15n6Rm73ybwdclpKe59_N3Kvb5EwxPt5XThE9i85kTh" 
-                            alt="WhatsApp Dashboard" 
-                            className="w-full h-auto"
-                        />
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="relative bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden ring-1 ring-black/5">
+                            <img 
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnoa4b6WrJ89lK0gsGfnKE0AN5jbIGQpDLht9U1mMssyGvUVlXX-Eh0_EuPZv7p_zFyRfWsOU6aLvc2eGNyupWy4sgp0ff0sbSHvbdPzk8sYHpXqBXpxxAQRX0IY99FTgRI3Q_--0aWeGZxyMFBa9t5pKDjxglRN58JOkdT5TsszB1ETvg8KfOerseZgt0OeULXVLWgeg0IW9lGNyF1ThUbfdL2oNn-6dGo15n6Rm73ybwdclpKe59_N3Kvb5EwxPt5XThE9i85kTh" 
+                                alt="Dashboard Visualization" 
+                                className="w-full h-auto scale-105 group-hover:scale-100 transition-transform duration-700"
+                            />
+                        </div>
                     </div>
 
-                    <div className="absolute -bottom-6 -left-6 bg-secondary text-white p-5 rounded-xl shadow-2xl hidden md:block z-20">
-                        <div className="flex items-center gap-3">
-                            <ShieldCheck size={24} />
-                            <div>
-                                <p className="text-[10px] uppercase tracking-wider opacity-80 font-bold">Encryption</p>
-                                <p className="text-sm font-black">Enterprise Secure</p>
-                            </div>
+                    <div className="absolute -bottom-8 left-10 glass-panel p-6 rounded-2xl flex items-center gap-4 group">
+                        <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+                            <ShieldCheck size={28} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Compliance</p>
+                            <p className="text-sm font-black text-primary">End-to-End Encrypted</p>
                         </div>
                     </div>
                 </div>

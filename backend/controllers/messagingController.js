@@ -307,8 +307,17 @@ export const getConversations = async (req, res) => {
             { $group: {
                 _id: "$to",
                 lastMessage: { $first: "$$ROOT" },
-                unreadCount: { $sum: { $cond: [{ $eq: ["$direction", "incoming"] }, 1, 0] } } // Simplistic unread count
+                unreadCount: { $sum: { $cond: [{ $eq: ["$direction", "incoming"] }, 1, 0] } }
             }},
+            {
+                $lookup: {
+                    from: "contacts",
+                    localField: "_id",
+                    foreignField: "phoneNumber",
+                    as: "contactInfo"
+                }
+            },
+            { $unwind: { path: "$contactInfo", preserveNullAndEmptyArrays: true } },
             { $sort: { "lastMessage.createdAt": -1 } }
         ]);
 
