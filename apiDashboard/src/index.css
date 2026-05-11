@@ -2,14 +2,16 @@
 
 @theme {
   /* Brand Identity - Strict Logo Colors */
-  --color-primary: #003B6D;      /* Logo Navy */
+  --color-primary: #003B6D;
+  /* Logo Navy */
   --color-primary-light: #004f94;
   --color-primary-dark: #002a52;
-  
-  --color-secondary: #63C132;    /* Logo Green */
+
+  --color-secondary: #63C132;
+  /* Logo Green */
   --color-secondary-light: #7ed94f;
   --color-secondary-dark: #4e9a26;
-  
+
   /* Refined Palette */
   --color-background: #F8FAFC;
   --color-on-background: #0F172A;
@@ -33,15 +35,33 @@
 }
 
 @layer base {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
-  html, body, #root {
+
+  html,
+  body,
+  #root {
     height: 100%;
-    overflow: hidden;
   }
+
+  html,
+  body {
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
   body {
     @apply bg-background text-on-background font-sans antialiased;
     -webkit-font-smoothing: antialiased;
@@ -50,11 +70,12 @@
 }
 
 @layer components {
+
   /* Professional Layout Utilities */
   .glass-panel {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-premium;
   }
-  
+
   .glass-card {
     @apply bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-premium transition-all duration-300;
   }
@@ -85,6 +106,7 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -94,9 +116,11 @@
     width: 6px;
     height: 6px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-200 rounded-full hover:bg-slate-300;
   }
