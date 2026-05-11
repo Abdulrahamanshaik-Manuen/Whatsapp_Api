@@ -25,7 +25,7 @@ router.use('/whatsapp', whatsappRoutes);
 router.use('/webhook', webhookRoutes);
 router.use('/contacts', contactRoutes);
 router.use('/groups', groupRoutes);
-router.use('/', messagingRoutes);
+router.use('/messages', messagingRoutes);
 router.use('/campaigns', campaignRoutes);
 router.use('/templates', templateRoutes);
 router.use('/analytics', analyticsRoutes);

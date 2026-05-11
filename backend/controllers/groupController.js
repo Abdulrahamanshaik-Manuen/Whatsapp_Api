@@ -23,6 +23,15 @@ export const createGroup = async (req, res) => {
         });
 
         await group.save();
+
+        // Update contacts to reflect this group
+        if (contacts && contacts.length > 0) {
+            await Contact.updateMany(
+                { phoneNumber: { $in: contacts } },
+                { $set: { "details.group": name } }
+            );
+        }
+
         res.status(201).json(group);
     } catch (error) {
         console.error("Create Group Error:", error);
@@ -89,6 +98,15 @@ export const updateGroup = async (req, res) => {
         if (req.body.tags) group.tags = req.body.tags;
 
         await group.save();
+
+        // If name changed or contacts changed, sync to Contact model
+        if (name || contacts) {
+            await Contact.updateMany(
+                { phoneNumber: { $in: group.contacts } },
+                { $set: { "details.group": group.name } }
+            );
+        }
+
         res.json(group);
     } catch (error) {
         console.error("Update Group Error:", error);
@@ -137,6 +155,12 @@ export const addContactsToGroup = async (req, res) => {
         // Add new contacts and the pre-save hook will deduplicate
         group.contacts.push(...contacts);
         await group.save();
+
+        // Sync to Contact model
+        await Contact.updateMany(
+            { phoneNumber: { $in: contacts } },
+            { $set: { "details.group": group.name } }
+        );
 
         res.json(group);
     } catch (error) {

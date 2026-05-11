@@ -11,7 +11,34 @@ import {
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
-export default function ContactsPage() {
+// Reusable StatCard following Dashboard/MessageLogs style
+const StatCard = ({ label, value, color, icon: Icon }) => {
+  const colors = {
+    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
+    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
+    blue: 'from-blue-500/10 to-cyan-500/10 text-blue-600 border-blue-100',
+    indigo: 'from-indigo-500/10 to-blue-500/10 text-indigo-600 border-indigo-100',
+    orange: 'from-orange-500/10 to-amber-500/10 text-orange-600 border-orange-100',
+    rose: 'from-rose-500/10 to-pink-500/10 text-rose-600 border-rose-100'
+  };
+
+  return (
+    <div className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+      <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
+      <div className="flex items-center gap-4 relative z-10">
+        <div className={`w-12 h-12 bg-gradient-to-br ${colors[color]} rounded-xl flex items-center justify-center`}>
+          <Icon size={24} />
+        </div>
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+          <p className="text-2xl font-black text-primary tracking-tight leading-none">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function ContactsPage({ onNavigate, setActiveTab }) {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -218,14 +245,25 @@ export default function ContactsPage() {
       });
 
       if (response.ok) {
-        alert("Message sent successfully!");
+        console.log("Message sent successfully, navigating to inbox...");
         setChatMessage('');
         setShowChatModal(false);
+
+        // Use both setActiveTab for immediate UI update and onNavigate for URL sync
+        if (setActiveTab) {
+          setActiveTab('Messages');
+        }
+        if (onNavigate) {
+          onNavigate('/messages');
+        }
       } else {
-        alert("Failed to send message.");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to send message:", errorData);
+        alert(errorData.error || "Failed to send message.");
       }
     } catch (err) {
-      alert("Error sending message.");
+      console.error("Error in handleSendMessage:", err);
+      alert("Error sending message. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -236,345 +274,355 @@ export default function ContactsPage() {
       <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar pb-10">
 
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-black text-slate-800 tracking-tight">Contact Manager</h2>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
-              <Users size={14} className="text-primary" />
-              Manage your WhatsApp audience and leads
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <div className="w-2 h-10 bg-primary rounded-full hidden md:block" />
+              Contacts
+            </h1>
+            <p className="text-slate-500 font-medium text-sm flex items-center gap-2 ml-1">
+              <Users size={16} className="text-secondary" />
+              Manage and organize your WhatsApp audience database
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            {/* View Toggle */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/60 mr-2">
               <button
                 onClick={() => setViewMode('table')}
-                className={`p-2.5 rounded-xl transition-all ${viewMode === 'table' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                title="Table View"
+                className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'table' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 <List size={18} />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                title="Grid View"
+                className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 <LayoutGrid size={18} />
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleExport}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
-              >
-                <Download size={16} />
-                Export CSV
-              </button>
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
-              >
-                <FileUp size={16} />
-                Import CSV
-              </button>
-               <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95"
-              >
-                <UserPlus size={16} />
-                Add Contact
-              </button>
-            </div>
+            <button
+              onClick={handleExport}
+              className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 shadow-sm"
+            >
+              <Download size={16} className="text-slate-400 group-hover:text-primary transition-colors" />
+              Export
+            </button>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 shadow-sm"
+            >
+              <FileUp size={16} className="text-slate-400 group-hover:text-primary transition-colors" />
+              Import
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-light transition-all shadow-lg shadow-primary/20 active:scale-95"
+            >
+              <UserPlus size={16} />
+              Add Contact
+            </button>
           </div>
         </div>
 
-        {/* Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-                  <Users size={24} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Contacts</p>
-                  <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">{contacts.length}</p>
-                </div>
-              </div>
-            </div>
-             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center">
-                  <ShieldCheck size={24} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Verified Consent</p>
-                  <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                    {contacts.filter(c => c.consent_status === 'verified').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center">
-                  <Globe size={24} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Web Leads</p>
-                  <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                    {contacts.filter(c => c.consent_source === 'web').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-                  <FileUp size={24} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">CSV Imports</p>
-                  <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                    {contacts.filter(c => c.consent_source === 'csv').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <StatCard
+            label="Total Contacts"
+            value={contacts.length}
+            color="primary"
+            icon={Users}
+          />
+          <StatCard
+            label="Verified Consent"
+            value={contacts.filter(c => c.consent_status === 'verified').length}
+            color="secondary"
+            icon={ShieldCheck}
+          />
+          <StatCard
+            label="Web Leads"
+            value={contacts.filter(c => c.consent_source === 'web').length}
+            color="blue"
+            icon={Globe}
+          />
+          <StatCard
+            label="Bulk Imports"
+            value={contacts.filter(c => c.consent_source === 'csv').length}
+            color="indigo"
+            icon={Layers}
+          />
+        </div>
 
-          {/* Action Bar */}
-          <div className="bg-white p-4 rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col md:flex-row items-center gap-4">
-            <div className="relative flex-1 w-full">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by name or phone number..."
-                 value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
-              />
-            </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
+        {/* Action Bar */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+          <div className="relative flex-1 w-full group">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={searchQuery}
+              onChange={handleSearch}
+              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400"
+            />
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl">
               <select
                 value={filters.consent_status}
                 onChange={(e) => setFilters({ ...filters, consent_status: e.target.value })}
-                className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest focus:outline-none cursor-pointer flex-1 md:flex-none"
+                className="pl-3 pr-8 py-1.5 bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '12px' }}
               >
-                <option value="">Status: All</option>
+                <option value="">All Status</option>
                 <option value="verified">Verified</option>
                 <option value="unverified">Unverified</option>
               </select>
+              <div className="w-px h-4 bg-slate-200" />
               <select
                 value={filters.consent_source}
                 onChange={(e) => setFilters({ ...filters, consent_source: e.target.value })}
-                className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest focus:outline-none cursor-pointer flex-1 md:flex-none"
+                className="pl-3 pr-8 py-1.5 bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '12px' }}
               >
-                <option value="">Source: All</option>
+                <option value="">All Sources</option>
                 <option value="web">Web</option>
                 <option value="csv">CSV</option>
                 <option value="qr">QR Code</option>
                 <option value="store">Store</option>
               </select>
-              <button
-                onClick={() => { setFilters({ consent_status: '', consent_source: '' }); setSearchQuery(''); fetchContacts(); }}
-                className="p-3 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 transition-colors"
-              >
-                <FilterX size={20} />
-              </button>
             </div>
+            <button
+              onClick={() => { setFilters({ consent_status: '', consent_source: '' }); setSearchQuery(''); fetchContacts(); }}
+              className="p-3 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all active:scale-95 shadow-sm"
+              title="Reset Filters"
+            >
+              <FilterX size={20} />
+            </button>
           </div>
+        </div>
 
-          {/* Contacts View */}
-          {viewMode === 'table' ? (
-            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
-              <div className="overflow-x-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/50">
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Identity</th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Source & Status</th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Added Date</th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {loading ? (
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <tr key={i} className="animate-pulse">
-                          <td colSpan="5" className="px-6 py-8">
-                            <div className="h-4 bg-slate-100 rounded-full w-full opacity-50"></div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : contacts.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="px-6 py-20 text-center">
-                          <div className="flex flex-col items-center justify-center opacity-40">
-                            <Layers size={40} className="text-slate-200 mb-4" />
-                            <h3 className="text-lg font-black text-slate-800">No Contacts Found</h3>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Start by adding a contact or importing a CSV file</p>
+        {/* Contacts View */}
+        {viewMode === 'table' ? (
+          <div className="glass-panel rounded-[2rem] overflow-hidden border border-slate-200/50">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/40 border-b border-slate-100/50">
+                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Contact Identity</th>
+                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Phone Number</th>
+                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status & Source</th>
+                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Joined Date</th>
+                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50/50">
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan="5" className="px-6 py-8">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-slate-100 rounded-2xl" />
+                            <div className="space-y-2">
+                              <div className="h-3.5 bg-slate-100 rounded-full w-40" />
+                              <div className="h-2.5 bg-slate-50 rounded-full w-28" />
+                            </div>
                           </div>
                         </td>
                       </tr>
-                    ) : (
-                      contacts.map((contact) => (
-                        <tr key={contact._id} className="group hover:bg-slate-50/50 transition-all duration-300">
-                          <td className="px-6 py-5">
-                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg shadow-primary/20">
-                                {contact.name.charAt(0).toUpperCase()}
-                              </div>
-                              <div>
-                                <p className="text-xs font-black text-slate-800 leading-none mb-1.5">{contact.name}</p>
-                                <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5">
-                                  <Mail size={10} className="text-slate-300" />
-                                  {contact.email || 'No email provided'}
-                                </p>
-                              </div>
+                    ))
+                  ) : contacts.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-32 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner">
+                            <Users size={40} className="text-slate-200" />
+                          </div>
+                          <h3 className="text-xl font-bold text-slate-800">Your audience is empty</h3>
+                          <p className="text-sm text-slate-400 mt-2 max-w-xs mx-auto">Start building your community by adding your first contact or importing a list.</p>
+                          <button
+                            onClick={() => setShowAddModal(true)}
+                            className="mt-8 px-8 py-3 bg-primary text-white text-xs font-bold rounded-2xl hover:bg-primary-light transition-all shadow-xl shadow-primary/20 active:scale-95"
+                          >
+                            Add Your First Contact
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    contacts.map((contact) => (
+                      <tr key={contact._id} className="group hover:bg-white/60 transition-all duration-300">
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light text-white rounded-2xl flex items-center justify-center font-bold text-base shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
+                              {contact.name.charAt(0).toUpperCase()}
                             </div>
-                          </td>
-                           <td className="px-6 py-5">
+                            <div>
+                              <p className="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-primary transition-colors">{contact.name}</p>
+                              <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+                                <Mail size={12} className="text-slate-300" />
+                                {contact.email || 'No email provided'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold border border-slate-100 group-hover:bg-white group-hover:border-primary/10 transition-all">
+                            <Smartphone size={14} className="text-slate-400" />
+                            +{contact.phoneNumber}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
-                                <Phone size={12} />
+                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${contact.consent_status === 'verified' ? 'bg-secondary/5 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                                {contact.consent_status}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                                <Tag size={12} className="text-slate-300" />
+                                {contact.consent_source}
+                              </span>
+                            </div>
+                            {contact.location && (
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium ml-1">
+                                <MapPin size={12} className="text-slate-300" />
+                                {contact.location}
                               </div>
-                              <span className="text-xs font-black text-slate-800">+{contact.phoneNumber}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div className="flex flex-col gap-2">
-                               <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
-                                  {contact.consent_status}
-                                </span>
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                                  <Tag size={10} className="text-slate-300" />
-                                  {contact.consent_source}
-                                </span>
-                              </div>
-                              {contact.location && (
-                                <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                  <MapPin size={10} className="text-slate-300" />
-                                  {contact.location}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-2 text-slate-500 font-bold text-[10px]">
-                              <Calendar size={12} className="text-slate-300" />
-                              {new Date(contact.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </div>
-                          </td>
-                          <td className="px-6 py-5 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                               <a
-                                href={`tel:${contact.phoneNumber}`}
-                                className="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary hover:text-white transition-all shadow-sm"
-                                title="Call Contact"
-                              >
-                                <Phone size={16} />
-                              </a>
-                              <button
-                                onClick={() => { setSelectedContactForChat(contact); setShowChatModal(true); }}
-                                className="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm"
-                                title="Quick Chat"
-                              >
-                                <MessageSquare size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteContact(contact._id)}
-                                className="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                                title="Delete"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-2.5 text-slate-500 font-medium text-[11px]">
+                            <Calendar size={15} className="text-slate-300" />
+                            {new Date(contact.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <div className="flex items-center justify-end gap-2.5">
+                            <button
+                              onClick={() => { setSelectedContactForChat(contact); setShowChatModal(true); }}
+                              className="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm hover:shadow-blue-500/20 active:scale-90"
+                              title="Quick Chat"
+                            >
+                              <MessageSquare size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteContact(contact._id)}
+                              className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm hover:shadow-rose-500/20 active:scale-90"
+                              title="Delete"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            /* Grid View Rendering */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {loading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-[200px] bg-white rounded-[2rem] border border-slate-100 animate-pulse"></div>
-                ))
-              ) : contacts.length === 0 ? (
-                <div className="col-span-full py-20 bg-white rounded-[2rem] border border-slate-100 text-center flex flex-col items-center justify-center opacity-40">
-                  <Layers size={40} className="text-slate-200 mb-4" />
-                  <h3 className="text-lg font-black text-slate-800">No Contacts Found</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Start by adding a contact or importing a CSV file</p>
+          </div>
+        ) : (
+          /* Grid View Rendering */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-64 glass-panel rounded-[2.5rem] animate-pulse" />
+              ))
+            ) : contacts.length === 0 ? (
+              <div className="col-span-full py-32 glass-panel rounded-[2.5rem] text-center flex flex-col items-center justify-center">
+                <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner">
+                  <Users size={40} className="text-slate-200" />
                 </div>
-              ) : (
-                contacts.map((contact) => (
-                  <div key={contact._id} className="group bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-indigo-600/10 transition-all duration-300 relative overflow-hidden">
-                     <div className="absolute top-0 right-0 p-4">
-                      <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider border ${contact.consent_status === 'verified' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
-                        {contact.consent_status}
-                      </span>
+                <h3 className="text-xl font-bold text-slate-800">Your audience is empty</h3>
+                <p className="text-sm text-slate-400 mt-2 max-w-xs mx-auto">Start building your community by adding your first contact or importing a list.</p>
+              </div>
+            ) : (
+              contacts.map((contact) => (
+                <div key={contact._id} className="group bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 relative overflow-hidden flex flex-col gap-5">
+                  {/* Card Header: Avatar, Name, Phone & Status */}
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    <div className="w-14 h-14 bg-[#004277] text-white rounded-[1.25rem] flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform duration-500 flex-shrink-0">
+                      {contact.name.charAt(0).toUpperCase()}
                     </div>
-                     <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="w-16 h-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-white font-black text-xl shadow-xl shadow-primary/30 group-hover:scale-110 transition-transform">
-                        {contact.name.charAt(0).toUpperCase()}
-                      </div>
-                       <div>
-                        <h3 className="text-sm font-black text-slate-800 mb-1">{contact.name}</h3>
-                        <p className="text-xs font-black text-primary">+{contact.phoneNumber}</p>
-                        {contact.location && (
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 flex items-center justify-center gap-1">
-                            <MapPin size={10} /> {contact.location}
-                          </p>
-                        )}
-                      </div>
 
-                      <div className="flex items-center gap-2 w-full pt-2">
-                         <a
-                          href={`tel:${contact.phoneNumber}`}
-                          className="flex-1 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-secondary/10 hover:text-secondary transition-all border border-slate-100"
-                        >
-                          <Phone size={16} />
-                        </a>
-                        <button
-                          onClick={() => { setSelectedContactForChat(contact); setShowChatModal(true); }}
-                          className="flex-1 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:text-blue-500 transition-all border border-slate-100"
-                        >
-                          <MessageSquare size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteContact(contact._id)}
-                          className="flex-1 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all border border-slate-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                    {/* Name, Phone & Badge Row */}
+                    <div className="flex-1 min-w-0 relative">
+                      <div className="absolute top-0 right-0">
+                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border shrink-0 ${contact.consent_status === 'verified' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                          {contact.consent_status}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-black text-slate-800 leading-tight pr-14 mb-1 line-clamp-2" title={contact.name}>
+                        {contact.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-bold mt-1.5">
+                        <Smartphone size={12} className="text-slate-400" />
+                        <span>+{contact.phoneNumber}</span>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          )}
+
+                  {/* Contact Info List */}
+                  <div className="space-y-3 w-full">
+                    <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500">
+                      <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100/50">
+                        <Mail size={14} />
+                      </div>
+                      <span className="truncate">{contact.email || 'No email provided'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500">
+                      <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100/50">
+                        <MapPin size={14} />
+                      </div>
+                      <span className="truncate">{contact.location || 'Location not set'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                      <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100/50">
+                        <Tag size={13} />
+                      </div>
+                      <span>{contact.consent_source}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-3 w-full pt-1">
+                    <button
+                      onClick={() => { setSelectedContactForChat(contact); setShowChatModal(true); }}
+                      className="flex-[2] h-11 rounded-2xl bg-[#004277] text-white flex items-center justify-center hover:bg-primary-light transition-all text-xs font-black gap-2 shadow-lg shadow-blue-900/10 active:scale-95"
+                    >
+                      <MessageSquare size={16} />
+                      Quick Chat
+                    </button>
+                    <button
+                      onClick={() => handleDeleteContact(contact._id)}
+                      className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-95 border border-rose-100/50"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </main>
 
       {/* Quick Chat Modal */}
       {showChatModal && selectedContactForChat && (
-         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-[450px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-primary text-white">
+            <div className="p-6 bg-primary text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-black">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm backdrop-blur-sm">
                   {selectedContactForChat.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-sm font-black leading-none">{selectedContactForChat.name}</h3>
-                  <p className="text-[10px] font-bold opacity-70 mt-1 uppercase">Quick Conversation</p>
+                  <h3 className="text-sm font-bold leading-tight">{selectedContactForChat.name}</h3>
+                  <p className="text-[10px] font-medium opacity-70 uppercase tracking-widest">Direct Message</p>
                 </div>
               </div>
               <button
@@ -584,40 +632,49 @@ export default function ContactsPage() {
                 <X size={18} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">WhatsApp Number</p>
-                <p className="text-sm font-black text-slate-800">+{selectedContactForChat.phoneNumber}</p>
+            <div className="p-8 space-y-6">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">WhatsApp Number</p>
+                  <p className="text-sm font-bold text-slate-800">+{selectedContactForChat.phoneNumber}</p>
+                </div>
+                <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center">
+                  <Phone size={18} />
+                </div>
               </div>
+
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Message Body</label>
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Message Content</label>
                 <textarea
                   rows="4"
-                  placeholder="Type your message here..."
-                   value={chatMessage}
+                  placeholder="Type your WhatsApp message here..."
+                  value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300 resize-none"
-                ></textarea>
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 resize-none"
+                />
               </div>
-              <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
-                <Info size={14} />
-                <p className="text-[10px] font-bold uppercase tracking-wide">This will be sent via your primary WhatsApp number</p>
+
+              <div className="flex items-start gap-3 p-4 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100/50">
+                <Info size={16} className="shrink-0 mt-0.5" />
+                <p className="text-[11px] font-medium leading-relaxed">
+                  Messages sent here are delivered instantly via your connected WhatsApp API business account.
+                </p>
               </div>
             </div>
-            <div className="p-6 border-t border-slate-50 bg-slate-50/50 flex items-center gap-3">
+            <div className="p-8 border-t border-slate-50 bg-slate-50/30 flex items-center gap-3">
               <button
                 onClick={() => setShowChatModal(false)}
-                className="flex-1 py-3.5 bg-white text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all"
+                className="flex-1 py-3 bg-white text-slate-500 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
               >
                 Cancel
               </button>
-               <button
+              <button
                 onClick={handleSendMessage}
                 disabled={submitting || !chatMessage.trim()}
-                className="flex-[2] py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-[2] py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-xl shadow-primary/20 hover:bg-primary-light transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                Send Message
+                Send WhatsApp
               </button>
             </div>
           </div>
@@ -626,17 +683,17 @@ export default function ContactsPage() {
 
       {/* Add Contact Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="flex flex-col max-h-[85vh]">
+            <div className="flex flex-col max-h-[90vh]">
               <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0">
-                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                     <UserPlus size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-800 leading-none">Add Single Contact</h2>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Create a new audience member</p>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Add New Contact</h2>
+                    <p className="text-xs text-slate-400 font-medium">Create a new entry in your audience database</p>
                   </div>
                 </div>
                 <button
@@ -648,100 +705,110 @@ export default function ContactsPage() {
               </div>
 
               <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Abdul Shaik"
-                     value={newContact.name}
-                    onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number (with code)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 919876543210"
-                     value={newContact.phoneNumber}
-                    onChange={(e) => setNewContact({ ...newContact, phoneNumber: e.target.value })}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-300"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Optional)</label>
-                    <input
-                      type="email"
-                      placeholder="shaik@manuen.com"
-                       value={newContact.email}
-                      onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Location</label>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
                     <input
                       type="text"
-                      placeholder="City, Country"
-                       value={newContact.location}
-                      onChange={(e) => setNewContact({ ...newContact, location: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                      placeholder="e.g. John Doe"
+                      value={newContact.name}
+                      onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consent Source</label>
-                    <select
-                       value={newContact.consent_source}
-                      onChange={(e) => setNewContact({ ...newContact, consent_source: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                    >
-                      <option value="web">Web</option>
-                      <option value="store">Store</option>
-                      <option value="qr">QR Code</option>
-                      <option value="csv">CSV</option>
-                    </select>
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                    <div className="relative">
+                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">+</div>
+                      <input
+                        type="text"
+                        placeholder="919876543210"
+                        value={newContact.phoneNumber}
+                        onChange={(e) => setNewContact({ ...newContact, phoneNumber: e.target.value })}
+                        className="w-full pl-9 pr-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consent Status</label>
-                    <select
-                       value={newContact.consent_status}
-                      onChange={(e) => setNewContact({ ...newContact, consent_status: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                    >
-                      <option value="verified">Verified</option>
-                      <option value="unverified">Unverified</option>
-                    </select>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                   <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${newContact.consent ? 'bg-secondary' : 'bg-slate-300'}`} onClick={() => setNewContact({ ...newContact, consent: !newContact.consent })}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newContact.consent ? 'left-5' : 'left-1'}`}></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
+                      <input
+                        type="email"
+                        placeholder="john@example.com"
+                        value={newContact.email}
+                        onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
+                        className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Location</label>
+                      <input
+                        type="text"
+                        placeholder="City, Country"
+                        value={newContact.location}
+                        onChange={(e) => setNewContact({ ...newContact, location: e.target.value })}
+                        className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black text-secondary uppercase tracking-widest">Marketing Consent</p>
-                    <p className="text-[9px] text-secondary/70 font-bold uppercase tracking-widest">User has opted-in for messages</p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Consent Source</label>
+                      <select
+                        value={newContact.consent_source}
+                        onChange={(e) => setNewContact({ ...newContact, consent_source: e.target.value })}
+                        className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 cursor-pointer"
+                      >
+                        <option value="web">Website</option>
+                        <option value="store">Physical Store</option>
+                        <option value="qr">QR Code</option>
+                        <option value="csv">CSV Import</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                      <select
+                        value={newContact.consent_status}
+                        onChange={(e) => setNewContact({ ...newContact, consent_status: e.target.value })}
+                        className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 cursor-pointer"
+                      >
+                        <option value="verified">Verified</option>
+                        <option value="unverified">Unverified</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${newContact.consent ? 'bg-secondary/5 border-secondary/20' : 'bg-slate-50 border-slate-100'}`}
+                    onClick={() => setNewContact({ ...newContact, consent: !newContact.consent })}
+                  >
+                    <div className={`w-10 h-6 rounded-full relative transition-colors ${newContact.consent ? 'bg-secondary' : 'bg-slate-300'}`}>
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newContact.consent ? 'left-5' : 'left-1'}`} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-800 uppercase tracking-widest leading-none mb-1">Marketing Consent</p>
+                      <p className="text-[10px] text-slate-500 font-medium">User has opted-in for receiving updates</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8 border-t border-slate-50 flex items-center justify-end gap-3 shrink-0">
+              <div className="p-8 border-t border-slate-50 flex items-center justify-end gap-3 shrink-0 bg-slate-50/30">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="px-6 py-3.5 bg-slate-50 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all"
+                  className="px-6 py-3 text-slate-500 text-xs font-bold rounded-xl hover:bg-slate-100 transition-all"
                 >
                   Cancel
                 </button>
-                 <button
+                <button
                   onClick={handleSaveContact}
                   disabled={submitting}
-                  className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-light transition-all shadow-xl shadow-primary/20 active:scale-95 disabled:opacity-50"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                   Save Contact
                 </button>
               </div>
@@ -752,16 +819,17 @@ export default function ContactsPage() {
 
       {/* Upload CSV Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-[600px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+            {/* Sticky Header */}
+            <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0 bg-white">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                   <FileUp size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-800 leading-none">Import CSV Audience</h2>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Bulk upload your contact database</p>
+                  <h2 className="text-xl font-black text-slate-800 tracking-tight">Bulk Import Contacts</h2>
+                  <p className="text-xs text-slate-400 font-medium">Upload your CSV or Excel database</p>
                 </div>
               </div>
               <button
@@ -772,8 +840,9 @@ export default function ContactsPage() {
               </button>
             </div>
 
-             <div className="p-8 space-y-6">
-              <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer relative group">
+            {/* Scrollable Content */}
+            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+              <div className="p-12 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer relative group bg-slate-50/50">
                 <input
                   type="file"
                   accept=".csv,.xlsx"
@@ -781,39 +850,57 @@ export default function ContactsPage() {
                   onChange={handleFileUpload}
                   disabled={submitting}
                 />
-                 {submitting ? (
-                  <Loader2 size={40} className="animate-spin text-primary" />
+                {submitting ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 size={40} className="animate-spin text-primary" />
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Processing...</p>
+                  </div>
                 ) : (
                   <>
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-primary transition-colors">
+                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-slate-300 group-hover:text-primary transition-all shadow-sm border border-slate-100">
                       <Download size={32} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-black text-slate-700">Click to upload or drag & drop</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Supports .CSV and .XLSX files</p>
+                      <p className="text-base font-bold text-slate-800">Click to upload or drag & drop</p>
+                      <p className="text-[11px] text-slate-400 font-medium mt-1">Supports CSV, XLSX up to 10MB</p>
                     </div>
                   </>
                 )}
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-3">
-                <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                  <Info size={14} className="text-indigo-600" />
-                  CSV Format Requirements
-                </h4>
-                <ul className="text-[10px] text-slate-500 font-bold uppercase tracking-widest space-y-2 list-disc ml-4">
-                  <li>Column 1: phoneNumber (required)</li>
-                  <li>Column 2: name (optional)</li>
-                  <li>Column 3: email (optional)</li>
-                  <li>Column 4: location (optional)</li>
-                </ul>
+              <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+                    <Info size={16} />
+                  </div>
+                  <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">
+                    Required CSV Format
+                  </h4>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'COLUMN 1', value: 'mobilenumber*', desc: 'Required' },
+                    { label: 'COLUMN 2', value: 'name*', desc: 'Required' },
+                    { label: 'COLUMN 3', value: 'consent*', desc: 'Required (true/false)' },
+                    { label: 'COLUMN 4', value: 'consent status*', desc: 'Required (verified/unverified)' },
+                    { label: 'COLUMN 5', value: 'consent source*', desc: 'Required' },
+                    { label: 'OPTIONAL', value: 'email / location', desc: 'Optional fields' }
+                  ].map((col, idx) => (
+                    <div key={idx} className={`bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm ${idx === 4 || idx === 5 ? 'col-span-1' : ''}`}>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-tight mb-1">{col.label}</p>
+                      <p className="text-xs font-black text-slate-800 mb-0.5">{col.value}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{col.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="p-8 border-t border-slate-50 flex items-center justify-center">
+            {/* Sticky Footer */}
+            <div className="p-8 border-t border-slate-50 flex items-center justify-end bg-slate-50/30 shrink-0">
               <button
                 onClick={() => setShowUploadModal(false)}
-                className="w-full py-4 bg-slate-50 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all"
+                className="px-8 py-3 bg-white text-slate-500 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
               >
                 Close Importer
               </button>

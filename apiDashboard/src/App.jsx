@@ -33,7 +33,7 @@ export default function App() {
     if (activePath === '/register') return <RegisterPage onNavigate={navigateTo} />;
     if (activePath === '/login') return <LoginPage onNavigate={navigateTo} />;
     if (activePath === '/forgot-password') return <ForgotPasswordPage onNavigate={navigateTo} />;
-    if (activePath === '/dashboard' || activePath === '/campaigns' || activePath === '/contacts' || activePath === '/messages' || activePath === '/history' || activePath === '/analytics' || activePath === '/templates' || activePath === '/automations' || activePath === '/setup' || activePath === '/billing' || activePath === '/settings' || activePath === '/groups') {
+    if (activePath === '/dashboard' || activePath === '/campaigns' || activePath === '/contacts' || activePath === '/messages' || activePath === '/history' || activePath === '/templates' || activePath === '/templates/create' || activePath === '/templates/view' || activePath === '/automations' || activePath === '/setup' || activePath === '/billing' || activePath === '/settings' || activePath === '/groups') {
         return <DashboardPage onNavigate={navigateTo} initialPath={activePath} />;
     }
 

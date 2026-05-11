@@ -8,11 +8,13 @@ import InboxPage from './InboxPage';
 import TemplatesPage from './TemplatesPage';
 import ContactsPage from './ContactsPage';
 import AutomationPage from './AutomationPage';
-import AnalyticsPage from './AnalyticsPage';
+
 import WhatsAppSetupPage from './WhatsAppSetupPage';
 import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
 import GroupsPage from './GroupsPage';
+import CreateTemplatePage from './CreateTemplatePage';
+import TemplateDetailsPage from './TemplateDetailsPage';
 
 const tabPathMap = {
   'Dashboard': '/dashboard',
@@ -20,13 +22,15 @@ const tabPathMap = {
   'Contacts': '/contacts',
   'Messages': '/messages',
   'Message History': '/history',
-  'Analytics': '/analytics',
+
   'Templates': '/templates',
   'Automations': '/automations',
   'WhatsApp Setup': '/setup',
   'Billing & Plan': '/billing',
   'Settings': '/settings',
-  'Groups': '/groups'
+  'Groups': '/groups',
+  'Create Template': '/templates/create',
+  'Template Details': '/templates/view'
 };
 
 const pathToTabMap = Object.fromEntries(
@@ -44,6 +48,10 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [businessData, setBusinessData] = useState(null);
+  const [selectedTemplateData, setSelectedTemplateData] = useState(() => {
+    const saved = localStorage.getItem('selectedTemplateData');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const fetchUserData = async () => {
     try {
@@ -78,10 +86,15 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   useEffect(() => {
     localStorage.setItem('activeDashboardTab', activeTab);
 
-    // Update URL if it doesn't match the current tab
+    const normalize = p => p?.replace(/\/+$/, '') || '';
     const targetPath = tabPathMap[activeTab];
-    if (targetPath && window.location.pathname !== targetPath) {
-      onNavigate(targetPath);
+    const currentPath = normalize(window.location.pathname);
+    
+    console.log('[Dashboard] Tab Sync:', { activeTab, targetPath, currentPath });
+
+    if (targetPath && normalize(targetPath) !== currentPath) {
+      console.log('[Dashboard] Navigating to:', targetPath);
+      // onNavigate(targetPath);
     }
   }, [activeTab, onNavigate]);
 
@@ -124,13 +137,30 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           ) : activeTab === 'Message History' ? (
             <MessagesPage />
           ) : activeTab === 'Templates' ? (
-            <TemplatesPage />
+            <TemplatesPage onNavigate={(path, data) => {
+              if (path === '/templates/view') {
+                localStorage.setItem('selectedTemplateData', JSON.stringify(data));
+                setSelectedTemplateData(data);
+                setActiveTab('Template Details');
+                onNavigate(path);
+              } else {
+                onNavigate(path);
+              }
+            }} />
+          ) : activeTab === 'Template Details' ? (
+            <TemplateDetailsPage 
+              template={selectedTemplateData} 
+              onBack={() => {
+                localStorage.removeItem('selectedTemplateData');
+                setSelectedTemplateData(null);
+                setActiveTab('Templates');
+                onNavigate('/templates');
+              }} 
+            />
           ) : activeTab === 'Contacts' ? (
-            <ContactsPage />
+            <ContactsPage onNavigate={onNavigate} setActiveTab={setActiveTab} />
           ) : activeTab === 'Automations' ? (
             <AutomationPage />
-          ) : activeTab === 'Analytics' ? (
-            <AnalyticsPage />
           ) : activeTab === 'WhatsApp Setup' ? (
             <WhatsAppSetupPage userData={userData} onUpdate={fetchUserData} />
           ) : activeTab === 'Billing & Plan' ? (
@@ -143,6 +173,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
             />
           ) : activeTab === 'Groups' ? (
             <GroupsPage />
+          ) : activeTab === 'Create Template' ? (
+            <CreateTemplatePage onNavigate={onNavigate} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center bg-white h-full">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">

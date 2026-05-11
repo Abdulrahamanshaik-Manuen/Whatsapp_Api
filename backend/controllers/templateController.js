@@ -1,4 +1,5 @@
 import fs from 'fs';
+import axios from 'axios';
 import Template from '../models/Template.js';
 import User from '../models/User.js';
 import * as whatsappService from '../services/whatsappService.js';
@@ -125,31 +126,18 @@ export const uploadSample = async (req, res) => {
         // 1. Upload to Cloudinary for persistent storage and preview
         const cloudinaryResult = await cloudinaryService.uploadToCloudinary(req.file.path);
         
-        if (!cloudinaryResult.success) {
-            return res.status(400).json({ error: "Cloudinary upload failed", details: cloudinaryResult.error });
+        // Clean up local file
+        if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
         }
 
-        // 2. Upload to Meta for template approval handle
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const metaResult = await whatsappService.uploadMediaSampleToMeta(
-            appId, 
-            accessToken, 
-            fileBuffer, 
-            req.file.originalname, 
-            req.file.mimetype
-        );
-
-        // Clean up local file
-        fs.unlinkSync(req.file.path);
-
-        if (metaResult.success) {
+        if (cloudinaryResult.success) {
             res.status(200).json({ 
-                handle: metaResult.handle,
-                message: "Sample uploaded successfully",
+                message: "Media uploaded for preview",
                 previewUrl: cloudinaryResult.url
             });
         } else {
-            res.status(400).json({ error: "Meta upload failed", details: metaResult.error });
+            res.status(400).json({ error: "Cloudinary upload failed", details: cloudinaryResult.error });
         }
     } catch (error) {
         console.error('Upload Sample Error:', error);
@@ -159,7 +147,7 @@ export const uploadSample = async (req, res) => {
 
 export const requestCustomTemplate = async (req, res) => {
     try {
-        const { name, category, language, content, headerType, headerText, footer, buttons, mediaHandle, directSubmit } = req.body;
+        const { name, category, language, content, headerType, headerText, footer, buttons, mediaHandle, previewUrl, directSubmit } = req.body;
         
         // Clean up name (Meta only allows lowercase and underscores)
         const cleanName = name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
@@ -168,13 +156,36 @@ export const requestCustomTemplate = async (req, res) => {
         const variableMatches = content.match(/\{\{(\d+)\}\}/g) || [];
         const uniqueVariables = [...new Set(variableMatches)];
 
+        let finalMediaHandle = mediaHandle;
+        const appId = process.env.APP_ID || process.env.WHATSAPP_APP_ID;
+        const access_token = process.env.ACCESSTOKEN;
+
+        // If direct submission to Meta and we have a media preview but no Meta handle yet
+        if (directSubmit && !finalMediaHandle && previewUrl && headerType !== 'NONE') {
+            try {
+                const response = await axios.get(previewUrl, { responseType: 'arraybuffer' });
+                const buffer = Buffer.from(response.data);
+                const fileName = `sample_${Date.now()}`;
+                const fileType = headerType === 'IMAGE' ? 'image/jpeg' : headerType === 'VIDEO' ? 'video/mp4' : 'application/pdf';
+                
+                const metaResult = await whatsappService.uploadMediaSampleToMeta(appId, access_token, buffer, fileName, fileType);
+                if (metaResult.success) {
+                    finalMediaHandle = metaResult.handle;
+                } else {
+                    console.error('Deferred Meta Upload Error:', metaResult.error);
+                }
+            } catch (err) {
+                console.error('Error fetching media for Meta upload:', err.message);
+            }
+        }
+
         const templateData = {
             name: cleanName,
             category: category.toLowerCase(),
             language: language || 'en_US',
             content,
             variables: uniqueVariables,
-            header: headerType !== 'NONE' ? { type: headerType, text: headerText, handle: mediaHandle } : null,
+            header: headerType !== 'NONE' ? { type: headerType, text: headerText, handle: finalMediaHandle, media_url: previewUrl } : null,
             footer: footer || null,
             buttons: buttons || [],
             created_by: req.user.user_id,
@@ -187,7 +198,6 @@ export const requestCustomTemplate = async (req, res) => {
 
         if (directSubmit) {
             const waba_id = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
-            const access_token = process.env.ACCESSTOKEN;
 
             if (!waba_id || !access_token) {
                 return res.status(400).json({ error: "System credentials missing for direct submission." });
@@ -208,9 +218,9 @@ export const requestCustomTemplate = async (req, res) => {
                 };
                 if (headerType === 'TEXT') {
                     header.text = headerText;
-                } else if (mediaHandle) {
+                } else if (finalMediaHandle) {
                     header.example = {
-                        header_handle: [mediaHandle]
+                        header_handle: [finalMediaHandle]
                     };
                 }
                 components.push(header);

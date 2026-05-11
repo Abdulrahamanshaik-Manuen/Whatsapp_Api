@@ -15,10 +15,11 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
     { name: 'Messages', icon: MessageSquare, path: '/messages' },
     { name: 'Message History', icon: Clock, path: '/history' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
+    { name: 'Create Template', icon: Zap, path: '/templates/create', hidden: true },
     { name: 'Contacts', icon: Users, path: '/contacts' },
     { name: 'Groups', icon: FolderOpen, path: '/groups' },
     { name: 'Automations', icon: Bot, path: '/automations' },
-    { name: 'Analytics', icon: BarChart2, path: '/analytics' },
+
     { name: 'WhatsApp Setup', icon: Smartphone, path: '/setup' },
     { name: 'Billing & Plan', icon: CreditCard, path: '/billing' },
     { name: 'Settings', icon: Settings, path: '/settings' },
@@ -50,7 +51,7 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
       </div>
 
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar no-scrollbar">
-        {navItems.map((item) => (
+        {navItems.filter(item => !item.hidden).map((item) => (
           <button
             key={item.name}
             onClick={() => {

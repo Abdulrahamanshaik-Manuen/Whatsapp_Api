@@ -51,24 +51,29 @@ export const parseFile = async (input, originalName) => {
 
 export const validateContactData = (contact) => {
     // Map various possible header names to internal keys
-    const phoneNumber = contact.phoneNumber || contact['Phone Number'] || contact.phone || contact.Phone || contact.Mobile;
-    const firstName = contact.firstName || contact['First Name'] || contact.fname;
-    const lastName = contact.lastName || contact['Last Name'] || contact.lname;
-    const name = contact.name || contact.Name || (firstName ? `${firstName} ${lastName || ''}`.trim() : 'Unknown Contact');
+    const phoneNumber = contact.mobilenumber || contact.phoneNumber || contact['Phone Number'] || contact.phone || contact.Mobile;
+    const name = contact.name || contact.Name || contact['Full Name'];
     
     const consent = contact.consent || contact['User Provided Consent'] || contact.Consent;
-    const consent_source = contact.consent_source || contact['Consent Source'] || contact.source;
+    const consent_status = contact.consent_status || contact['consent status'] || contact['Consent Status'];
+    const consent_source = contact.consent_source || contact['consent source'] || contact['Consent Source'] || contact.source;
+    
     const email = contact.email || contact.Email || contact.Mail;
     const location = contact.location || contact.Location || contact.City;
 
-    if (!phoneNumber) return { valid: false, error: 'Phone number is required' };
+    // Strict requirements as requested by user
+    if (!phoneNumber) return { valid: false, error: 'Mobile number is required' };
+    if (!name) return { valid: false, error: 'Name is required' };
+    if (consent === undefined) return { valid: false, error: 'Consent is required (true/false)' };
+    if (!consent_status) return { valid: false, error: 'Consent Status is required (verified/unverified)' };
+    if (!consent_source) return { valid: false, error: 'Consent Source is required' };
 
     // Ensure phoneNumber is a string (Excel might parse it as a number)
     const phoneStr = String(phoneNumber);
-
-    // Basic phone number cleaning
     const cleanPhone = phoneStr.replace(/\D/g, '');
     if (cleanPhone.length < 10) return { valid: false, error: 'Invalid phone number' };
+
+    const isConsentTrue = consent === 'true' || consent === true || String(consent).toLowerCase() === 'yes';
 
     return {
         valid: true,
@@ -77,10 +82,10 @@ export const validateContactData = (contact) => {
             email,
             location,
             phoneNumber: cleanPhone,
-            consent: consent === 'true' || consent === true || String(consent).toLowerCase() === 'yes',
-            consent_status: (consent === 'true' || consent === true || String(consent).toLowerCase() === 'yes') ? 'verified' : 'unverified',
-            consent_source: String(consent_source || 'csv').toLowerCase(),
-            consent_timestamp: (consent === 'true' || consent === true || String(consent).toLowerCase() === 'yes') ? new Date() : null
+            consent: isConsentTrue,
+            consent_status: String(consent_status).toLowerCase() === 'verified' ? 'verified' : 'unverified',
+            consent_source: String(consent_source).toLowerCase(),
+            consent_timestamp: isConsentTrue ? new Date() : null
         }
     };
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
 import { 
   Search, 
@@ -72,7 +73,7 @@ const InboxPage = () => {
   const fetchMessages = async (contactId) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_BASE_URL}/messages/contact/${contactId}`, {
+      const res = await axios.get(`${API_BASE_URL}/messages/conversations/${contactId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(res.data);
@@ -188,9 +189,10 @@ const InboxPage = () => {
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {chat.lastMessage?.direction === 'outgoing' && <CheckCheck size={14} className="inline mr-1 text-blue-400" />}
-                          {chat.lastMessage?.body || chat.lastMessage?.template_name || 'No message'}
+                        <p className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
+                          {chat.lastMessage?.direction === 'outgoing' && <CheckCheck size={14} className="inline text-blue-400" />}
+                          {chat.lastMessage?.type === 'template' && <span className="bg-slate-100 text-slate-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter shrink-0">Template</span>}
+                          <span className="truncate">{chat.lastMessage?.body || chat.lastMessage?.template_name || 'No message'}</span>
                         </p>
                         {chat.unreadCount > 0 && (
                           <div className="bg-[#25D366] text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">
@@ -276,16 +278,22 @@ const InboxPage = () => {
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#F1F5F9]/30 custom-scrollbar">
                  {messages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}>
-                       <div className={`max-w-[70%] p-3.5 rounded-2xl shadow-sm relative group ${msg.direction === 'outgoing' ? 'bg-[#25D366] text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
-                          <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.body || msg.template_name}</p>
-                          <div className={`flex items-center gap-1 mt-1.5 justify-end ${msg.direction === 'outgoing' ? 'text-white/60' : 'text-slate-400'}`}>
-                             <span className="text-[9px] font-medium">{formatTime(msg.createdAt)}</span>
-                             {msg.direction === 'outgoing' && <CheckCheck size={12} />}
-                          </div>
-                       </div>
-                    </div>
-                 ))}
+                     <div key={i} className={`flex ${msg.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[70%] p-3.5 rounded-2xl shadow-sm relative group ${msg.direction === 'outgoing' ? 'bg-[#25D366] text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
+                           {msg.type === 'template' && (
+                             <div className={`flex items-center gap-1.5 mb-2 ${msg.direction === 'outgoing' ? 'text-white/60' : 'text-slate-400'}`}>
+                               <BookText size={10} />
+                               <span className="text-[8px] font-black uppercase tracking-[0.2em]">WhatsApp Template</span>
+                             </div>
+                           )}
+                           <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.body || msg.template_name}</p>
+                           <div className={`flex items-center gap-1 mt-1.5 justify-end ${msg.direction === 'outgoing' ? 'text-white/60' : 'text-slate-400'}`}>
+                              <span className="text-[9px] font-medium">{formatTime(msg.createdAt)}</span>
+                              {msg.direction === 'outgoing' && <CheckCheck size={12} />}
+                           </div>
+                        </div>
+                     </div>
+                  ))}
                  <div ref={chatEndRef} />
               </div>
 

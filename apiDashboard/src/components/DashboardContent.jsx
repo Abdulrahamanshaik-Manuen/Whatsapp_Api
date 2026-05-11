@@ -96,7 +96,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
             <h2 className="text-3xl font-black text-primary tracking-tight">Dashboard Overview</h2>
             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest opacity-60">Monitor your real-time performance and usage</p>
           </div>
-          
+
         </div>
 
         {/* Stats Row */}
@@ -262,7 +262,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                   <p className="text-[9px] md:text-[10px] text-slate-500 mt-0.5 truncate">ID: {connection.wabaId || '---'}</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => handleInternalNav('WhatsApp Setup', '/setup')}
                 className="w-full py-2.5 border border-slate-200 hover:border-primary hover:bg-primary/5 text-primary text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 group"
               >
@@ -312,7 +312,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                   </div>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => handleInternalNav('Billing & Plan', '/billing')}
                 className="w-full mt-4 py-2.5 text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/5 rounded-xl transition-colors"
               >
@@ -329,7 +329,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
           <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-6 flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-base md:text-lg font-black text-primary tracking-tight whitespace-nowrap">Recent Campaigns</h3>
-              <button 
+              <button
                 onClick={() => handleInternalNav('Campaigns', '/campaigns')}
                 className="text-secondary text-xs font-bold hover:underline transition-colors whitespace-nowrap ml-4"
               >
@@ -362,7 +362,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
           <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-6 flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-base md:text-lg font-black text-primary tracking-tight whitespace-nowrap">Top Templates</h3>
-              <button 
+              <button
                 onClick={() => handleInternalNav('Templates', '/templates')}
                 className="text-secondary text-xs font-bold hover:underline transition-colors whitespace-nowrap ml-4"
               >
@@ -409,7 +409,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
 function StatCard({ label, value, color, icon: Icon, isCurrency, onClick }) {
   const isSecondary = color === 'secondary';
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group"
     >
@@ -461,7 +461,7 @@ function CampaignItem({ name, type, date, status, sent, delivered, icon: Icon, i
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="flex items-center gap-3 group cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded-2xl transition-all border-b border-slate-50 last:border-0 pb-3"
     >
@@ -491,7 +491,7 @@ function CampaignItem({ name, type, date, status, sent, delivered, icon: Icon, i
 
 function TemplateItem({ name, type, usage, isActive, onClick }) {
   return (
-    <div 
+    <div
       onClick={onClick}
       className={`flex items-center justify-between group cursor-pointer p-4 rounded-2xl transition-all duration-300 ${isActive ? 'bg-primary/5 border border-primary/10' : 'hover:bg-slate-50/80 border border-transparent'}`}
     >
@@ -525,7 +525,7 @@ function TemplateItem({ name, type, usage, isActive, onClick }) {
 function ActionBtn({ label, icon: Icon, color, onClick }) {
   const isSecondary = color === 'secondary';
   return (
-    <button 
+    <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-2 p-3 md:p-4 bg-white border border-slate-100 rounded-xl md:rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group min-h-[100px] md:min-h-[110px]"
     >

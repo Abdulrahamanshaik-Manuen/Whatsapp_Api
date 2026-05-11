@@ -1,4 +1,5 @@
 import axios from 'axios';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Message from '../models/Message.js';
 import Contact from '../models/Contact.js';
@@ -14,7 +15,9 @@ const META_PRICING = {
 export const sendMessage = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { to, template_id, template_name, template_type, variable_values } = req.body;
+        let { to, template_id, template_name, template_type, variable_values } = req.body;
+
+        if (to) to = to.replace(/\D/g, '');
 
         if (!to || (!template_id && (!template_name || !template_type))) {
             return res.status(400).json({ error: "Missing required fields. Provide template_id or name/type." });
@@ -89,6 +92,14 @@ export const sendMessage = async (req, res) => {
             status = 'sent';
         }
 
+        // Construct preview body
+        let previewBody = template ? template.content : t_name;
+        if (template && variable_values && Array.isArray(variable_values)) {
+            variable_values.forEach((val, i) => {
+                previewBody = previewBody.replace(`{{${i + 1}}}`, val);
+            });
+        }
+
         // Save Message Log
         const messageLog = await Message.create({
             user_id: user._id,
@@ -96,6 +107,7 @@ export const sendMessage = async (req, res) => {
             template_id: template_id || null,
             template_name: t_name,
             template_type: t_type,
+            body: previewBody,
             variable_values: variable_values || [],
             meta_cost,
             platform_cost,
@@ -126,7 +138,11 @@ export const sendMessage = async (req, res) => {
 export const sendBulkMessages = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { to, template_id, template_name, template_type, variable_values } = req.body;
+        let { to, template_id, template_name, template_type, variable_values } = req.body;
+
+        if (to && Array.isArray(to)) {
+            to = to.map(p => p.replace(/\D/g, ''));
+        }
 
         if (!to || !Array.isArray(to) || to.length === 0 || (!template_id && (!template_name || !template_type))) {
             return res.status(400).json({ error: "Missing required fields. Provide phone numbers array and template." });
@@ -221,12 +237,21 @@ export const sendBulkMessages = async (req, res) => {
                 results.failed++;
             }
 
+            // Construct preview body
+            let previewBody = template ? template.content : t_name;
+            if (template && variable_values && Array.isArray(variable_values)) {
+                variable_values.forEach((val, i) => {
+                    previewBody = previewBody.replace(`{{${i + 1}}}`, val);
+                });
+            }
+
             results.logs.push({
                 user_id: user._id,
                 to: phone,
                 template_id: template_id || null,
                 template_name: t_name,
                 template_type: t_type,
+                body: previewBody,
                 variable_values: variable_values || [],
                 meta_cost,
                 platform_cost,
@@ -298,7 +323,7 @@ export const getMessages = async (req, res) => {
 
 export const getConversations = async (req, res) => {
     try {
-        const userId = req.user.user_id;
+        const userId = new mongoose.Types.ObjectId(req.user.user_id);
         
         // Group by 'to' and get the latest message for each
         const conversations = await Message.aggregate([
@@ -330,7 +355,7 @@ export const getConversations = async (req, res) => {
 
 export const getMessagesByContact = async (req, res) => {
     try {
-        const userId = req.user.user_id;
+        const userId = new mongoose.Types.ObjectId(req.user.user_id);
         const { phone } = req.params;
 
         const messages = await Message.find({
@@ -348,7 +373,9 @@ export const getMessagesByContact = async (req, res) => {
 export const sendReply = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { to, text } = req.body;
+        let { to, text } = req.body;
+
+        if (to) to = to.replace(/\D/g, '');
 
         if (!to || !text) {
             return res.status(400).json({ error: "Recipient and text are required" });
