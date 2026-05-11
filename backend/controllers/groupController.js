@@ -1,4 +1,5 @@
 import Group from '../models/Group.js';
+import Contact from '../models/Contact.js';
 import mongoose from 'mongoose';
 
 /**
@@ -17,12 +18,14 @@ export const createGroup = async (req, res) => {
             user_id,
             name,
             description,
-            contacts: contacts || []
+            contacts: contacts || [],
+            tags: req.body.tags || []
         });
 
         await group.save();
         res.status(201).json(group);
     } catch (error) {
+        console.error("Create Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -33,9 +36,11 @@ export const createGroup = async (req, res) => {
 export const getGroups = async (req, res) => {
     try {
         const user_id = req.user.user_id;
+        console.log("Fetching groups for user:", user_id);
         const groups = await Group.find({ user_id }).sort({ createdAt: -1 });
         res.json(groups);
     } catch (error) {
+        console.error("Get Groups Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -59,6 +64,7 @@ export const getGroupById = async (req, res) => {
 
         res.json(group);
     } catch (error) {
+        console.error("Get Group By ID Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -80,10 +86,12 @@ export const updateGroup = async (req, res) => {
         if (name) group.name = name;
         if (description !== undefined) group.description = description;
         if (contacts) group.contacts = contacts;
+        if (req.body.tags) group.tags = req.body.tags;
 
         await group.save();
         res.json(group);
     } catch (error) {
+        console.error("Update Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -103,6 +111,7 @@ export const deleteGroup = async (req, res) => {
 
         res.json({ message: 'Group deleted successfully' });
     } catch (error) {
+        console.error("Delete Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -131,6 +140,7 @@ export const addContactsToGroup = async (req, res) => {
 
         res.json(group);
     } catch (error) {
+        console.error("Add Contacts to Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -154,6 +164,78 @@ export const removeContactFromGroup = async (req, res) => {
 
         res.json(group);
     } catch (error) {
+        console.error("Remove Contact from Group Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Get full contact details for all members of a group
+ */
+export const getGroupContacts = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user_id = req.user.user_id;
+
+        const group = await Group.findOne({ _id: id, user_id });
+        if (!group) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+
+        // Fetch contacts from the Contact model matching the phone numbers in the group
+        const contacts = await Contact.find({ 
+            phoneNumber: { $in: group.contacts }
+        });
+
+        res.json(contacts);
+    } catch (error) {
+        console.error("Get Group Contacts Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Grant marketing consent to all members of a group
+ */
+export const grantGroupConsent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user_id = req.user.user_id;
+
+        const group = await Group.findOne({ _id: id, user_id });
+        if (!group) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+
+        if (!group.contacts || group.contacts.length === 0) {
+            return res.status(400).json({ error: 'Group has no contacts' });
+        }
+
+        // Use bulkWrite for efficiency
+        const bulkOps = group.contacts.map(phone => ({
+            updateOne: {
+                filter: { phoneNumber: phone },
+                update: { 
+                    $set: { 
+                        consent: true, 
+                        consent_status: 'verified', 
+                        consent_timestamp: new Date(),
+                        userId: user_id 
+                    } 
+                },
+                upsert: true
+            }
+        }));
+
+        const result = await Contact.bulkWrite(bulkOps);
+
+        res.json({ 
+            message: `Consent granted to ${group.contacts.length} members`,
+            modifiedCount: result.modifiedCount,
+            upsertedCount: result.upsertedCount
+        });
+    } catch (error) {
+        console.error("Grant Group Consent Error:", error);
         res.status(500).json({ error: error.message });
     }
 };

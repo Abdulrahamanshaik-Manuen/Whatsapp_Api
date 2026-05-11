@@ -38,6 +38,12 @@ export const handleWebhookEvent = async (req, res) => {
                 const status = statusUpdate.status;
 
                 const message = await Message.findOne({ meta_message_id });
+                console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
+                
+                if (status === 'failed') {
+                    console.error(`[Webhook] ❌ Delivery Failed! Reason:`, JSON.stringify(statusUpdate.errors || 'Unknown Meta Error', null, 2));
+                }
+
                 if (message) {
                     message.status = status;
                     await message.save();

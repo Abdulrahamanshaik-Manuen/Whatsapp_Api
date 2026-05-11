@@ -18,6 +18,10 @@ const groupSchema = new mongoose.Schema({
         type: String,
         trim: true
     }],
+    tags: [{
+        type: String,
+        trim: true
+    }],
     contactCount: {
         type: Number,
         default: 0
@@ -26,14 +30,28 @@ const groupSchema = new mongoose.Schema({
     timestamps: true 
 });
 
-// Update contact count before saving
-groupSchema.pre('save', function(next) {
-    if (this.contacts) {
+// Update contact count and normalize phone numbers before saving
+groupSchema.pre('save', function() {
+    if (this.contacts && Array.isArray(this.contacts)) {
+        // Normalize each phone number
+        this.contacts = this.contacts.map(phone => {
+            if (typeof phone !== 'string') return phone;
+            
+            // Remove all non-digits
+            let cleaned = phone.replace(/\D/g, '');
+            
+            // Handle 10-digit Indian numbers
+            if (cleaned.length === 10) {
+                cleaned = '91' + cleaned;
+            }
+            
+            return cleaned;
+        });
+
         // Deduplicate contacts
         this.contacts = [...new Set(this.contacts)];
         this.contactCount = this.contacts.length;
     }
-    next();
 });
 
 const Group = mongoose.model('Group', groupSchema);

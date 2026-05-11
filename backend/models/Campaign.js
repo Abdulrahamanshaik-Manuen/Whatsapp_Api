@@ -30,10 +30,13 @@ const campaignSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    status: {
-        type: String,
-        enum: ['pending', 'scheduled', 'running', 'completed', 'failed'],
-        default: 'pending'
+    header_image: { type: String, default: null },
+    failed_count: { type: Number, default: 0 },
+    last_error: { type: String, default: null },
+    status: { 
+        type: String, 
+        enum: ['scheduled', 'running', 'completed', 'paused', 'failed'], 
+        default: 'scheduled' 
     },
     scheduled_at: {
         type: Date
@@ -47,10 +50,6 @@ const campaignSchema = new mongoose.Schema({
         default: 0
     },
     read_count: {
-        type: Number,
-        default: 0
-    },
-    failed_count: {
         type: Number,
         default: 0
     },

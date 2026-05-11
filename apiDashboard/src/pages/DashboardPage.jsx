@@ -12,6 +12,7 @@ import AnalyticsPage from './AnalyticsPage';
 import WhatsAppSetupPage from './WhatsAppSetupPage';
 import BillingPage from './BillingPage';
 import SettingsPage from './SettingsPage';
+import GroupsPage from './GroupsPage';
 
 const tabPathMap = {
   'Dashboard': '/dashboard',
@@ -24,7 +25,8 @@ const tabPathMap = {
   'Automations': '/automations',
   'WhatsApp Setup': '/setup',
   'Billing & Plan': '/billing',
-  'Settings': '/settings'
+  'Settings': '/settings',
+  'Groups': '/groups'
 };
 
 const pathToTabMap = Object.fromEntries(
@@ -139,6 +141,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
               businessData={businessData}
               onUpdate={fetchUserData}
             />
+          ) : activeTab === 'Groups' ? (
+            <GroupsPage />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center bg-white h-full">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">

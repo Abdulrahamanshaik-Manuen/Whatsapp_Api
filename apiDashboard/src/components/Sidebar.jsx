@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Send, MessageSquare, LayoutTemplate,
   Users, Bot, BarChart2, Smartphone, Blocks, CreditCard,
   Settings, HelpCircle, Headphones, Crown, X, Zap, Menu,
-  Clock
+  Clock, FolderOpen
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, setIsOpen }) {
@@ -16,6 +16,7 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
     { name: 'Message History', icon: Clock, path: '/history' },
     { name: 'Templates', icon: LayoutTemplate, path: '/templates' },
     { name: 'Contacts', icon: Users, path: '/contacts' },
+    { name: 'Groups', icon: FolderOpen, path: '/groups' },
     { name: 'Automations', icon: Bot, path: '/automations' },
     { name: 'Analytics', icon: BarChart2, path: '/analytics' },
     { name: 'WhatsApp Setup', icon: Smartphone, path: '/setup' },

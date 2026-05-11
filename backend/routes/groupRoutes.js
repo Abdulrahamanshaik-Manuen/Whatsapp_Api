@@ -15,6 +15,8 @@ router.delete('/:id', groupController.deleteGroup);
 
 // Sub-routes for contact management within groups
 router.post('/:id/contacts', groupController.addContactsToGroup);
+router.get('/:id/contacts', groupController.getGroupContacts);
 router.delete('/:id/contacts', groupController.removeContactFromGroup);
+router.post('/:id/consent', groupController.grantGroupConsent);
 
 export default router;

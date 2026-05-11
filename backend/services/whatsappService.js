@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const META_API_URL = 'https://graph.facebook.com/v17.0';
+const META_API_URL = 'https://graph.facebook.com/v21.0';
 
 /**
  * Submit a template to Meta WhatsApp Cloud API
@@ -81,13 +81,16 @@ export const getTemplateStatusFromMeta = async (wabaId, accessToken, templateNam
 /**
  * Send a Template Message
  */
-export const sendTemplateMessage = async (phone_number_id, accessToken, to, templateName, languageCode = 'en_US', variables = []) => {
+export const sendTemplateMessage = async (phone_number_id, accessToken, to, templateName, languageCode = 'en_US', variables = [], headerImage = null) => {
     try {
         const url = `${META_API_URL}/${phone_number_id}/messages`;
         
+        // Ensure number has '+' prefix as seen in Meta Dashboard
+        const formattedTo = to.startsWith('+') ? to : `+${to}`;
+
         const body = {
             messaging_product: "whatsapp",
-            to,
+            to: formattedTo,
             type: "template",
             template: {
                 name: templateName,
@@ -96,6 +99,20 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
             }
         };
 
+        // Handle Image Header
+        if (headerImage) {
+            body.template.components.push({
+                type: 'header',
+                parameters: [
+                    {
+                        type: 'image',
+                        image: { link: headerImage }
+                    }
+                ]
+            });
+        }
+
+        // Handle Body Variables
         if (variables && variables.length > 0) {
             body.template.components.push({
                 type: 'body',
@@ -105,6 +122,13 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
                 }))
             });
         }
+
+        // If no components, remove the array to keep payload minimal
+        if (body.template.components.length === 0) {
+            delete body.template.components;
+        }
+
+        console.log(`[WhatsAppService] Sending to ${formattedTo} via ${META_API_URL}`);
 
         const response = await axios.post(url, body, {
             headers: {

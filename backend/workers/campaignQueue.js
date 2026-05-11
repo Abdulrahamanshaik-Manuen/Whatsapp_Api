@@ -11,11 +11,26 @@ dotenv.config();
 
 const redisUrl = process.env.REDIS_URI || 'redis://127.0.0.1:6379';
 
-// Initialize Bull Queue
-export const bulkMessageQueue = new Queue('bulkMessageQueue', redisUrl);
+// Initialize Bull Queue with TLS options if needed
+const queueOptions = {};
+if (redisUrl.startsWith('rediss://')) {
+    queueOptions.redis = {
+        tls: { rejectUnauthorized: false }
+    };
+}
+
+export const bulkMessageQueue = new Queue('bulkMessageQueue', redisUrl, queueOptions);
 
 bulkMessageQueue.on('error', (error) => {
     console.error('Bull Queue Redis Error:', error.message);
+});
+
+bulkMessageQueue.on('waiting', (jobId) => {
+    console.log(`Job ${jobId} is waiting...`);
+});
+
+bulkMessageQueue.on('active', (jobId) => {
+    console.log(`Job ${jobId} is now active...`);
 });
 
 const META_PRICING = {
@@ -26,7 +41,7 @@ const META_PRICING = {
 
 // Process jobs
 bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
-    const { to, template_id, template_name, template_type, variable_values, user_id, campaign_id } = job.data;
+    const { to, template_id, template_name, template_type, variable_values, user_id, campaign_id, header_image } = job.data;
     
     try {
         const user = await User.findById(user_id);
@@ -80,21 +95,59 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             }
         }
 
+        // Use tokens from .env if available, otherwise fallback to database
+        const phone_number_id = process.env.PHONE_NUMBER_ID || user.phone_number_id;
+        const accessToken = process.env.ACCESSTOKEN || user.access_token;
+
+        if (!phone_number_id || !accessToken) {
+            throw new Error('WhatsApp configuration missing (phone_number_id or access_token)');
+        }
+
+        // Handle Image Header Logic
+        let finalHeaderImage = header_image;
+        // If it's the interior_design template and no image provided, use a placeholder to avoid Meta error
+        // Using an ultra-reliable, small JPEG for Meta
+        if (!finalHeaderImage && template_name === 'interior_design') {
+            finalHeaderImage = 'https://picsum.photos/200/300.jpg'; 
+        }
+
         // Use whatsappService
-        const result = await whatsappService.sendTemplateMessage(
-            user.phone_number_id,
-            user.access_token,
+        console.log(`[Worker] Attempting to send template "${template_name}" to ${to} with image ${finalHeaderImage}...`);
+        let result = await whatsappService.sendTemplateMessage(
+            phone_number_id,
+            accessToken,
             to,
             template_name,
             'en_US',
-            resolvedVariables
+            resolvedVariables,
+            finalHeaderImage
         );
 
+        // Fallback to 'en' if 'en_US' fails (common Meta issue)
+        if (!result.success && result.error?.includes('language')) {
+            console.log(`[Worker] Retrying with language "en" for ${to}...`);
+            result = await whatsappService.sendTemplateMessage(
+                phone_number_id,
+                accessToken,
+                to,
+                template_name,
+                'en',
+                resolvedVariables,
+                finalHeaderImage
+            );
+        }
+
         if (result.success) {
+            console.log(`[Worker] ✅ Successfully sent to ${to}. Meta ID: ${result.data?.messages?.[0]?.id}`);
             meta_message_id = result.data?.messages?.[0]?.id;
             status = 'sent';
         } else {
+            console.error(`[Worker] ❌ Meta Rejection for ${to}:`, result.error);
             status = 'failed';
+            // Save the last error to the campaign for dashboard visibility
+            if (campaign_id) {
+                await Campaign.findByIdAndUpdate(campaign_id, { last_error: result.error });
+            }
             throw new Error(result.error);
         }
 
@@ -126,7 +179,12 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         // Update Campaign Sent Count
         if (campaign_id) {
-            await Campaign.findByIdAndUpdate(campaign_id, { $inc: { sent_count: 1 } });
+            const updatedCampaign = await Campaign.findByIdAndUpdate(
+                campaign_id, 
+                { $inc: { sent_count: 1 } },
+                { new: true }
+            );
+            console.log(`[Worker] Campaign ${campaign_id} updated. New Sent Count: ${updatedCampaign?.sent_count}`);
         }
 
         return { status: 'sent', to };
@@ -159,7 +217,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
  * Handle Campaign Launching (especially for scheduled ones)
  */
 bulkMessageQueue.process('launch-campaign', async (job) => {
-    const { campaign_id, finalContacts, template_id, template_name, template_type, variable_values, user_id } = job.data;
+    const { campaign_id, finalContacts, template_id, template_name, template_type, variable_values, user_id, header_image } = job.data;
     
     try {
         console.log(`Launching Campaign: ${campaign_id}`);
@@ -173,7 +231,6 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
             const contactVars = (typeof c === 'object' && c.variables) ? c.variables : [];
             
             // Merge variables: contact-specific ones override global ones if they are present
-            // Or usually, for Excel, contactVars is the complete list for {{1}}, {{2}}...
             const finalVars = contactVars.length > 0 ? contactVars : variable_values;
 
             return {
@@ -183,7 +240,8 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
                 template_type,
                 variable_values: finalVars,
                 user_id,
-                campaign_id
+                campaign_id,
+                header_image // Pass the header image to individual jobs
             };
         });
 
