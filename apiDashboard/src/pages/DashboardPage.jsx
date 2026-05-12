@@ -16,6 +16,7 @@ import GroupsPage from './GroupsPage';
 import CreateTemplatePage from './CreateTemplatePage';
 import TemplateDetailsPage from './TemplateDetailsPage';
 import CreateCampaignPage from './CreateCampaignPage';
+import AutomationBuilder from './AutomationBuilder';
 
 const tabPathMap = {
   'Dashboard': '/dashboard',
@@ -26,6 +27,7 @@ const tabPathMap = {
 
   'Templates': '/templates',
   'Automations': '/automations',
+  'Automation Builder': '/automations/builder',
   'WhatsApp Setup': '/setup',
   'Billing & Plan': '/billing',
   'Settings': '/settings',
@@ -52,6 +54,10 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   const [businessData, setBusinessData] = useState(null);
   const [selectedTemplateData, setSelectedTemplateData] = useState(() => {
     const saved = localStorage.getItem('selectedTemplateData');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [selectedAutomationData, setSelectedAutomationData] = useState(() => {
+    const saved = localStorage.getItem('selectedAutomationData');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -164,7 +170,29 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           ) : activeTab === 'Contacts' ? (
             <ContactsPage onNavigate={onNavigate} setActiveTab={setActiveTab} />
           ) : activeTab === 'Automations' ? (
-            <AutomationPage />
+            <AutomationPage onNavigate={(path, data) => {
+              if (path === '/automations/builder') {
+                if (data) {
+                  localStorage.setItem('selectedAutomationData', JSON.stringify(data));
+                  setSelectedAutomationData(data);
+                } else {
+                  localStorage.removeItem('selectedAutomationData');
+                  setSelectedAutomationData(null);
+                }
+                setActiveTab('Automation Builder');
+              }
+              onNavigate(path);
+            }} />
+          ) : activeTab === 'Automation Builder' ? (
+            <AutomationBuilder 
+              automation={selectedAutomationData}
+              onClose={() => {
+                localStorage.removeItem('selectedAutomationData');
+                setSelectedAutomationData(null);
+                setActiveTab('Automations');
+                onNavigate('/automations');
+              }} 
+            />
           ) : activeTab === 'WhatsApp Setup' ? (
             <WhatsAppSetupPage userData={userData} onUpdate={fetchUserData} />
           ) : activeTab === 'Billing & Plan' ? (

@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.4",
+    "@xyflow/react": "^12.10.2",
     "axios": "^1.16.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "recharts": "^3.8.1",
+    "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

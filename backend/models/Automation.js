@@ -1,72 +1,57 @@
 import mongoose from 'mongoose';
 
 const AutomationSchema = new mongoose.Schema({
-  user: {
+  clientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false
+    required: false // Link to the specific client using this automation
   },
-  isTemplate: {
-    type: Boolean,
-    default: false
-  },
-  category: {
-    type: String,
-    default: 'General'
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false // Admin who created it
   },
   name: {
     type: String,
     required: true,
     trim: true
   },
-  type: {
-    type: String,
-    enum: ['auto-reply', 'keyword', 'flow', 'drip'],
-    default: 'auto-reply'
-  },
-  trigger: {
-    event: {
-      type: String,
-      enum: ['incoming_message', 'keyword_match', 'first_interaction', 'tag_added'],
-      required: true
-    },
-    keywords: [String],
-    matchType: {
-      type: String,
-      enum: ['exact', 'contains'],
-      default: 'contains'
-    }
-  },
-  action: {
-    messageType: {
-      type: String,
-      enum: ['text', 'template', 'media'],
-      default: 'text'
-    },
-    content: String,
-    templateId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Template'
-    },
-    mediaUrl: String
-  },
+  description: String,
   status: {
     type: String,
     enum: ['active', 'paused', 'draft'],
     default: 'active'
   },
-  originalTemplateId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Automation'
+  // React Flow Structure
+  nodes: {
+    type: Array,
+    default: []
+  },
+  edges: {
+    type: Array,
+    default: []
   },
   metrics: {
-    sentCount: { type: Number, default: 0 },
+    totalExecutions: { type: Number, default: 0 },
+    successRate: { type: Number, default: 0 },
     lastTriggered: Date
+  },
+  version: {
+    type: Number,
+    default: 1
   },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+});
+
+AutomationSchema.pre('save', function() {
+  this.updatedAt = Date.now();
 });
 
 const Automation = mongoose.model('Automation', AutomationSchema);
