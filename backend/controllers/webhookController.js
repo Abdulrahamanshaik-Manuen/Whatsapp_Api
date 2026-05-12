@@ -100,16 +100,22 @@ export const handleWebhookEvent = async (req, res) => {
                         console.log(`User ${from} opted out. Consent revoked.`);
                     }
 
-                    await Message.create({
-                        user_id: user._id,
-                        to: from,
-                        direction: 'incoming',
-                        type: type,
-                        body: bodyText,
-                        status: 'delivered',
-                        meta_message_id
-                    });
-                    console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+                    // Idempotency check: Don't save if we already have this message
+                    const existingMsg = await Message.findOne({ meta_message_id });
+                    if (!existingMsg) {
+                        await Message.create({
+                            user_id: user._id,
+                            to: from,
+                            direction: 'incoming',
+                            type: type,
+                            body: bodyText,
+                            status: 'delivered',
+                            meta_message_id
+                        });
+                        console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+                    } else {
+                        console.log(`Skipped duplicate incoming message: ${meta_message_id}`);
+                    }
 
                     // Trigger Automation Engine
                     processAutomation(user._id, from, bodyText);

@@ -27,7 +27,6 @@ const contactSchema = new mongoose.Schema({
     joined: String,
     group: String
   },
-  // ✅ Consent Boolean
   consent: {
     type: Boolean,
     default: false

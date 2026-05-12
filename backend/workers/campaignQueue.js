@@ -189,43 +189,53 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         // Log success
         try {
-            // Fetch template content for preview
+            // Construct preview body (Rendered version)
             let previewBody = template_name;
-            if (template_id) {
-                try {
-                    const template = await Template.findById(template_id);
-                    if (template) {
-                        previewBody = template.content;
-                        if (resolvedVariables && Array.isArray(resolvedVariables)) {
-                            resolvedVariables.forEach((val, i) => {
-                                previewBody = previewBody.replace(`{{${i + 1}}}`, val);
-                            });
-                        }
+            try {
+                // Try to fetch the template by ID or Name to get the content
+                const templateDoc = template_id 
+                    ? await Template.findById(template_id) 
+                    : await Template.findOne({ name: template_name, user_id: new mongoose.Types.ObjectId(user_id) });
+
+                if (templateDoc) {
+                    previewBody = templateDoc.content;
+                    // Replace placeholders with actual variables
+                    if (resolvedVariables && Array.isArray(resolvedVariables)) {
+                        resolvedVariables.forEach((val, i) => {
+                            previewBody = previewBody.replace(`{{${i + 1}}}`, val);
+                        });
                     }
-                } catch (tempErr) {
-                    console.warn(`[Worker] Could not fetch template ${template_id} for preview:`, tempErr.message);
                 }
+            } catch (tempErr) {
+                console.warn(`[Worker] Could not fetch template for preview:`, tempErr.message);
             }
 
             const cleanTo = to.replace(/\D/g, '');
-            const logEntry = {
-                user_id: new mongoose.Types.ObjectId(user_id),
-                campaign_id: campaign_id ? new mongoose.Types.ObjectId(campaign_id) : null,
-                to: cleanTo,
-                template_id: template_id ? new mongoose.Types.ObjectId(template_id) : null,
-                template_name,
-                template_type,
-                body: previewBody,
-                variable_values: variable_values || [],
-                status,
-                meta_cost,
-                platform_cost,
-                total_cost,
-                meta_message_id
-            };
             
-            const newMessage = await Message.create(logEntry);
-            console.log(`[Worker] 📝 Log created for ${cleanTo}. ID: ${newMessage._id}`);
+            // Idempotency check: Don't create duplicate logs if the job retries
+            const existingLog = await Message.findOne({ meta_message_id });
+            if (!existingLog) {
+                const logEntry = {
+                    user_id: new mongoose.Types.ObjectId(user_id),
+                    campaign_id: campaign_id ? new mongoose.Types.ObjectId(campaign_id) : null,
+                    to: cleanTo,
+                    template_id: template_id ? new mongoose.Types.ObjectId(template_id) : null,
+                    template_name,
+                    template_type,
+                    body: previewBody,
+                    variable_values: variable_values || [],
+                    status,
+                    meta_cost,
+                    platform_cost,
+                    total_cost,
+                    meta_message_id
+                };
+                
+                const newMessage = await Message.create(logEntry);
+                console.log(`[Worker] 📝 Log created for ${cleanTo}. ID: ${newMessage._id}`);
+            } else {
+                console.log(`[Worker] ⏭️ Skipping duplicate log for ${cleanTo} (Meta ID: ${meta_message_id})`);
+            }
 
         } catch (logErr) {
             console.error(`[Worker] ❌ Failed to create message log for ${to}:`, logErr.message);

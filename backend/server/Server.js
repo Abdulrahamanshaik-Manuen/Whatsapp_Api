@@ -37,6 +37,7 @@ app.use(express.json({
   }
 }));
 app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Pass io to request object so controllers can use it
 app.use((req, res, next) => {

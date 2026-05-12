@@ -120,7 +120,7 @@ export const uploadContacts = async (req, res) => {
         }
 
         console.log("Uploading file to Cloudinary:", req.file.originalname);
-        
+
         // 1. Save to Cloudinary
         const cloudinaryResult = await uploadToCloudinary(req.file.path);
         const cloudinaryUrl = cloudinaryResult.secure_url;
@@ -128,7 +128,7 @@ export const uploadContacts = async (req, res) => {
 
         // 2. Fetch from Cloudinary (as per user requirement "fetched from cloudinary")
         console.log("Fetching file back from Cloudinary...");
-        const response = await axios.get(cloudinaryUrl, { 
+        const response = await axios.get(cloudinaryUrl, {
             responseType: 'arraybuffer',
             timeout: 10000 // 10s timeout
         });
@@ -236,8 +236,8 @@ export const searchContacts = async (req, res) => {
 export const getGroups = async (req, res) => {
     try {
         const groups = await Contact.distinct('details.group');
-        const tags = await Contact.distinct('tags');
-        const allGroups = [...new Set([...groups, ...tags])].filter(Boolean);
+        // Filter out null/empty values and anything that looks like a tag (starts with #)
+        const allGroups = groups.filter(g => g && !g.startsWith('#'));
         res.status(200).json(allGroups);
     } catch (error) {
         res.status(500).json({ error: error.message });

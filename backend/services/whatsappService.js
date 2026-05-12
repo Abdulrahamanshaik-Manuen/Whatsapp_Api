@@ -181,6 +181,55 @@ export const sendTextMessage = async (phone_number_id, accessToken, to, text) =>
     }
 };
 
+/**
+ * Send a Media Message (Image, Document, Video, Audio)
+ */
+export const sendMediaMessage = async (phone_number_id, accessToken, to, type, mediaUrl, caption = '') => {
+    try {
+        const url = `${META_API_URL}/${phone_number_id}/messages`;
+        
+        // Ensure number has '+' prefix
+        const formattedTo = to.startsWith('+') ? to : `+${to}`;
+
+        const body = {
+            messaging_product: "whatsapp",
+            to: formattedTo,
+            type: type,
+            [type]: {
+                link: mediaUrl
+            }
+        };
+
+        // Add caption only if it's an image or video
+        if (caption && (type === 'image' || type === 'video')) {
+            body[type].caption = caption;
+        }
+        
+        // Documents can have a filename
+        if (type === 'document' && caption) {
+            body[type].filename = caption;
+        }
+
+        const response = await axios.post(url, body, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        console.error(`Meta Send ${type} Message Error:`, error.response?.data || error.message);
+        return {
+            success: false,
+            error: error.response?.data?.error?.message || error.message
+        };
+    }
+};
+
 export const getAllTemplatesFromMeta = async (wabaId, accessToken) => {
     try {
         const url = `${META_API_URL}/${wabaId}/message_templates`;

@@ -2,6 +2,7 @@ import Campaign from '../models/Campaign.js';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 import Template from '../models/Template.js';
+import Contact from '../models/Contact.js';
 import mongoose from 'mongoose';
 
 export const getDashboardStats = async (req, res) => {
@@ -12,7 +13,7 @@ export const getDashboardStats = async (req, res) => {
 
         // 1. KPI Stats
         const stats = await Message.aggregate([
-            { $match: { user_id: userObjectId } },
+            { $match: { user_id: userObjectId, status: { $ne: 'failed' } } },
             {
                 $group: {
                     _id: null,
@@ -27,6 +28,7 @@ export const getDashboardStats = async (req, res) => {
 
         const kpi = stats[0] || { totalSent: 0, totalDelivered: 0, totalCost: 0 };
         const user = await User.findById(userId);
+        const contactCount = await Contact.countDocuments({ user_id: userObjectId });
 
         // 2. Performance Chart
         const performance = [];
@@ -44,7 +46,7 @@ export const getDashboardStats = async (req, res) => {
                 endOfHour.setMinutes(59, 59, 999);
 
                 const hourStats = await Message.aggregate([
-                    { $match: { user_id: userObjectId, created_at: { $gte: startOfHour, $lte: endOfHour } } },
+                    { $match: { user_id: userObjectId, status: { $ne: 'failed' }, created_at: { $gte: startOfHour, $lte: endOfHour } } },
                     { $group: { _id: null, sent: { $sum: 1 }, delivered: { $sum: { $cond: [{ $in: ['$status', ['delivered', 'read']] }, 1, 0] } } } }
                 ]);
                 const s = hourStats[0] || { sent: 0, delivered: 0 };
@@ -63,7 +65,7 @@ export const getDashboardStats = async (req, res) => {
                 endOfDay.setHours(23, 59, 59, 999);
 
                 const dayStats = await Message.aggregate([
-                    { $match: { user_id: userObjectId, created_at: { $gte: startOfDay, $lte: endOfDay } } },
+                    { $match: { user_id: userObjectId, status: { $ne: 'failed' }, created_at: { $gte: startOfDay, $lte: endOfDay } } },
                     { $group: { _id: null, sent: { $sum: 1 }, delivered: { $sum: { $cond: [{ $in: ['$status', ['delivered', 'read']] }, 1, 0] } } } }
                 ]);
                 const s = dayStats[0] || { sent: 0, delivered: 0 };
@@ -78,7 +80,7 @@ export const getDashboardStats = async (req, res) => {
 
         // 4. Top Templates
         const topTemplates = await Message.aggregate([
-            { $match: { user_id: userObjectId, template_name: { $ne: null } } },
+            { $match: { user_id: userObjectId, template_name: { $ne: null }, status: { $ne: 'failed' } } },
             {
                 $group: {
                     _id: "$template_name",
@@ -98,7 +100,7 @@ export const getDashboardStats = async (req, res) => {
                 delivered: kpi.totalDelivered,
                 deliveryRate: kpi.totalSent > 0 ? ((kpi.totalDelivered / kpi.totalSent) * 100).toFixed(1) + '%' : '0%',
                 totalSpend: '₹' + kpi.totalCost.toFixed(2),
-                activeContacts: user.messages_used // Placeholder or fetch actual contact count
+                activeContacts: contactCount
             },
             performance,
             recentCampaigns,

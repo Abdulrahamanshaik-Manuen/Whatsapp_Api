@@ -92,12 +92,20 @@ export const sendMessage = async (req, res) => {
             status = 'sent';
         }
 
-        // Construct preview body
-        let previewBody = template ? template.content : t_name;
-        if (template && variable_values && Array.isArray(variable_values)) {
-            variable_values.forEach((val, i) => {
-                previewBody = previewBody.replace(`{{${i + 1}}}`, val);
-            });
+        // Construct preview body (Rendered version)
+        let previewBody = t_name;
+        try {
+            const templateDoc = template || await Template.findOne({ name: t_name, user_id: userId });
+            if (templateDoc) {
+                previewBody = templateDoc.content;
+                if (variable_values && Array.isArray(variable_values)) {
+                    variable_values.forEach((val, i) => {
+                        previewBody = previewBody.replace(`{{${i + 1}}}`, val);
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("Failed to construct preview body:", err.message);
         }
 
         // Save Message Log
@@ -237,12 +245,20 @@ export const sendBulkMessages = async (req, res) => {
                 results.failed++;
             }
 
-            // Construct preview body
-            let previewBody = template ? template.content : t_name;
-            if (template && variable_values && Array.isArray(variable_values)) {
-                variable_values.forEach((val, i) => {
-                    previewBody = previewBody.replace(`{{${i + 1}}}`, val);
-                });
+            // Construct preview body (Rendered version)
+            let previewBody = t_name;
+            try {
+                const templateDoc = template || await Template.findOne({ name: t_name, user_id: userId });
+                if (templateDoc) {
+                    previewBody = templateDoc.content;
+                    if (variable_values && Array.isArray(variable_values)) {
+                        variable_values.forEach((val, i) => {
+                            previewBody = previewBody.replace(`{{${i + 1}}}`, val);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to construct bulk preview body:", err.message);
             }
 
             results.logs.push({
@@ -332,7 +348,7 @@ export const getConversations = async (req, res) => {
             { $group: {
                 _id: "$to",
                 lastMessage: { $first: "$$ROOT" },
-                unreadCount: { $sum: { $cond: [{ $eq: ["$direction", "incoming"] }, 1, 0] } }
+                unreadCount: { $sum: { $cond: [{ $and: [{ $eq: ["$direction", "incoming"] }, { $ne: ["$status", "read"] }] }, 1, 0] } }
             }},
             {
                 $lookup: {
@@ -373,12 +389,13 @@ export const getMessagesByContact = async (req, res) => {
 export const sendReply = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        let { to, text } = req.body;
+        let { to, text, type, mediaUrl } = req.body;
+        if (!type) type = 'text';
 
         if (to) to = to.replace(/\D/g, '');
 
-        if (!to || !text) {
-            return res.status(400).json({ error: "Recipient and text are required" });
+        if (!to || (!text && !mediaUrl)) {
+            return res.status(400).json({ error: "Recipient and content are required" });
         }
 
         const user = await User.findById(userId);
@@ -386,20 +403,32 @@ export const sendReply = async (req, res) => {
             return res.status(403).json({ error: "WhatsApp not connected" });
         }
 
-        const result = await whatsappService.sendTextMessage(
-            user.phone_number_id,
-            user.access_token,
-            to,
-            text
-        );
+        let result;
+        if (type === 'text') {
+            result = await whatsappService.sendTextMessage(
+                user.phone_number_id,
+                user.access_token,
+                to,
+                text
+            );
+        } else {
+            result = await whatsappService.sendMediaMessage(
+                user.phone_number_id,
+                user.access_token,
+                to,
+                type,
+                mediaUrl,
+                text // caption
+            );
+        }
 
         if (result.success) {
             const messageLog = await Message.create({
                 user_id: user._id,
                 to,
                 direction: 'outgoing',
-                type: 'text',
-                body: text,
+                type: type,
+                body: text || `[${type}]`,
                 status: 'sent',
                 meta_message_id: result.data?.messages?.[0]?.id
             });
