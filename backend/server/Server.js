@@ -1,6 +1,15 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load env vars explicitly from backend/.env at the very beginning
+dotenv.config({ path: path.join(__dirname, '../.env'), override: true });
+
 import express from 'express';
 // Restart Trigger v1.2
-import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from '../config/db.js';
 
@@ -8,15 +17,6 @@ import http from 'http';
 import { Server } from 'socket.io';
 import routes from '../routes/Routes.js';
 import '../workers/campaignQueue.js';
-
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load env vars explicitly from backend/.env
-dotenv.config({ path: path.join(__dirname, '../.env'), override: true });
 
 // Connect to database
 connectDB();
@@ -69,3 +69,11 @@ server.listen(PORT, () => {
 });
 
 
+// Restart Trigger v1.3
+// Restart Trigger v1.4
+// Restart Trigger v1.5
+// Restart Trigger v1.6
+// Restart Trigger v1.7
+// Restart Trigger v1.8
+// Restart Trigger v1.9
+// Restart Trigger v2.0

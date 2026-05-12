@@ -33,27 +33,39 @@ export const handleWebhookEvent = async (req, res) => {
 
             // Handle Status Updates (sent, delivered, read, failed)
             if (value?.statuses) {
-                const statusUpdate = value.statuses[0];
-                const meta_message_id = statusUpdate.id;
-                const status = statusUpdate.status;
+                const statusUpdates = value.statuses || [];
+                for (const statusUpdate of statusUpdates) {
+                    const { status, id: meta_message_id, recipient_id } = statusUpdate;
+                    
+                    // CATCH-ALL LOG: See everything Meta sends
+                    console.log(`[Webhook] Incoming Status: "${status}" for Meta ID: ${meta_message_id} to ${recipient_id}`);
 
-                const message = await Message.findOne({ meta_message_id });
-                console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
-                
-                if (status === 'failed') {
-                    console.error(`[Webhook] ❌ Delivery Failed! Reason:`, JSON.stringify(statusUpdate.errors || 'Unknown Meta Error', null, 2));
-                }
+                    const message = await Message.findOne({ meta_message_id });
+                    console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
+                    
+                    if (status === 'failed') {
+                        console.error(`[Webhook] ❌ Delivery Failed! Reason:`, JSON.stringify(statusUpdate.errors || 'Unknown Meta Error', null, 2));
+                    }
 
-                if (message) {
-                    message.status = status;
-                    await message.save();
+                    // Only update if the status has actually changed to avoid double-counting
+                    if (message && message.status !== status) {
+                        const oldStatus = message.status;
+                        message.status = status;
+                        await message.save();
 
-                    // Update Campaign analytics if linked
-                    if (message.campaign_id) {
-                        const incField = `${status}_count`;
-                        const update = { $inc: { [incField]: 1 } };
-
-                        await Campaign.findByIdAndUpdate(message.campaign_id, update);
+                        // Update Campaign analytics if linked
+                        if (message.campaign_id) {
+                            const incField = `${status}_count`;
+                            
+                            // Security check: ensure the field exists in our Campaign model
+                            const campaign = await Campaign.findById(message.campaign_id);
+                            if (campaign && campaign[incField] !== undefined) {
+                                await Campaign.findByIdAndUpdate(message.campaign_id, {
+                                    $inc: { [incField]: 1 }
+                                });
+                                console.log(`[Webhook] Incremented ${incField} for Campaign ${message.campaign_id}`);
+                            }
+                        }
                     }
                 }
             }

@@ -60,10 +60,17 @@ const resolveContacts = async (contacts, group_ids, userId, template_type, rich_
 
         const validPhones = new Set(validContacts.map(c => c.phoneNumber));
         
-        // Note: For Excel uploads, we might want to bypass consent if they are transactionals
-        // But for now, let's keep it strict or allow 'utility' templates to bypass
+        // EXCEL BYPASS: If the contact came from a rich_contact (Excel), we trust the user's upload.
+        // We only filter for marketing if they are NOT rich contacts.
         if (template_type === 'marketing') {
-            finalContacts = finalContacts.filter(c => validPhones.has(c.phone));
+            const richPhones = new Set((rich_contacts || []).map(rc => typeof rc === 'object' ? rc.phone : rc));
+            
+            finalContacts = finalContacts.filter(c => {
+                // If it's in the Excel upload, let it pass.
+                if (richPhones.has(c.phone)) return true;
+                // Otherwise, check for database consent.
+                return validPhones.has(c.phone);
+            });
         }
     }
 

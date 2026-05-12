@@ -118,7 +118,7 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
                 type: 'body',
                 parameters: variables.map(val => ({
                     type: 'text',
-                    text: String(val)
+                    text: (val === null || val === undefined || val === '') ? ' ' : String(val)
                 }))
             });
         }

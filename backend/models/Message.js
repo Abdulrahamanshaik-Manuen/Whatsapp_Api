@@ -55,7 +55,7 @@ const messageSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['sent', 'delivered', 'read', 'failed'],
+        enum: ['pending', 'sent', 'delivered', 'read', 'failed'],
         required: true
     },
     meta_message_id: {

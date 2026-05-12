@@ -99,7 +99,15 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         // Use tokens from .env if available, otherwise fallback to database
         const phone_number_id = process.env.PHONE_NUMBER_ID || user.phone_number_id;
-        const accessToken = process.env.ACCESSTOKEN || user.access_token;
+
+        // DEBUG: Identifying which token source is being used
+        const envToken = process.env.ACCESSTOKEN || process.env.META_ACCESS_TOKEN;
+        const dbToken = user.access_token;
+        
+        const accessToken = envToken || dbToken; // Prioritize the one in .env since we just verified it
+        
+        console.log(`[Worker] Using Token Source: ${envToken ? '.env' : 'Database'}`);
+        console.log(`[Worker] Token Snippet: ${accessToken ? accessToken.substring(0, 15) + '...' : 'MISSING'}`);
 
         if (!phone_number_id || !accessToken) {
             throw new Error('WhatsApp configuration missing (phone_number_id or access_token)');
@@ -107,10 +115,22 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         // Handle Image Header Logic
         let finalHeaderImage = header_image;
-        // If it's the interior_design template and no image provided, use a placeholder to avoid Meta error
-        // Using an ultra-reliable, small JPEG for Meta
-        if (!finalHeaderImage && template_name === 'interior_design') {
-            finalHeaderImage = 'https://picsum.photos/200/300.jpg'; 
+
+        // If no image provided in job, try to fetch from the Template database entry
+        if (!finalHeaderImage) {
+            try {
+                const templateDoc = await Template.findOne({ name: template_name });
+                if (templateDoc && templateDoc.header && templateDoc.header.media_url && !templateDoc.header.media_url.includes('scontent.whatsapp.net')) {
+                    finalHeaderImage = templateDoc.header.media_url;
+                    console.log(`[Worker] Using database-saved image for ${template_name}: ${finalHeaderImage}`);
+                } else if (template_name === 'interior_design') {
+                    // Fallback to the recovered permanent Cloudinary link for this specific template
+                    finalHeaderImage = 'https://res.cloudinary.com/dcsfxv6g1/image/upload/v1778567550/whatsapp_templates/interior_design_approved.jpg';
+                    console.log(`[Worker] Using permanent Cloudinary link for interior_design`);
+                }
+            } catch (err) {
+                console.warn(`[Worker] Failed to fetch template media for ${template_name}:`, err.message);
+            }
         }
 
         // Use whatsappService
@@ -140,9 +160,23 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
         }
 
         if (result.success) {
-            console.log(`[Worker] ✅ Successfully sent to ${to}. Meta ID: ${result.data?.messages?.[0]?.id}`);
+            console.log(`[Worker] ✅ Successfully handed to Meta for ${to}. Meta ID: ${result.data?.messages?.[0]?.id}`);
             meta_message_id = result.data?.messages?.[0]?.id;
-            status = 'sent';
+            status = 'pending'; // Set to pending, webhook will update to 'sent' and increment count
+
+            // ONLY update User Usage if Meta accepted the message
+            try {
+                await User.findByIdAndUpdate(user_id, {
+                    $inc: {
+                        messages_used: 1,
+                        meta_cost_total: meta_cost,
+                        platform_cost_total: platform_cost,
+                        total_cost: total_cost
+                    }
+                });
+            } catch (usageErr) {
+                console.error(`[Worker] Failed to update usage for ${user_id}:`, usageErr.message);
+            }
         } else {
             console.error(`[Worker] ❌ Meta Rejection for ${to}:`, result.error);
             status = 'failed';
@@ -193,27 +227,14 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             const newMessage = await Message.create(logEntry);
             console.log(`[Worker] 📝 Log created for ${cleanTo}. ID: ${newMessage._id}`);
 
-            // Update User Usage safely
-            await User.findByIdAndUpdate(user_id, {
-                $inc: {
-                    messages_used: 1,
-                    meta_cost_total: meta_cost,
-                    platform_cost_total: platform_cost,
-                    total_cost: total_cost
-                }
-            });
         } catch (logErr) {
             console.error(`[Worker] ❌ Failed to create message log for ${to}:`, logErr.message);
         }
 
-        // Update Campaign Sent Count
+        // Update Campaign stats - We now rely on the WEBHOOK to increment sent_count 
+        // to avoid double-counting (Worker API Success + Meta Sent Webhook).
         if (campaign_id) {
-            const updatedCampaign = await Campaign.findByIdAndUpdate(
-                campaign_id, 
-                { $inc: { sent_count: 1 } },
-                { new: true }
-            );
-            console.log(`[Worker] Campaign ${campaign_id} updated. New Sent Count: ${updatedCampaign?.sent_count}`);
+            console.log(`[Worker] Campaign ${campaign_id} message handed to Meta. Waiting for webhook confirmation.`);
         }
 
         return { status: 'sent', to };
