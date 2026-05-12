@@ -92,7 +92,7 @@ export default function MessagesPage() {
         {/* Title Row */}
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Message History</h2>
+            <h1 className="text-3xl font-black text-primary tracking-tight">Message History</h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Audit and track your broadcast delivery performance</p>
           </div>
           <button

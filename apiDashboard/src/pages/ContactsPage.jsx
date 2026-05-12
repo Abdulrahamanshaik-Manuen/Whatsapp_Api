@@ -276,12 +276,10 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-              <div className="w-2 h-10 bg-primary rounded-full hidden md:block" />
+            <h1 className="text-3xl font-black text-primary tracking-tight flex items-center gap-3">
               Contacts
             </h1>
-            <p className="text-slate-500 font-medium text-sm flex items-center gap-2 ml-1">
-              <Users size={16} className="text-secondary" />
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">
               Manage and organize your WhatsApp audience database
             </p>
           </div>

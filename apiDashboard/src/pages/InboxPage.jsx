@@ -25,7 +25,8 @@ import {
   BookText,
   Plus,
   Camera,
-  Sparkles
+  Sparkles,
+  ChevronLeft
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -116,10 +117,24 @@ const InboxPage = () => {
   };
 
   return (
-    <div className="flex-1 flex min-h-0 h-full bg-[#F8FAFC] overflow-hidden py-5 pr-5 pl-1 gap-5 font-['Inter',_sans-serif]">
+    <div className="flex-1 overflow-y-auto bg-[#F8FAFC] custom-scrollbar">
       
-      {/* Column 1: iPhone Mockup */}
-      <div className="hidden xl:flex w-[350px] shrink-0 items-center justify-center min-h-0">
+      {/* Standardized Page Header */}
+      <div className="px-8 lg:px-12 pt-10 pb-4">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-primary tracking-tight">Messages</h1>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
+              Real-time customer conversation center
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex min-h-[600px] h-[calc(100vh-180px)] px-8 lg:px-12 pb-8 gap-5 font-['Inter',_sans-serif]">
+      
+      {/* Column 1: iPhone Mockup (Mobile View) */}
+      <div className="flex w-[310px] shrink-0 items-center justify-start min-h-0">
         <div className="relative w-[290px] h-[580px] bg-[#1a1a1a] rounded-[2.8rem] p-2 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] border-[3px] border-[#333] shrink-0">
           <div className="w-full h-full bg-white rounded-[2.3rem] overflow-hidden flex flex-col relative pt-4">
 
@@ -212,7 +227,7 @@ const InboxPage = () => {
         </div>
       </div>
 
-      {/* Column 2: Center Workspace */}
+      {/* Column 2: Center Workspace (Main Chat Area) */}
       <div className="flex-1 flex flex-col bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative">
          {!activeChat ? (
            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
@@ -235,7 +250,7 @@ const InboxPage = () => {
                  </div>
                  <h2 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight">Select a conversation</h2>
                  <p className="text-sm text-slate-400 font-medium max-w-xs mb-10 leading-relaxed">
-                   Choose a chat from the list on the left to view and manage your customer conversations.
+                    Choose a chat from the list on the left to view and manage your customer conversations.
                  </p>
                  <div className="flex items-center gap-12">
                     <div className="flex flex-col items-center gap-2.5">
@@ -341,7 +356,7 @@ const InboxPage = () => {
       </div>
 
       {/* Column 3: CRM Insights Sidebar */}
-      <div className="hidden xl:flex w-[300px] flex-col bg-white rounded-[2rem] py-6 px-5 shadow-sm border border-slate-100 overflow-y-auto custom-scrollbar">
+      <div className="hidden xl:flex w-[260px] flex-col bg-white rounded-[2rem] py-6 px-4 shadow-sm border border-slate-100 overflow-y-auto custom-scrollbar">
          {!activeChat ? (
            <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
               <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mb-4">
@@ -460,6 +475,7 @@ const InboxPage = () => {
          )}
       </div>
     </div>
+  </div>
   );
 };
 

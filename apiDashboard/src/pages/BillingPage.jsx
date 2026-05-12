@@ -47,8 +47,8 @@ export default function BillingPage({ userData }) {
         <div className="px-8 lg:px-12 pt-12 pb-6 shrink-0">
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="space-y-1">
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                Billing & <span className="text-primary">Subscriptions</span>
+              <h1 className="text-3xl font-black text-primary tracking-tight">
+                Billing & Subscriptions
               </h1>
               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
                 Manage your enterprise plan and monitor resource consumption

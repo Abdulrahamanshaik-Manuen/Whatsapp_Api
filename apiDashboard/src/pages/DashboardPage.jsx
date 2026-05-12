@@ -15,6 +15,7 @@ import SettingsPage from './SettingsPage';
 import GroupsPage from './GroupsPage';
 import CreateTemplatePage from './CreateTemplatePage';
 import TemplateDetailsPage from './TemplateDetailsPage';
+import CreateCampaignPage from './CreateCampaignPage';
 
 const tabPathMap = {
   'Dashboard': '/dashboard',
@@ -30,7 +31,8 @@ const tabPathMap = {
   'Settings': '/settings',
   'Groups': '/groups',
   'Create Template': '/templates/create',
-  'Template Details': '/templates/view'
+  'Template Details': '/templates/view',
+  'Create Campaign': '/campaigns/create'
 };
 
 const pathToTabMap = Object.fromEntries(
@@ -132,6 +134,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
             />
           ) : activeTab === 'Campaigns' ? (
             <CampaignsPage onNavigate={onNavigate} />
+          ) : activeTab === 'Create Campaign' ? (
+            <CreateCampaignPage onNavigate={onNavigate} />
           ) : activeTab === 'Messages' ? (
             <InboxPage />
           ) : activeTab === 'Message History' ? (
