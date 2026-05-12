@@ -271,7 +271,7 @@ export default function GroupsPage() {
       <div className="px-8 pt-8 pb-2">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+            <h1 className="text-3xl font-black text-primary tracking-tight">
               Groups
             </h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Create, organize and manage contact groups effortlessly</p>

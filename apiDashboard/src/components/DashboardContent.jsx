@@ -56,16 +56,6 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
     fetchData();
   }, [onNavigate, selectedFilter]);
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-slate-500 font-bold tracking-tight">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   const stats = data?.kpi || {
     messagesSent: '0',
@@ -94,7 +84,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-1">
             <h2 className="text-3xl font-black text-primary tracking-tight">Dashboard Overview</h2>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest opacity-60">Monitor your real-time performance and usage</p>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Monitor your real-time performance and usage</p>
           </div>
 
         </div>
