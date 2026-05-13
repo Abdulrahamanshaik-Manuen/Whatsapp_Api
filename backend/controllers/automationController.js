@@ -6,12 +6,17 @@ import Automation from '../models/Automation.js';
  */
 export const getAutomations = async (req, res) => {
   try {
-    const automations = await Automation.find({ 
-      $or: [
-        { clientId: req.user._id }, 
-        { createdBy: req.user._id }
-      ]
-    }).sort({ createdAt: -1 });
+    let query = {};
+    if (req.user.role !== 'admin') {
+      query = { 
+        $or: [
+          { clientId: req.user.user_id }, 
+          { createdBy: req.user.user_id }
+        ]
+      };
+    }
+
+    const automations = await Automation.find(query).sort({ createdAt: -1 });
     
     res.json(automations);
   } catch (error) {
@@ -32,8 +37,8 @@ export const createAutomation = async (req, res) => {
       description,
       nodes: nodes || [],
       edges: edges || [],
-      createdBy: req.user._id,
-      clientId: req.user.role === 'client' ? req.user._id : null
+      createdBy: req.user.user_id,
+      clientId: req.user.role === 'client' ? req.user.user_id : null
     });
     
     res.status(201).json(automation);

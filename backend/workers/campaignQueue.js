@@ -36,9 +36,9 @@ bulkMessageQueue.on('active', (jobId) => {
 });
 
 const META_PRICING = {
-    marketing: 1.0,
-    utility: 0.25,
-    authentication: 0.15
+    marketing: 0.8631,
+    utility: 0.1150,
+    authentication: 0.1150
 };
 
 // Process jobs

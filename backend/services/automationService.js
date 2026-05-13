@@ -12,40 +12,24 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
     try {
         console.log(`[Automation] Processing message for ${fromNumber}: "${messageText}" (UserID: ${userId})`);
         
-        // 1. Check for active conversation state
-        let state = await AutomationState.findOne({ phoneNumber: fromNumber, userId });
-
-        if (state) {
-            console.log(`[Automation] Found existing state for ${fromNumber}. Resuming flow...`);
-            const automation = await Automation.findById(state.automationId);
-            if (automation && automation.status === 'active') {
-                return await executeWorkflow(automation, state, messageText);
-            } else {
-                console.log(`[Automation] Workflow ${state.automationId} is no longer active. Deleting state.`);
-                await AutomationState.findByIdAndDelete(state._id);
-            }
-        }
-
-        // 2. Search for Triggers in active automations
+        // 1. Search for Triggers first - This allows "Restart" keywords like 'hello' to reset the flow
         const automations = await Automation.find({ 
             $or: [{ clientId: userId }, { createdBy: userId }], 
             status: 'active' 
         });
 
-        console.log(`[Automation] Found ${automations.length} active automations for this user.`);
-
         for (const auto of automations) {
             const triggerNode = auto.nodes.find(n => n.type === 'triggerNode');
-            if (!triggerNode) {
-                console.log(`[Automation] Workflow "${auto.name}" has no trigger node.`);
-                continue;
-            }
+            if (!triggerNode) continue;
 
             const isMatched = checkTriggerMatch(triggerNode, messageText);
             if (isMatched) {
-                console.log(`[Automation] Match found! Triggering "${auto.name}" for ${fromNumber}`);
+                console.log(`[Automation] Trigger match found for "${messageText}". Starting fresh flow...`);
                 
-                // Create new state
+                // Clear any existing stuck state for this user/number
+                await AutomationState.deleteMany({ phoneNumber: fromNumber, userId });
+
+                // Create new state starting at the trigger
                 const newState = await AutomationState.create({
                     phoneNumber: fromNumber,
                     userId,
@@ -57,7 +41,21 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
                 return await executeWorkflow(auto, newState, messageText);
             }
         }
-        console.log(`[Automation] No matching triggers found for "${messageText}"`);
+
+        // 2. If no trigger matched, check if we are in the middle of an existing conversation
+        let state = await AutomationState.findOne({ phoneNumber: fromNumber, userId });
+
+        if (state) {
+            console.log(`[Automation] Resuming existing flow for ${fromNumber}...`);
+            const automation = await Automation.findById(state.automationId);
+            if (automation && automation.status === 'active') {
+                return await executeWorkflow(automation, state, messageText);
+            } else {
+                await AutomationState.findByIdAndDelete(state._id);
+            }
+        }
+
+        console.log(`[Automation] No matching triggers or active flows for "${messageText}"`);
     } catch (err) {
         console.error("[Automation Engine Error]:", err);
     }

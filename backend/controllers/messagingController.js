@@ -7,9 +7,9 @@ import Template from '../models/Template.js';
 import * as whatsappService from '../services/whatsappService.js';
 
 const META_PRICING = {
-    marketing: 1.0,
-    utility: 0.25,
-    authentication: 0.15
+    marketing: 0.8631,
+    utility: 0.1150,
+    authentication: 0.1150
 };
 
 export const sendMessage = async (req, res) => {
