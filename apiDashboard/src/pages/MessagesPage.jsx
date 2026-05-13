@@ -42,6 +42,7 @@ export default function MessagesPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  const [stats, setStats] = useState({ total: 0, delivered: 0, read: 0, failed: 0 });
 
   useEffect(() => {
     fetchMessages();
@@ -51,14 +52,15 @@ export default function MessagesPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      // Note: Backend getMessages already handles search, we can add status filter if needed or filter client-side
-      const response = await fetch(`${API_BASE_URL}/messages?page=${page}&search=${searchQuery}`, {
+      const statusParam = statusFilter !== 'All' ? `&status=${statusFilter.toLowerCase()}` : '';
+      const response = await fetch(`${API_BASE_URL}/messages?page=${page}&limit=10&search=${searchQuery}${statusParam}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
       if (response.ok) {
         setMessages(data.messages);
         setPagination(data.pagination);
+        setStats(data.stats);
       }
     } catch (err) {
       console.error("Failed to fetch messages:", err);
@@ -77,12 +79,6 @@ export default function MessagesPage() {
     }
   };
 
-  const stats = {
-    total: pagination.total,
-    delivered: messages.filter(m => m.status === 'delivered').length, // This is just for the current page, ideally backend provides totals
-    read: messages.filter(m => m.status === 'read').length,
-    failed: messages.filter(m => m.status === 'failed').length
-  };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
@@ -180,10 +176,10 @@ export default function MessagesPage() {
                       <tr key={msg._id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-primary/5 text-primary flex items-center justify-center text-[10px] font-black">
-                              {msg.to?.slice(-2)}
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-100 text-slate-400 flex items-center justify-center shadow-sm">
+                              <Users size={16} className="text-slate-400" />
                             </div>
-                            <span className="text-xs font-black text-slate-700 tracking-tight">{msg.to}</span>
+                            <span className="text-xs font-black text-slate-700 tracking-tight">+{msg.to}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -202,8 +198,8 @@ export default function MessagesPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                            <div className="flex flex-col items-end">
-                              <span className="text-[10px] font-black text-slate-700">{new Date(msg.createdAt).toLocaleDateString()}</span>
-                              <span className="text-[9px] font-bold text-slate-400">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-[10px] font-black text-slate-700">{new Date(msg.created_at || msg.createdAt).toLocaleDateString()}</span>
+                              <span className="text-[9px] font-bold text-slate-400">{new Date(msg.created_at || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                            </div>
                         </td>
                         <td className="px-6 py-4 text-center">

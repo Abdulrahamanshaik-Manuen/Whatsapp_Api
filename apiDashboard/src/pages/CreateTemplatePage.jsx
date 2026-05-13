@@ -120,54 +120,45 @@ export default function CreateTemplatePage({ onNavigate }) {
    };
 
    return (
-      <div className="flex-1 overflow-y-auto bg-slate-50/50 no-scrollbar pb-16 animate-in fade-in zoom-in-95 duration-700 relative font-display">
-         <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#25D366]/10 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/10 rounded-full blur-[120px]"></div>
-         </div>
-
-         <div className="max-w-[1300px] mx-auto px-6 py-8 relative z-10">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-               <div className="space-y-3">
-                  <button
-                     onClick={() => onNavigate('/templates')}
-                     className="group flex items-center gap-2.5 text-slate-400 font-bold text-[9px] uppercase tracking-[0.2em] hover:text-[#25D366] transition-all"
-                  >
-                     <div className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-[#25D366]/30 group-hover:bg-[#25D366]/5 transition-all">
-                        <ChevronRight size={12} className="rotate-180" />
-                     </div>
-                     Return to Library
-                  </button>
-                  <div>
-                     <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-1">Create Template</h2>
-                     <div className="flex items-center gap-2.5">
-                        <span className="w-1.5 h-1.5 bg-[#25D366] rounded-full animate-pulse"></span>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Approval takes approx. 2 days</p>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="flex items-center gap-3">
-                  <button
-                     onClick={() => handleCreateSubmit(false)}
-                     disabled={loading || !newTemplate.name || !newTemplate.content}
-                     className="px-6 py-3.5 bg-white border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 disabled:opacity-40"
-                  >
-                     Submit to Admin
-                  </button>
-                  <button
-                     onClick={() => handleCreateSubmit(true)}
-                     disabled={loading || !newTemplate.name || !newTemplate.content}
-                     className="group flex items-center gap-3 px-8 py-3.5 bg-[#0F172A] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
-                  >
-                     {loading ? <RefreshCcw size={16} className="animate-spin text-[#25D366]" /> : <Zap size={16} className="text-[#25D366] group-hover:animate-pulse" />}
-                     Submit to Meta
-                  </button>
-               </div>
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10 relative z-10">
+        
+        <div className="max-w-[1300px] mx-auto relative z-10">
+          {/* Title Row */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 mb-1">
+                 <button
+                    onClick={() => onNavigate('/templates')}
+                    className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm"
+                 >
+                    <ChevronRight size={18} className="rotate-180" />
+                 </button>
+                 <h1 className="text-3xl font-black text-primary tracking-tight">Create Template</h1>
+              </div>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and request approval for new Meta WhatsApp templates</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-               <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center gap-3">
+               <button
+                  onClick={() => handleCreateSubmit(false)}
+                  disabled={loading || !newTemplate.name || !newTemplate.content}
+                  className="px-6 py-3.5 bg-white border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 disabled:opacity-40"
+               >
+                  Submit to Admin
+               </button>
+               <button
+                  onClick={() => handleCreateSubmit(true)}
+                  disabled={loading || !newTemplate.name || !newTemplate.content}
+                  className="group flex items-center gap-3 px-8 py-3.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+               >
+                  {loading ? <RefreshCcw size={16} className="animate-spin text-[#25D366]" /> : <Zap size={16} className="text-[#25D366] group-hover:animate-pulse" />}
+                  Submit to Meta
+               </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+             <div className="lg:col-span-8 space-y-6">
                   <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-8 space-y-8">
                      <div className="space-y-6">
                         <div className="flex items-center gap-3">
@@ -368,6 +359,6 @@ export default function CreateTemplatePage({ onNavigate }) {
                </div>
             </div>
          </div>
-      </div>
+      </main>
    );
 }

@@ -63,6 +63,11 @@ const messageSchema = new mongoose.Schema({
         unique: true,
         sparse: true
     },
+    pricing: {
+        billable: { type: Boolean },
+        category: { type: String },
+        pricing_model: { type: String }
+    },
     created_at: {
         type: Date,
         default: Date.now

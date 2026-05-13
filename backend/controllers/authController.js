@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Otp from '../models/Otp.js';
 import BusinessProfile from '../models/BusinessProfile.js';
+import Contact from '../models/Contact.js';
 import mongoose from 'mongoose';
 import * as otpService from '../services/otpService.js';
 import * as smsService from '../services/smsService.js';
@@ -97,7 +98,7 @@ export const register = async (req, res) => {
         res.status(201).json({ 
             message: "User registered successfully", 
             token,
-            user: { id: user._id, name: user.name, phone: user.phone, email: f.email } 
+            user: { id: user._id, name: user.name, phone: user.phone } 
         });
     } catch (err) {
         console.error("Registration Error:", err);
@@ -213,13 +214,31 @@ export const resetPassword = async (req, res) => {
 
 export const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.user_id).select('-password');
-        if (!user) return res.status(404).json({ error: "User not found" });
+        console.log("getMe called for user_id:", req.user?.user_id);
+        const user = await User.findById(req.user.user_id).select('-password').populate('planId');
+        if (!user) {
+            console.log("User not found in DB");
+            return res.status(404).json({ error: "User not found" });
+        }
 
+        console.log("Fetching business profile...");
         const business = await BusinessProfile.findOne({ user_id: user._id });
         
-        res.json({ user, business });
+        console.log("Counting contacts...");
+        // Count contacts for Audience Reach
+        const contactCount = await Contact.countDocuments({ userId: user._id.toString() });
+
+        console.log("Preparing response stats...");
+        // Add calculated stats to user object
+        const userObj = user.toObject();
+        userObj.contacts_count = contactCount;
+        userObj.platform_status = user.whatsapp_connected ? 'Optimal' : 'Disconnected';
+        userObj.platform_uptime = '99.9%';
+
+        console.log("getMe successful");
+        res.json({ user: userObj, business });
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch user data" });
+        console.error("getMe Error Detailed:", err);
+        res.status(500).json({ error: "Failed to fetch user data", message: err.message });
     }
 };

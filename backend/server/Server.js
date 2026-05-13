@@ -37,6 +37,7 @@ app.use(express.json({
   }
 }));
 app.use(cors());
+app.use('/api', routes);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Pass io to request object so controllers can use it
@@ -49,7 +50,6 @@ import { oauthCallback } from '../controllers/whatsappController.js';
 
 // Routes
 app.get('/api/whatsapp/callback', oauthCallback);
-app.use('/api', routes);
 
 // Basic route
 app.get('/', (req, res) => {
@@ -68,13 +68,3 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
-
-
-// Restart Trigger v1.3
-// Restart Trigger v1.4
-// Restart Trigger v1.5
-// Restart Trigger v1.6
-// Restart Trigger v1.7
-// Restart Trigger v1.8
-// Restart Trigger v1.9
-// Restart Trigger v2.0

@@ -23,6 +23,7 @@ export const verifyWebhook = (req, res) => {
 };
 
 export const handleWebhookEvent = async (req, res) => {
+    console.log('[Webhook] Received Request Body:', JSON.stringify(req.body, null, 2));
     const body = req.body;
 
     if (body.object === 'whatsapp_business_account') {
@@ -41,6 +42,18 @@ export const handleWebhookEvent = async (req, res) => {
                     console.log(`[Webhook] Incoming Status: "${status}" for Meta ID: ${meta_message_id} to ${recipient_id}`);
 
                     const message = await Message.findOne({ meta_message_id });
+                    
+                    // Capture Pricing Info if provided by Meta
+                    if (statusUpdate.pricing) {
+                        const { billable, category, pricing_model } = statusUpdate.pricing;
+                        if (message) {
+                            message.pricing = { billable, category, pricing_model };
+                            // If it's a Marketing/Auth message, we'll store the cost we set earlier or update it
+                            // For now, just ensuring the data exists
+                            console.log(`[Webhook] Pricing Info for ${meta_message_id}: ${category} (${billable ? 'Billable' : 'Free'})`);
+                        }
+                    }
+
                     console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
                     
                     if (status === 'failed') {
@@ -90,14 +103,32 @@ export const handleWebhookEvent = async (req, res) => {
                 const user = await User.findOne({ phone_number_id });
 
                 if (user) {
+                    const now = new Date();
+                    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                    const cleanFrom = from.replace(/\D/g, '');
+
+                    // Update/Create Contact and Reset 24-hour window
+                    await Contact.findOneAndUpdate(
+                        { phoneNumber: cleanFrom, userId: user._id },
+                        { 
+                            last_customer_message_at: now,
+                            window_expires_at: expiresAt,
+                            customer_service_window_active: true,
+                            phoneNumber: cleanFrom,
+                            userId: user._id
+                        },
+                        { upsert: true, returnDocument: 'after' }
+                    );
+
                     // Check for Opt-Out Keywords (e.g., STOP, UNSUBSCRIBE)
                     const upperText = bodyText.trim().toUpperCase();
                     if (['STOP', 'UNSUBSCRIBE', 'OPT OUT'].includes(upperText)) {
                         await Contact.findOneAndUpdate(
-                            { phoneNumber: from, userId: user._id },
-                            { consent: false, consent_timestamp: new Date() }
+                            { phoneNumber: cleanFrom, userId: user._id },
+                            { consent: false, consent_timestamp: now, customer_service_window_active: false },
+                            { returnDocument: 'after' }
                         );
-                        console.log(`User ${from} opted out. Consent revoked.`);
+                        console.log(`User ${cleanFrom} opted out. Consent revoked.`);
                     }
 
                     // Idempotency check: Don't save if we already have this message
@@ -105,20 +136,20 @@ export const handleWebhookEvent = async (req, res) => {
                     if (!existingMsg) {
                         await Message.create({
                             user_id: user._id,
-                            to: from,
+                            to: cleanFrom,
                             direction: 'incoming',
                             type: type,
                             body: bodyText,
                             status: 'delivered',
                             meta_message_id
                         });
-                        console.log(`Saved incoming message/button from ${from}: ${bodyText}`);
+                        console.log(`Saved incoming message/button from ${cleanFrom}: ${bodyText}`);
                     } else {
                         console.log(`Skipped duplicate incoming message: ${meta_message_id}`);
                     }
 
                     // Trigger Automation Engine
-                    processAutomation(user._id, from, bodyText);
+                    processAutomation(user._id, cleanFrom, bodyText);
                 }
             }
 
@@ -130,12 +161,13 @@ export const handleWebhookEvent = async (req, res) => {
                 if (['approved', 'rejected'].includes(status)) {
                     await Template.findOneAndUpdate(
                         { name: message_template_name },
-                        {
-                            status: status,
-                            meta_template_id: message_template_id,
-                            meta_rejection_reason: reason || null
-                        }
-                    );
+                            {
+                                status: status,
+                                meta_template_id: message_template_id,
+                                meta_rejection_reason: reason || null
+                            },
+                            { returnDocument: 'after' }
+                        );
                     console.log(`Template "${message_template_name}" status updated to: ${status}`);
                 }
             }

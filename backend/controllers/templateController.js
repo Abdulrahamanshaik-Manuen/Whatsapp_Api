@@ -31,6 +31,7 @@ export const createTemplate = async (req, res) => {
 export const updateTemplate = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user.user_id;
         const updates = req.body;
 
         // If content changes, reset status to draft/pending
@@ -38,8 +39,8 @@ export const updateTemplate = async (req, res) => {
             updates.status = 'draft';
         }
 
-        const template = await Template.findByIdAndUpdate(id, updates, { new: true });
-        if (!template) return res.status(404).json({ error: "Template not found" });
+        const template = await Template.findOneAndUpdate({ _id: id, created_by: userId }, updates, { returnDocument: 'after' });
+        if (!template) return res.status(404).json({ error: "Template not found or unauthorized" });
 
         res.status(200).json({ message: "Template updated successfully", template });
     } catch (error) {
@@ -50,8 +51,9 @@ export const updateTemplate = async (req, res) => {
 export const deleteTemplate = async (req, res) => {
     try {
         const { id } = req.params;
-        const template = await Template.findByIdAndDelete(id);
-        if (!template) return res.status(404).json({ error: "Template not found" });
+        const userId = req.user.user_id;
+        const template = await Template.findOneAndDelete({ _id: id, created_by: userId });
+        if (!template) return res.status(404).json({ error: "Template not found or unauthorized" });
 
         res.status(200).json({ message: "Template deleted successfully" });
     } catch (error) {
@@ -71,13 +73,14 @@ export const getAdminTemplates = async (req, res) => {
 export const submitToMeta = async (req, res) => {
     try {
         const { id } = req.params;
-        const template = await Template.findById(id);
-        if (!template) return res.status(404).json({ error: "Template not found" });
+        const userId = req.user.user_id;
+        const template = await Template.findOne({ _id: id, created_by: userId });
+        if (!template) return res.status(404).json({ error: "Template not found or unauthorized" });
 
         // Admin needs their WABA details (assuming admin is a user with these details)
-        const admin = await User.findById(req.user.user_id);
+        const admin = await User.findById(userId);
         if (!admin.waba_id || !admin.access_token) {
-            return res.status(400).json({ error: "Admin WhatsApp credentials missing. Please set up WABA ID and Access Token in profile." });
+            return res.status(400).json({ error: "WhatsApp credentials missing. Please set up WABA ID and Access Token in profile." });
         }
 
         const result = await whatsappService.submitTemplateToMeta(admin.waba_id, admin.access_token, {
@@ -104,7 +107,7 @@ export const submitToMeta = async (req, res) => {
 
 export const getClientTemplates = async (req, res) => {
     try {
-        // Clients only see approved templates
+        // Clients can see all approved templates in the system
         const templates = await Template.find({ status: 'approved' });
         res.status(200).json(templates);
     } catch (error) {
@@ -276,8 +279,9 @@ export const requestCustomTemplate = async (req, res) => {
 export const syncTemplateStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const template = await Template.findById(id);
-        if (!template) return res.status(404).json({ error: "Template not found" });
+        const userId = req.user.user_id;
+        const template = await Template.findOne({ _id: id, created_by: userId });
+        if (!template) return res.status(404).json({ error: "Template not found or unauthorized" });
 
         if (template.status !== 'pending_meta_approval') {
             return res.status(400).json({ error: "Only pending templates can be synced" });

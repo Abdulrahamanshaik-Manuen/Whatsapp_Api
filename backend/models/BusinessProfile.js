@@ -42,6 +42,23 @@ const businessProfileSchema = new mongoose.Schema({
     logo_url: {
         type: String
     },
+    // Bank Details
+    bank_name: {
+        type: String,
+        trim: true
+    },
+    account_number: {
+        type: String,
+        trim: true
+    },
+    ifsc_code: {
+        type: String,
+        trim: true
+    },
+    account_holder_name: {
+        type: String,
+        trim: true
+    },
     created_at: {
         type: Date,
         default: Date.now

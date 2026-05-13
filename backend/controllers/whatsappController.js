@@ -128,7 +128,7 @@ export const oauthCallback = async (req, res) => {
             phone_number_id: phoneNumberId,
             access_token: accessToken,
             whatsapp_connected: true
-        }, { new: true });
+        }, { returnDocument: 'after' });
 
         console.log("9. Database Update Success! Connected:", updatedUser?.whatsapp_connected);
 
@@ -180,7 +180,7 @@ export const saveSettings = async (req, res) => {
                 access_token,
                 whatsapp_connected: !!(phone_number_id && access_token)
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
         res.json({ message: "Settings saved successfully", user });
     } catch (err) {

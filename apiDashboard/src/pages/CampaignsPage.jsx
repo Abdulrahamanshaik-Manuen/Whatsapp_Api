@@ -113,15 +113,14 @@ export default function CampaignsPage({ onNavigate }) {
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all"
               />
             </div>
-            
+
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               {['All', 'Running', 'Completed', 'Scheduled', 'Failed'].map(status => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                    statusFilter === status ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                  }`}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${statusFilter === status ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    }`}
                 >
                   {status}
                 </button>

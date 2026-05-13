@@ -124,6 +124,7 @@ export default function DashboardPage({ onNavigate, initialPath }) {
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         onNavigate={onNavigate}
+        userData={userData}
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
@@ -168,7 +169,7 @@ export default function DashboardPage({ onNavigate, initialPath }) {
               }} 
             />
           ) : activeTab === 'Contacts' ? (
-            <ContactsPage onNavigate={onNavigate} setActiveTab={setActiveTab} />
+            <ContactsPage onNavigate={onNavigate} setActiveTab={setActiveTab} userData={userData} />
           ) : activeTab === 'Automations' ? (
             <AutomationPage onNavigate={(path, data) => {
               if (path === '/automations/builder') {

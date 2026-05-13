@@ -6,22 +6,25 @@ const MessagePreview = ({ template }) => {
   if (!template) return null;
   
   const bodyText = template.body?.text || template.content || '';
-  const footerText = template.footer?.text || '';
+  const footerText = template.footer?.text || (typeof template.footer === 'string' ? template.footer : '');
   const buttons = template.buttons || [];
   const header = template.header || null;
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-4 shadow-2xl border-[8px] border-slate-900 w-full aspect-[9/18] flex flex-col overflow-hidden relative">
-      {/* Phone Status Bar */}
-      <div className="flex justify-between items-center px-4 pt-2 pb-4 text-[10px] font-bold text-slate-400">
-        <span>9:41</span>
-        <div className="flex gap-1.5">
-          <div className="w-4 h-2 bg-slate-200 rounded-sm"></div>
-          <div className="w-2 h-2 bg-slate-200 rounded-full"></div>
+    <div className="bg-white rounded-[2.5rem] p-1.5 shadow-2xl border-[8px] border-slate-900 w-full aspect-[9/18] flex flex-col overflow-hidden relative">
+      <div className="flex-1 bg-[#E5DDD5] rounded-[2rem] overflow-hidden flex flex-col relative">
+        {/* WhatsApp Header Mockup */}
+        <div className="h-14 bg-[#075E54] flex items-center px-4 gap-3 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+            <div className="w-4 h-4 bg-slate-400 rounded-full"></div>
+          </div>
+          <div>
+            <p className="text-white text-[11px] font-bold leading-none">Maneun Business</p>
+            <p className="text-white/60 text-[8px] font-medium mt-1 uppercase tracking-widest">Official Account</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 bg-[#E5DDD5] rounded-3xl p-3 overflow-hidden relative">
+        <div className="flex-1 p-3 overflow-y-auto no-scrollbar space-y-2 relative">
         {/* Chat Background Pattern (Simulated) */}
         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 0.5px, transparent 0.5px)', backgroundSize: '10px 10px' }}></div>
 
@@ -83,6 +86,7 @@ const MessagePreview = ({ template }) => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
@@ -100,29 +104,28 @@ export default function TemplateDetailsPage({ template, onBack }) {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] overflow-hidden">
-      {/* Detail Header */}
-      <div className="px-8 py-6 bg-white border-b border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">{template.name}</h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Template Insights & Preview</p>
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10">
+      
+      {/* Title Row */}
+      <div className="max-w-7xl mx-auto flex items-center justify-between mb-8">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 mb-1">
+             <button
+                onClick={onBack}
+                className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm"
+             >
+                <ArrowLeft size={18} />
+             </button>
+             <h1 className="text-3xl font-black text-primary tracking-tight">{template.name}</h1>
+             <span className={`ml-4 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+              template.status?.toUpperCase() === 'APPROVED' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
+              template.status?.toUpperCase() === 'REJECTED' ? 'bg-rose-50 text-rose-500 border border-rose-100' :
+              'bg-orange-50 text-orange-500 border border-orange-100'
+            }`}>
+              {template.status}
+            </span>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-            template.status?.toUpperCase() === 'APPROVED' ? 'bg-emerald-50 text-emerald-500' :
-            template.status?.toUpperCase() === 'REJECTED' ? 'bg-rose-50 text-rose-500' :
-            'bg-orange-50 text-orange-500'
-          }`}>
-            {template.status}
-          </span>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Template Insights & Real-time Visualization</p>
         </div>
       </div>
 
@@ -197,7 +200,7 @@ export default function TemplateDetailsPage({ template, onBack }) {
                       <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Footer</h4>
                     </div>
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-slate-400 text-xs font-medium">
-                      {template.footer.text}
+                      {template.footer.text || (typeof template.footer === 'string' ? template.footer : 'No footer content')}
                     </div>
                   </div>
                 )}
@@ -234,8 +237,7 @@ export default function TemplateDetailsPage({ template, onBack }) {
 
           {/* Right Column: Visual Preview */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            <div className="sticky top-0 w-full flex flex-col items-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 bg-white px-6 py-2 rounded-full border border-slate-100 shadow-sm">Real-time Visualization</p>
+            <div className="sticky top-0 w-full flex flex-col items-center pt-4">
               <div className="w-full max-w-[340px]">
                 <MessagePreview template={template} />
               </div>
@@ -244,6 +246,6 @@ export default function TemplateDetailsPage({ template, onBack }) {
 
         </div>
       </div>
-    </div>
+    </main>
   );
 }

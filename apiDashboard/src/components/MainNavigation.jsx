@@ -16,6 +16,7 @@ const MainNavigation = ({ activePath, onNavigate }) => {
     const navItems = [
         { label: 'Features', path: '#features' },
         { label: 'Solutions', path: '#solutions' },
+        { label: 'Subscriptions', path: '#pricing' },
     ];
 
     return (

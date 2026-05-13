@@ -8,13 +8,14 @@ import axios from 'axios';
 export const getContacts = async (req, res) => {
     try {
         const { consent_status, consent_source, consent } = req.query;
-        const filter = {};
+        const userId = req.user.user_id; // Added userId from authMiddleware
+        const filter = { userId }; // Filter by logged in user
 
         if (consent_status) filter.consent_status = consent_status;
         if (consent_source) filter.consent_source = consent_source;
         if (consent !== undefined) filter.consent = consent === 'true';
 
-        const contacts = await Contact.find(filter).sort({ createdAt: -1 }); // changed from lastMessageAt which isn't in schema
+        const contacts = await Contact.find(filter).sort({ createdAt: -1 });
         res.status(200).json(contacts);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -24,17 +25,20 @@ export const getContacts = async (req, res) => {
 export const saveContact = async (req, res) => {
     try {
         const { phoneNumber, name, email, location, details, consent, consent_source } = req.body;
+        const userId = req.user.user_id; // Get logged in user ID
+
         if (!phoneNumber) {
             return res.status(400).json({ error: "Phone number is required" });
         }
         const cleanPhone = phoneNumber.replace(/\D/g, '');
 
-        // Consent validation for manual addition
+        // Consent validation
         const updateData = {
             name,
+            userId, // Ensure userId is saved
             consent: consent === true || consent === 'true',
             consent_status: (consent === true || consent === 'true') ? 'verified' : 'unverified',
-            consent_source: consent_source || 'web', // Default to web if not provided
+            consent_source: consent_source || 'web',
             consent_timestamp: (consent === true || consent === 'true') ? new Date() : null
         };
 
@@ -43,7 +47,7 @@ export const saveContact = async (req, res) => {
         if (details !== undefined) updateData.details = details;
 
         let contact = await Contact.findOneAndUpdate(
-            { phoneNumber: cleanPhone },
+            { phoneNumber: cleanPhone, userId }, // Filter by phone AND userId
             { $set: updateData },
             { returnDocument: 'after' }
         );
@@ -59,6 +63,7 @@ export const saveContact = async (req, res) => {
             location,
             details,
             status: 'offline',
+            userId, // Set userId for new contact
             ...updateData
         });
         await contact.save();
@@ -100,7 +105,7 @@ export const captureQRConsent = async (req, res) => {
         const contact = await Contact.findOneAndUpdate(
             { phoneNumber: cleanPhone },
             { $set: updateData },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.status(200).json({
@@ -158,15 +163,17 @@ export const uploadContacts = async (req, res) => {
                     continue;
                 }
 
+                const userId = req.user.user_id;
                 const finalData = {
                     ...data,
+                    userId, // Set userId from request
                     consent_source: data.consent_source || 'csv'
                 };
 
                 await Contact.findOneAndUpdate(
-                    { phoneNumber: data.phoneNumber },
+                    { phoneNumber: data.phoneNumber, userId }, // Filter by phone AND userId
                     { $set: finalData },
-                    { upsert: true, new: true }
+                    { upsert: true, returnDocument: 'after' }
                 );
                 results.success++;
             } catch (err) {
@@ -199,7 +206,7 @@ export const getContactDetails = async (req, res) => {
 
 export const updateContact = async (req, res) => {
     try {
-        const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
         if (!contact) return res.status(404).json({ error: "Contact not found" });
         res.status(200).json(contact);
     } catch (error) {
@@ -221,7 +228,10 @@ export const deleteContact = async (req, res) => {
 export const searchContacts = async (req, res) => {
     try {
         const { query } = req.params;
+        const userId = req.user.user_id; // Filter by user
+
         const contacts = await Contact.find({
+            userId,
             $or: [
                 { name: { $regex: query, $options: 'i' } },
                 { phoneNumber: { $regex: query, $options: 'i' } }
@@ -229,17 +239,21 @@ export const searchContacts = async (req, res) => {
         });
         res.status(200).json(contacts);
     } catch (error) {
+        console.error("searchContacts Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
 export const getGroups = async (req, res) => {
     try {
-        const groups = await Contact.distinct('details.group');
+        const userId = req.user.user_id; // Filter by user
+        const groups = await Contact.distinct('details.group', { userId });
+        
         // Filter out null/empty values and anything that looks like a tag (starts with #)
         const allGroups = groups.filter(g => g && !g.startsWith('#'));
         res.status(200).json(allGroups);
     } catch (error) {
+        console.error("getGroups Error:", error);
         res.status(500).json({ error: error.message });
     }
 };

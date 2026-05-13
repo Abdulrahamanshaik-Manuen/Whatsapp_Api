@@ -5,12 +5,9 @@ import Message from '../models/Message.js';
 import Contact from '../models/Contact.js';
 import Template from '../models/Template.js';
 import * as whatsappService from '../services/whatsappService.js';
+import { calculateMetaCost } from '../utils/pricingEngine.js';
 
-const META_PRICING = {
-    marketing: 0.8631,
-    utility: 0.1150,
-    authentication: 0.1150
-};
+// Use calculateMetaCost from ../utils/pricingEngine.js
 
 export const sendMessage = async (req, res) => {
     try {
@@ -41,10 +38,6 @@ export const sendMessage = async (req, res) => {
         const t_type = template ? template.category : template_type;
         const t_lang = template ? template.language : "en_US";
 
-        if (!META_PRICING[t_type]) {
-            return res.status(400).json({ error: "Invalid template category. Must be marketing, utility, or authentication" });
-        }
-
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -52,16 +45,31 @@ export const sendMessage = async (req, res) => {
             return res.status(403).json({ error: "WhatsApp not connected or missing credentials" });
         }
 
+        // Check window status
+        const contact = await Contact.findOne({ phoneNumber: to, userId });
+        let isInsideWindow = contact ? (contact.customer_service_window_active && contact.window_expires_at > new Date()) : false;
+
+        // Message-based Fallback (Robust check)
+        if (!isInsideWindow) {
+            const lastIncoming = await Message.findOne({ to, direction: 'incoming', user_id: userId }).sort({ created_at: -1 });
+            if (lastIncoming) {
+                const now = new Date();
+                const diff = now - lastIncoming.created_at;
+                if (diff < 24 * 60 * 60 * 1000) {
+                    isInsideWindow = true;
+                }
+            }
+        }
+
         // Consent Validation
         if (t_type !== 'authentication') {
-            const contact = await Contact.findOne({ phoneNumber: to, consent: true });
-            if (!contact) {
+            if (!contact || !contact.consent) {
                 return res.status(403).json({ error: "Recipient has not provided consent." });
             }
         }
 
         // Pricing Calculation
-        const meta_cost = META_PRICING[t_type];
+        const meta_cost = calculateMetaCost({ category: t_type, isInsideWindow });
         let platform_cost = 0;
 
         if (user.messages_used >= user.message_limit) {
@@ -174,10 +182,6 @@ export const sendBulkMessages = async (req, res) => {
         const t_type = template ? template.category : template_type;
         const t_lang = template ? template.language : "en_US";
 
-        if (!META_PRICING[t_type]) {
-            return res.status(400).json({ error: "Invalid template category." });
-        }
-
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -190,6 +194,7 @@ export const sendBulkMessages = async (req, res) => {
         if (t_type !== 'authentication') {
             const consentedContacts = await Contact.find({
                 phoneNumber: { $in: validContacts },
+                user_id: userId,
                 consent: true
             }).select('phoneNumber -_id');
             validContacts = consentedContacts.map(c => c.phoneNumber);
@@ -207,9 +212,11 @@ export const sendBulkMessages = async (req, res) => {
             });
         }
 
-        const meta_cost = META_PRICING[t_type];
-        let platform_cost = 0;
-        const total_cost_per_msg = meta_cost + platform_cost;
+        // Bulk messages are templates. For Utility, we'd ideally check window per user.
+        // For simplicity in bulk, we'll assume outside window (isInsideWindow: false).
+        const meta_cost_default = calculateMetaCost({ category: t_type, isInsideWindow: false });
+        const platform_cost = 0;
+        const total_cost_per_msg = meta_cost_default + platform_cost;
 
         const results = {
             successful: 0,
@@ -308,22 +315,40 @@ export const sendBulkMessages = async (req, res) => {
 export const getMessages = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { page = 1, limit = 50, search = '' } = req.query;
+        const { page = 1, limit = 50, search = '', status } = req.query;
 
         const query = { user_id: userId };
         if (search) {
             query.to = { $regex: search, $options: 'i' };
         }
+        if (status) {
+            query.status = status;
+        }
 
         const messages = await Message.find(query)
-            .sort({ createdAt: -1 })
+            .sort({ created_at: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
 
         const total = await Message.countDocuments(query);
+        
+        const statsData = await Message.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(userId) } },
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+
+        const statsMap = {};
+        statsData.forEach(s => { statsMap[s._id] = s.count; });
 
         res.status(200).json({
             messages,
+            stats: {
+                total,
+                delivered: statsMap['delivered'] || 0,
+                read: statsMap['read'] || 0,
+                failed: statsMap['failed'] || 0,
+                sent: statsMap['sent'] || 0
+            },
             pagination: {
                 total,
                 page: parseInt(page),
@@ -341,13 +366,18 @@ export const getConversations = async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user.user_id);
         
-        // Group by 'to' and get the latest message for each
+        // Group by 'to' and get the latest message and last incoming message
         const conversations = await Message.aggregate([
             { $match: { user_id: userId } },
-            { $sort: { createdAt: -1 } },
+            { $sort: { created_at: -1 } },
             { $group: {
                 _id: "$to",
                 lastMessage: { $first: "$$ROOT" },
+                lastIncomingMessageAt: { 
+                    $max: {
+                        $cond: [{ $eq: ["$direction", "incoming"] }, "$created_at", null]
+                    }
+                },
                 unreadCount: { $sum: { $cond: [{ $and: [{ $eq: ["$direction", "incoming"] }, { $ne: ["$status", "read"] }] }, 1, 0] } }
             }},
             {
@@ -359,7 +389,7 @@ export const getConversations = async (req, res) => {
                 }
             },
             { $unwind: { path: "$contactInfo", preserveNullAndEmptyArrays: true } },
-            { $sort: { "lastMessage.createdAt": -1 } }
+            { $sort: { "lastMessage.created_at": -1 } }
         ]);
 
         res.status(200).json(conversations);
@@ -377,7 +407,7 @@ export const getMessagesByContact = async (req, res) => {
         const messages = await Message.find({
             user_id: userId,
             to: phone
-        }).sort({ createdAt: 1 });
+        }).sort({ created_at: 1 });
 
         res.status(200).json(messages);
     } catch (err) {
@@ -402,6 +432,34 @@ export const sendReply = async (req, res) => {
         if (!user || !user.whatsapp_connected) {
             return res.status(403).json({ error: "WhatsApp not connected" });
         }
+
+        // Window Enforcement
+        const contact = await Contact.findOne({ phoneNumber: to, userId });
+        let isInsideWindow = contact ? (contact.customer_service_window_active && contact.window_expires_at > new Date()) : false;
+
+        // Message-based Fallback (Robust check)
+        if (!isInsideWindow) {
+            const lastIncoming = await Message.findOne({ to, direction: 'incoming', user_id: userId }).sort({ created_at: -1 });
+            if (lastIncoming) {
+                const now = new Date();
+                const diff = now - lastIncoming.created_at;
+                if (diff < 24 * 60 * 60 * 1000) {
+                    isInsideWindow = true;
+                }
+            }
+        }
+
+        if (!isInsideWindow) {
+            return res.status(403).json({ 
+                error: "Customer service window expired", 
+                message: "You can only send free-form messages within 24 hours of the customer's last message. Please use a template to re-engage."
+            });
+        }
+
+        // Pricing for Service messages (FREE inside window)
+        const meta_cost = calculateMetaCost({ category: 'text', isInsideWindow });
+        const platform_cost = 0;
+        const total_cost = meta_cost + platform_cost;
 
         let result;
         if (type === 'text') {
@@ -430,6 +488,9 @@ export const sendReply = async (req, res) => {
                 type: type,
                 body: text || `[${type}]`,
                 status: 'sent',
+                meta_cost,
+                platform_cost,
+                total_cost,
                 meta_message_id: result.data?.messages?.[0]?.id
             });
             return res.status(200).json(messageLog);

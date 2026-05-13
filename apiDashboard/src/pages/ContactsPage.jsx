@@ -6,7 +6,8 @@ import {
   Trash2, ExternalLink, UserPlus, FileUp,
   Mail, MapPin, Tag, Calendar, MoreVertical,
   X, Send, ShieldCheck, Info, Loader2, Download,
-  Check, Phone, FilterX, MessageSquare, LayoutGrid, List
+  Check, Phone, FilterX, MessageSquare, LayoutGrid, List,
+  QrCode, Copy
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -38,7 +39,7 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
   );
 };
 
-export default function ContactsPage({ onNavigate, setActiveTab }) {
+export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +50,7 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
   const [showChatModal, setShowChatModal] = useState(false);
   const [selectedContactForChat, setSelectedContactForChat] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // New Contact State
   const [newContact, setNewContact] = useState({
@@ -321,6 +323,14 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
               <UserPlus size={16} />
               Add Contact
             </button>
+            <button
+              onClick={() => setShowQRModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+              title="Customer Lead QR"
+            >
+              <QrCode size={16} />
+              Lead QR
+            </button>
           </div>
         </div>
 
@@ -402,112 +412,77 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
 
         {/* Contacts View */}
         {viewMode === 'table' ? (
-          <div className="glass-panel rounded-[2rem] overflow-hidden border border-slate-200/50">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/40 border-b border-slate-100/50">
-                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Contact Identity</th>
-                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Phone Number</th>
-                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status & Source</th>
-                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Joined Date</th>
-                    <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <tr className="bg-slate-50/50 border-b border-slate-200">
+                    <th className="pl-6 pr-4 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-100/50">Contact Name</th>
+                    <th className="px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-100/50">WhatsApp Number</th>
+                    <th className="px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-100/50">Consent Status</th>
+                    <th className="px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-100/50">Source</th>
+                    <th className="px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-100/50 text-center">Joined</th>
+                    <th className="px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50/50">
+                <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
+                    Array.from({ length: 10 }).map((_, i) => (
                       <tr key={i} className="animate-pulse">
-                        <td colSpan="5" className="px-6 py-8">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded-2xl" />
-                            <div className="space-y-2">
-                              <div className="h-3.5 bg-slate-100 rounded-full w-40" />
-                              <div className="h-2.5 bg-slate-50 rounded-full w-28" />
-                            </div>
-                          </div>
+                        <td colSpan="6" className="px-6 py-4">
+                          <div className="h-4 bg-slate-50 rounded w-full" />
                         </td>
                       </tr>
                     ))
-                  ) : contacts.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="px-6 py-32 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner">
-                            <Users size={40} className="text-slate-200" />
-                          </div>
-                          <h3 className="text-xl font-bold text-slate-800">Your audience is empty</h3>
-                          <p className="text-sm text-slate-400 mt-2 max-w-xs mx-auto">Start building your community by adding your first contact or importing a list.</p>
-                          <button
-                            onClick={() => setShowAddModal(true)}
-                            className="mt-8 px-8 py-3 bg-primary text-white text-xs font-bold rounded-2xl hover:bg-primary-light transition-all shadow-xl shadow-primary/20 active:scale-95"
-                          >
-                            Add Your First Contact
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
                   ) : (
                     contacts.map((contact) => (
-                      <tr key={contact._id} className="group hover:bg-white/60 transition-all duration-300">
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light text-white rounded-2xl flex items-center justify-center font-bold text-base shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
+                      <tr key={contact._id} className="group hover:bg-slate-50 transition-colors">
+                        <td className="pl-6 pr-4 py-4 border-r border-slate-50/50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center font-bold text-xs border border-slate-200 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
                               {contact.name.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                              <p className="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-primary transition-colors">{contact.name}</p>
-                              <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
-                                <Mail size={12} className="text-slate-300" />
-                                {contact.email || 'No email provided'}
-                              </p>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-slate-900 truncate">{contact.name}</p>
+                              <p className="text-[10px] text-slate-400 font-medium truncate">{contact.email || 'no-email@system.com'}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold border border-slate-100 group-hover:bg-white group-hover:border-primary/10 transition-all">
-                            <Smartphone size={14} className="text-slate-400" />
+                        <td className="px-6 py-4 border-r border-slate-50/50">
+                          <code className="text-xs font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200/60">
                             +{contact.phoneNumber}
+                          </code>
+                        </td>
+                        <td className="px-6 py-4 border-r border-slate-50/50">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-1.5 h-1.5 rounded-full ${contact.consent_status === 'verified' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-orange-500'}`} />
+                            <span className="text-[11px] font-bold text-slate-700 capitalize">{contact.consent_status}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${contact.consent_status === 'verified' ? 'bg-secondary/5 text-secondary border-secondary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
-                                {contact.consent_status}
-                              </span>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-                                <Tag size={12} className="text-slate-300" />
-                                {contact.consent_source}
-                              </span>
-                            </div>
-                            {contact.location && (
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium ml-1">
-                                <MapPin size={12} className="text-slate-300" />
-                                {contact.location}
-                              </div>
-                            )}
+                        <td className="px-6 py-4 border-r border-slate-50/50">
+                          <div className="flex items-center gap-2 text-slate-500">
+                            <Tag size={12} className="text-slate-300" />
+                            <span className="text-[11px] font-bold uppercase tracking-wider">{contact.consent_source}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-2.5 text-slate-500 font-medium text-[11px]">
-                            <Calendar size={15} className="text-slate-300" />
-                            {new Date(contact.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </div>
+                        <td className="px-6 py-4 border-r border-slate-50/50 text-center">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            {new Date(contact.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
                         </td>
-                        <td className="px-6 py-5 text-right">
-                          <div className="flex items-center justify-end gap-2.5">
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => { setSelectedContactForChat(contact); setShowChatModal(true); }}
-                              className="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm hover:shadow-blue-500/20 active:scale-90"
-                              title="Quick Chat"
+                              className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                              title="Message"
                             >
                               <MessageSquare size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteContact(contact._id)}
-                              className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm hover:shadow-rose-500/20 active:scale-90"
-                              title="Delete"
+                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                              title="Remove"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -717,14 +692,19 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
 
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                    <div className="relative">
-                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">+</div>
+                    <div className="relative group">
+                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm border-r border-slate-200 pr-2 h-5 flex items-center">
+                        +91
+                      </div>
                       <input
-                        type="text"
-                        placeholder="919876543210"
-                        value={newContact.phoneNumber}
-                        onChange={(e) => setNewContact({ ...newContact, phoneNumber: e.target.value })}
-                        className="w-full pl-9 pr-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                        type="tel"
+                        placeholder="XXXXXXXXXX"
+                        value={newContact.phoneNumber.replace(/^(\+91|91)/, '')}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setNewContact({ ...newContact, phoneNumber: `91${val}` });
+                        }}
+                        className="w-full pl-16 pr-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                       />
                     </div>
                   </div>
@@ -901,6 +881,91 @@ export default function ContactsPage({ onNavigate, setActiveTab }) {
                 className="px-8 py-3 bg-white text-slate-500 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
               >
                 Close Importer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lead QR Modal */}
+      {showQRModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={() => setShowQRModal(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Clean Header */}
+            <div className="px-6 py-5 flex items-center justify-between border-b border-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary/5 text-primary rounded-lg flex items-center justify-center">
+                  <QrCode size={18} />
+                </div>
+                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Lead Capture QR</h3>
+              </div>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="w-8 h-8 rounded-lg hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-all"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Refined QR Section */}
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-sm relative">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/lead/${userData?._id || 'unknown'}`)}`}
+                    alt="Lead Capture QR"
+                    className="w-32 h-32"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Automatic Lead Generation</p>
+                  <p className="text-[11px] text-slate-500 font-medium leading-relaxed px-4">
+                    Customers scan this to join your list and give consent.
+                  </p>
+                </div>
+              </div>
+
+              {/* URL Section */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Direct Link</label>
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50/50 rounded-xl border border-slate-200/60">
+                  <input 
+                    readOnly
+                    value={`${window.location.origin}/lead/${userData?._id || ''}`}
+                    className="flex-1 bg-transparent border-none text-[10px] font-bold text-slate-500 truncate focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/lead/${userData?._id || ''}`);
+                      alert("Copied!");
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-primary transition-colors"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-50/30 rounded-xl border border-emerald-100/50">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest text-center flex-1">System Active & Secured</span>
+              </div>
+            </div>
+
+            {/* Simple Footer */}
+            <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-50">
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="w-full py-3 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+              >
+                Close Portal
               </button>
             </div>
           </div>

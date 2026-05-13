@@ -2,7 +2,11 @@ import BusinessProfile from '../models/BusinessProfile.js';
 
 export const createProfile = async (req, res) => {
     try {
-        const { business_name, business_category, business_description, email, address, city, state, country, business_hours, logo_url } = req.body;
+        const { 
+            business_name, business_category, business_description, email, 
+            address, city, state, country, business_hours, logo_url,
+            bank_name, account_number, ifsc_code, account_holder_name 
+        } = req.body;
         const user_id = req.user.user_id;
 
         // Check if profile already exists
@@ -20,7 +24,11 @@ export const createProfile = async (req, res) => {
             state,
             country,
             business_hours,
-            logo_url
+            logo_url,
+            bank_name,
+            account_number,
+            ifsc_code,
+            account_holder_name
         });
 
         await profile.save();
@@ -47,7 +55,7 @@ export const updateProfile = async (req, res) => {
         const updated = await BusinessProfile.findOneAndUpdate(
             { user_id: req.user.user_id },
             req.body,
-            { new: true }
+            { returnDocument: 'after' }
         );
         if (!updated) return res.status(404).json({ error: "Business profile not found" });
         res.status(200).json({ message: "Profile updated successfully", profile: updated });

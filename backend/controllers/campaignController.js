@@ -13,9 +13,8 @@ const META_PRICING = {
 };
 
 const resolveContacts = async (contacts, group_ids, userId, template_type, rich_contacts = []) => {
-    let finalContacts = []; // Array of objects: { phone: string, variables: [] }
+    let finalContacts = [];
 
-    // Step 1: Add rich contacts (e.g. from Excel)
     if (rich_contacts && Array.isArray(rich_contacts)) {
         finalContacts.push(...rich_contacts.map(c => ({
             phone: typeof c === 'object' ? c.phone : c,
@@ -23,12 +22,10 @@ const resolveContacts = async (contacts, group_ids, userId, template_type, rich_
         })));
     }
 
-    // Step 2: Add direct contacts (simple phone strings)
     if (contacts && Array.isArray(contacts)) {
         finalContacts.push(...contacts.map(phone => ({ phone, variables: [] })));
     }
 
-    // Step 3: Fetch group contacts
     if (group_ids && Array.isArray(group_ids) && group_ids.length > 0) {
         const groups = await Group.find({
             _id: { $in: group_ids },
@@ -42,7 +39,6 @@ const resolveContacts = async (contacts, group_ids, userId, template_type, rich_
         });
     }
 
-    // Step 4 & 5: Deduplicate by phone
     const seen = new Set();
     finalContacts = finalContacts.filter(c => {
         if (!c.phone || seen.has(c.phone)) return false;
@@ -50,21 +46,21 @@ const resolveContacts = async (contacts, group_ids, userId, template_type, rich_
         return true;
     });
 
-    // Step 6: Consent Validation (only for non-auth templates)
     if (template_type !== 'authentication' && finalContacts.length > 0) {
         const phones = finalContacts.map(c => c.phone);
         const validContacts = await Contact.find({
             phoneNumber: { $in: phones },
-            consent: true
+            consent: true,
+            userId: userId // Only check consent for this user's contacts
         }).select('phoneNumber -_id');
 
         const validPhones = new Set(validContacts.map(c => c.phoneNumber));
-        
+
         // EXCEL BYPASS: If the contact came from a rich_contact (Excel), we trust the user's upload.
         // We only filter for marketing if they are NOT rich contacts.
         if (template_type === 'marketing') {
             const richPhones = new Set((rich_contacts || []).map(rc => typeof rc === 'object' ? rc.phone : rc));
-            
+
             finalContacts = finalContacts.filter(c => {
                 // If it's in the Excel upload, let it pass.
                 if (richPhones.has(c.phone)) return true;
@@ -94,7 +90,7 @@ export const previewCampaign = async (req, res) => {
 
         const total_contacts = finalContacts.length;
         const estimated_meta_cost = (META_PRICING[template_type] || 1.0) * total_contacts;
-        const estimated_platform_cost = 0; 
+        const estimated_platform_cost = 0;
         const estimated_total_cost = estimated_meta_cost + estimated_platform_cost;
 
         res.json({
@@ -102,7 +98,7 @@ export const previewCampaign = async (req, res) => {
             estimated_meta_cost,
             estimated_platform_cost,
             estimated_total_cost,
-            preview_contacts: finalContacts.slice(0, 5) 
+            preview_contacts: finalContacts.slice(0, 5)
         });
     } catch (err) {
         console.error("Preview Campaign Error:", err);
@@ -121,8 +117,15 @@ export const createCampaign = async (req, res) => {
 
         let template;
         if (template_id) {
-            template = await Template.findById(template_id);
-            if (!template) return res.status(404).json({ error: "Template not found" });
+            // Users can use any approved template OR any template they created themselves
+            template = await Template.findOne({ 
+                _id: template_id, 
+                $or: [
+                    { status: 'approved' },
+                    { created_by: userId }
+                ]
+            });
+            if (!template) return res.status(404).json({ error: "Template not found or not approved for use" });
         }
 
         const t_name = template ? template.name : template_name;
@@ -189,7 +192,8 @@ export const getCampaigns = async (req, res) => {
 export const getCampaignStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const campaign = await Campaign.findById(id);
+        const userId = req.user.user_id;
+        const campaign = await Campaign.findOne({ _id: id, user_id: userId });
 
         if (!campaign) {
             return res.status(404).json({ error: "Campaign not found" });

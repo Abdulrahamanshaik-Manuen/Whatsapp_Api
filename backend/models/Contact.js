@@ -52,6 +52,18 @@ const contactSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: false
+  },
+  last_customer_message_at: {
+    type: Date,
+    default: null
+  },
+  window_expires_at: {
+    type: Date,
+    default: null
+  },
+  customer_service_window_active: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 

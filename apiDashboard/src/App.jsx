@@ -4,6 +4,7 @@ import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
+import LeadCapturePage from './pages/LeadCapturePage';
 
 // Simple Router Hook
 function getCurrentPath() {
@@ -33,6 +34,7 @@ export default function App() {
     if (activePath === '/register') return <RegisterPage onNavigate={navigateTo} />;
     if (activePath === '/login') return <LoginPage onNavigate={navigateTo} />;
     if (activePath === '/forgot-password') return <ForgotPasswordPage onNavigate={navigateTo} />;
+    if (activePath.startsWith('/lead')) return <LeadCapturePage />;
     if (activePath === '/dashboard' || activePath === '/campaigns' || activePath === '/campaigns/create' || activePath === '/contacts' || activePath === '/messages' || activePath === '/history' || activePath === '/templates' || activePath === '/templates/create' || activePath === '/templates/view' || activePath === '/automations' || activePath === '/automations/builder' || activePath === '/setup' || activePath === '/billing' || activePath === '/settings' || activePath === '/groups') {
         return <DashboardPage onNavigate={navigateTo} initialPath={activePath} />;
     }

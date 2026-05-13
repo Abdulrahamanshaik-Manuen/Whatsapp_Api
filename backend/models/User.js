@@ -63,6 +63,18 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 1.2
     },
+    planId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Plan'
+    },
+    subscription_status: {
+        type: String,
+        enum: ['active', 'expired', 'none'],
+        default: 'none'
+    },
+    subscription_expiry: {
+        type: Date
+    },
     created_at: {
         type: Date,
         default: Date.now

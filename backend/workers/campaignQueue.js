@@ -5,7 +5,9 @@ import User from '../models/User.js';
 import Message from '../models/Message.js';
 import Campaign from '../models/Campaign.js';
 import Template from '../models/Template.js';
+import Contact from '../models/Contact.js';
 import * as whatsappService from '../services/whatsappService.js';
+import { calculateMetaCost } from '../utils/pricingEngine.js';
 import mongoose from 'mongoose';
 
 // Ensure .env is loaded before reading process.env
@@ -74,7 +76,11 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             throw new Error('Message limit exceeded');
         }
 
-        const meta_cost = META_PRICING[template_type] || 1.0;
+        // Check window status
+        const contact = await Contact.findOne({ phoneNumber: to, userId: user_id });
+        const isInsideWindow = contact ? (contact.customer_service_window_active && contact.window_expires_at > new Date()) : false;
+
+        const meta_cost = calculateMetaCost({ category: template_type, isInsideWindow });
         const platform_cost = 0;
         const total_cost = meta_cost + platform_cost;
 

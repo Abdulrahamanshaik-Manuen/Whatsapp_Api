@@ -6,7 +6,7 @@ import {
   Clock, FolderOpen
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, setIsOpen }) {
+export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, setIsOpen, userData }) {
   const [showPlanBanner, setShowPlanBanner] = useState(true);
 
   const navItems = [
@@ -72,8 +72,8 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
         ))}
       </nav>
 
-      {/* Pro Plan Banner */}
-      {showPlanBanner && (
+    {/* Pro Plan Banner */}
+    {showPlanBanner && (
         <div className="p-5 mx-4 mb-6 bg-white/5 rounded-2xl border border-white/10 relative overflow-hidden group">
           <button
             onClick={() => setShowPlanBanner(false)}
@@ -85,9 +85,21 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
             <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center mb-3">
               <Crown size={20} className="text-secondary" />
             </div>
-            <h4 className="text-white text-sm font-black mb-1">Enterprise Pro</h4>
-            <p className="text-[10px] text-white/50 mb-4 px-2 font-medium">Enjoy unlimited messaging and advanced automation tools.</p>
-            <button className="w-full py-2.5 bg-secondary hover:brightness-110 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-secondary/20">
+            <h4 className="text-white text-sm font-black mb-1">
+              {userData?.planId?.name || (userData?.subscription_status === 'none' ? 'Starter Node' : 'Active Plan')}
+            </h4>
+            <p className="text-[10px] text-white/50 mb-4 px-2 font-medium">
+              {userData?.planId?.name 
+                ? `You are on the ${userData.planId.name} ecosystem.`
+                : 'Scale your communication node with enterprise plans.'}
+            </p>
+            <button 
+              onClick={() => {
+                setActiveTab('Billing & Plan');
+                if (onNavigate) onNavigate('/billing');
+              }}
+              className="w-full py-2.5 bg-secondary hover:brightness-110 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-secondary/20"
+            >
               Manage Subscription
             </button>
           </div>
