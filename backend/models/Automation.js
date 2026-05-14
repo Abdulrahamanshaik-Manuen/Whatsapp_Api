@@ -33,6 +33,7 @@ const AutomationSchema = new mongoose.Schema({
   },
   metrics: {
     totalExecutions: { type: Number, default: 0 },
+    totalSuccess: { type: Number, default: 0 },
     successRate: { type: Number, default: 0 },
     lastTriggered: Date
   },

@@ -331,7 +331,7 @@ export const getMessages = async (req, res) => {
             .limit(parseInt(limit));
 
         const total = await Message.countDocuments(query);
-        
+
         const statsData = await Message.aggregate([
             { $match: { user_id: new mongoose.Types.ObjectId(userId) } },
             { $group: { _id: "$status", count: { $sum: 1 } } }
@@ -365,21 +365,23 @@ export const getMessages = async (req, res) => {
 export const getConversations = async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user.user_id);
-        
+
         // Group by 'to' and get the latest message and last incoming message
         const conversations = await Message.aggregate([
             { $match: { user_id: userId } },
             { $sort: { created_at: -1 } },
-            { $group: {
-                _id: "$to",
-                lastMessage: { $first: "$$ROOT" },
-                lastIncomingMessageAt: { 
-                    $max: {
-                        $cond: [{ $eq: ["$direction", "incoming"] }, "$created_at", null]
-                    }
-                },
-                unreadCount: { $sum: { $cond: [{ $and: [{ $eq: ["$direction", "incoming"] }, { $ne: ["$status", "read"] }] }, 1, 0] } }
-            }},
+            {
+                $group: {
+                    _id: "$to",
+                    lastMessage: { $first: "$$ROOT" },
+                    lastIncomingMessageAt: {
+                        $max: {
+                            $cond: [{ $eq: ["$direction", "incoming"] }, "$created_at", null]
+                        }
+                    },
+                    unreadCount: { $sum: { $cond: [{ $and: [{ $eq: ["$direction", "incoming"] }, { $ne: ["$status", "read"] }] }, 1, 0] } }
+                }
+            },
             {
                 $lookup: {
                     from: "contacts",
@@ -450,8 +452,8 @@ export const sendReply = async (req, res) => {
         }
 
         if (!isInsideWindow) {
-            return res.status(403).json({ 
-                error: "Customer service window expired", 
+            return res.status(403).json({
+                error: "Customer service window expired",
                 message: "You can only send free-form messages within 24 hours of the customer's last message. Please use a template to re-engage."
             });
         }

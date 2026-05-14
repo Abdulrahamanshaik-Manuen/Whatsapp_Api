@@ -158,6 +158,7 @@ export const getStatus = async (req, res) => {
             whatsapp_connected: user.whatsapp_connected,
             phone_number_id: user.phone_number_id,
             waba_id: user.waba_id,
+            access_token: user.access_token,
             webhook_url: webhookUrl,
             verify_token: "whatsapp_token"
         });

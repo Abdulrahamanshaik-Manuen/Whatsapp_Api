@@ -46,7 +46,7 @@ const META_PRICING = {
 // Process jobs
 bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
     const { to, template_id, template_name, template_type, variable_values, user_id, campaign_id, header_image } = job.data;
-    
+
     try {
         const user = await User.findById(user_id);
         if (!user || !user.whatsapp_connected) {
@@ -109,9 +109,9 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
         // DEBUG: Identifying which token source is being used
         const envToken = process.env.ACCESSTOKEN || process.env.META_ACCESS_TOKEN;
         const dbToken = user.access_token;
-        
+
         const accessToken = envToken || dbToken; // Prioritize the one in .env since we just verified it
-        
+
         console.log(`[Worker] Using Token Source: ${envToken ? '.env' : 'Database'}`);
         console.log(`[Worker] Token Snippet: ${accessToken ? accessToken.substring(0, 15) + '...' : 'MISSING'}`);
 
@@ -199,8 +199,8 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             let previewBody = template_name;
             try {
                 // Try to fetch the template by ID or Name to get the content
-                const templateDoc = template_id 
-                    ? await Template.findById(template_id) 
+                const templateDoc = template_id
+                    ? await Template.findById(template_id)
                     : await Template.findOne({ name: template_name, user_id: new mongoose.Types.ObjectId(user_id) });
 
                 if (templateDoc) {
@@ -217,7 +217,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
             }
 
             const cleanTo = to.replace(/\D/g, '');
-            
+
             // Idempotency check: Don't create duplicate logs if the job retries
             const existingLog = await Message.findOne({ meta_message_id });
             if (!existingLog) {
@@ -236,7 +236,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                     total_cost,
                     meta_message_id
                 };
-                
+
                 const newMessage = await Message.create(logEntry);
                 console.log(`[Worker] 📝 Log created for ${cleanTo}. ID: ${newMessage._id}`);
             } else {
@@ -257,7 +257,7 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
     } catch (err) {
         // If it fails (even after retries), ensure we log a failed message
         if (job.attemptsMade >= job.opts.attempts - 1) {
-             await Message.create({
+            await Message.create({
                 user_id,
                 campaign_id,
                 to,
@@ -284,10 +284,10 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
  */
 bulkMessageQueue.process('launch-campaign', async (job) => {
     const { campaign_id, finalContacts, template_id, template_name, template_type, variable_values, user_id, header_image } = job.data;
-    
+
     try {
         console.log(`Launching Campaign: ${campaign_id}`);
-        
+
         // Mark campaign as running
         await Campaign.findByIdAndUpdate(campaign_id, { status: 'running' });
 
@@ -295,7 +295,7 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
         const jobs = finalContacts.map(c => {
             const phone = typeof c === 'object' ? c.phone : c;
             const contactVars = (typeof c === 'object' && c.variables) ? c.variables : [];
-            
+
             // Merge variables: contact-specific ones override global ones if they are present
             const finalVars = contactVars.length > 0 ? contactVars : variable_values;
 

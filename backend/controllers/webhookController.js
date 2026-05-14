@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import Contact from '../models/Contact.js';
 import Template from '../models/Template.js';
 import { processAutomation } from '../services/automationService.js';
+import logger from '../utils/logger.js';
 
 export const verifyWebhook = (req, res) => {
     const mode = req.query['hub.mode'];
@@ -23,7 +24,7 @@ export const verifyWebhook = (req, res) => {
 };
 
 export const handleWebhookEvent = async (req, res) => {
-    console.log('[Webhook] Received Request Body:', JSON.stringify(req.body, null, 2));
+    // console.log('[Webhook] Received Request Body:', JSON.stringify(req.body, null, 2));
     const body = req.body;
 
     if (body.object === 'whatsapp_business_account') {
@@ -37,25 +38,23 @@ export const handleWebhookEvent = async (req, res) => {
                 const statusUpdates = value.statuses || [];
                 for (const statusUpdate of statusUpdates) {
                     const { status, id: meta_message_id, recipient_id } = statusUpdate;
-                    
+
                     // CATCH-ALL LOG: See everything Meta sends
-                    console.log(`[Webhook] Incoming Status: "${status}" for Meta ID: ${meta_message_id} to ${recipient_id}`);
+                    // console.log(`[Webhook] Incoming Status: "${status}" for Meta ID: ${meta_message_id} to ${recipient_id}`);
 
                     const message = await Message.findOne({ meta_message_id });
-                    
+
                     // Capture Pricing Info if provided by Meta
                     if (statusUpdate.pricing) {
                         const { billable, category, pricing_model } = statusUpdate.pricing;
                         if (message) {
                             message.pricing = { billable, category, pricing_model };
-                            // If it's a Marketing/Auth message, we'll store the cost we set earlier or update it
-                            // For now, just ensuring the data exists
-                            console.log(`[Webhook] Pricing Info for ${meta_message_id}: ${category} (${billable ? 'Billable' : 'Free'})`);
+                            // console.log(`[Webhook] Pricing Info for ${meta_message_id}: ${category} (${billable ? 'Billable' : 'Free'})`);
                         }
                     }
 
-                    console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
-                    
+                    // console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
+
                     if (status === 'failed') {
                         console.error(`[Webhook] ❌ Delivery Failed! Reason:`, JSON.stringify(statusUpdate.errors || 'Unknown Meta Error', null, 2));
                     }
@@ -69,7 +68,7 @@ export const handleWebhookEvent = async (req, res) => {
                         // Update Campaign analytics if linked
                         if (message.campaign_id) {
                             const incField = `${status}_count`;
-                            
+
                             // Security check: ensure the field exists in our Campaign model
                             const campaign = await Campaign.findById(message.campaign_id);
                             if (campaign && campaign[incField] !== undefined) {
@@ -110,7 +109,7 @@ export const handleWebhookEvent = async (req, res) => {
                     // Update/Create Contact and Reset 24-hour window
                     await Contact.findOneAndUpdate(
                         { phoneNumber: cleanFrom, userId: user._id },
-                        { 
+                        {
                             last_customer_message_at: now,
                             window_expires_at: expiresAt,
                             customer_service_window_active: true,
@@ -143,7 +142,7 @@ export const handleWebhookEvent = async (req, res) => {
                             status: 'delivered',
                             meta_message_id
                         });
-                        console.log(`Saved incoming message/button from ${cleanFrom}: ${bodyText}`);
+                        logger.info(`Incoming from ${cleanFrom}: ${bodyText}`);
                     } else {
                         console.log(`Skipped duplicate incoming message: ${meta_message_id}`);
                     }
@@ -161,13 +160,13 @@ export const handleWebhookEvent = async (req, res) => {
                 if (['approved', 'rejected'].includes(status)) {
                     await Template.findOneAndUpdate(
                         { name: message_template_name },
-                            {
-                                status: status,
-                                meta_template_id: message_template_id,
-                                meta_rejection_reason: reason || null
-                            },
-                            { returnDocument: 'after' }
-                        );
+                        {
+                            status: status,
+                            meta_template_id: message_template_id,
+                            meta_rejection_reason: reason || null
+                        },
+                        { returnDocument: 'after' }
+                    );
                     console.log(`Template "${message_template_name}" status updated to: ${status}`);
                 }
             }

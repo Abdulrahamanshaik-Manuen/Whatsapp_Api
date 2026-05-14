@@ -7,18 +7,17 @@ import Message from '../models/Message.js';
 import { sendTemplateMessage, sendTextMessage } from './whatsappService.js';
 import { calculateMetaCost } from '../utils/pricingEngine.js';
 import axios from 'axios';
+import { io } from '../server/Server.js';
+import logger from '../utils/logger.js';
 
-/**
- * Main Entry Point for Automation
- */
 export const processAutomation = async (userId, fromNumber, messageText) => {
     try {
         console.log(`[Automation] Processing message for ${fromNumber}: "${messageText}" (UserID: ${userId})`);
-        
-        // 1. Search for Triggers first - This allows "Restart" keywords like 'hello' to reset the flow
-        const automations = await Automation.find({ 
-            $or: [{ clientId: userId }, { createdBy: userId }], 
-            status: 'active' 
+
+        // Search for Triggers first - This allows "Restart" keywords like 'hello' to reset the flow
+        const automations = await Automation.find({
+            $or: [{ clientId: userId }, { createdBy: userId }],
+            status: 'active'
         });
 
         for (const auto of automations) {
@@ -27,8 +26,24 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
 
             const isMatched = checkTriggerMatch(triggerNode, messageText);
             if (isMatched) {
-                console.log(`[Automation] Trigger match found for "${messageText}". Starting fresh flow...`);
-                
+                logger.info(`[Automation] Trigger match for "${messageText}". Starting flow for ${fromNumber}`);
+
+                // Update Automation Metrics
+                await Automation.findByIdAndUpdate(auto._id, {
+                    $inc: { 'metrics.totalExecutions': 1 },
+                    $set: { 'metrics.lastTriggered': new Date() }
+                });
+
+                if (io) {
+                    io.emit('live_event', {
+                        type: 'automation_start',
+                        from: fromNumber,
+                        automationName: auto.name,
+                        trigger: messageText,
+                        timestamp: new Date()
+                    });
+                }
+
                 // Clear any existing stuck state for this user/number
                 await AutomationState.deleteMany({ phoneNumber: fromNumber, userId });
 
@@ -45,7 +60,7 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
             }
         }
 
-        // 2. If no trigger matched, check if we are in the middle of an existing conversation
+        // If no trigger matched, check if we are in the middle of an existing conversation
         let state = await AutomationState.findOne({ phoneNumber: fromNumber, userId });
 
         if (state) {
@@ -64,15 +79,12 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
     }
 };
 
-/**
- * Check if a trigger node matches the incoming message
- */
 const checkTriggerMatch = (node, messageText) => {
     const config = node.data?.config || {};
     const text = messageText.trim().toLowerCase();
     const type = config.type || 'keyword';
 
-    console.log(`[Automation] Checking trigger match (Type: ${type}). Input: "${text}"`);
+    // console.log(`[Automation] Checking trigger match (Type: ${type}). Input: "${text}"`);
 
     if (type === 'keyword') {
         const keywords = config.keywords || [];
@@ -80,35 +92,68 @@ const checkTriggerMatch = (node, messageText) => {
         return keywords.some(kw => {
             const target = kw.toLowerCase().trim();
             const match = config.matchType === 'exact' ? text === target : text.includes(target);
-            console.log(`[Automation] Comparing "${text}" to "${target}" (Match: ${match})`);
+            // console.log(`[Automation] Comparing "${text}" to "${target}" (Match: ${match})`);
             return match;
         });
     }
-    
+
     if (type === 'incoming_message') return true;
 
     return false;
 };
 
-/**
- * Recursive/Loop based Workflow Executor
- */
 const executeWorkflow = async (automation, state, lastMessage) => {
-    let currentNodeId = state.currentNodeId;
     let keepExecuting = true;
 
+    // If we were waiting for a reply, we must first "finish" the current node
+    if (state.waitingForReply) {
+        const currentNode = automation.nodes.find(n => n.id === state.currentNodeId);
+        if (currentNode) {
+            console.log(`[Automation] Resuming execution for node: ${currentNode.type} (${currentNode.id})`);
+            const result = await handleNodeExecution(currentNode, automation, state, lastMessage);
+
+            if (result.pause) {
+                // Still waiting? (Shouldn't happen for waitNode but maybe for others)
+                return;
+            }
+
+            if (!result.success) {
+                console.error(`[Automation] Error resuming node:`, result.error);
+                return;
+            }
+
+            // Node finished! Clear waiting state
+            state.waitingForReply = false;
+            // Now we proceed to outgoing edges from this node
+        }
+    }
+
     while (keepExecuting) {
-        // Find outgoing edges from current node
+        const currentNodeId = state.currentNodeId;
         const outgoingEdges = automation.edges.filter(e => e.source === currentNodeId);
-        
+
         if (outgoingEdges.length === 0) {
             console.log(`[Automation] Workflow "${automation.name}" ended for ${state.phoneNumber}`);
+
+            // Update Success Metrics
+            const updatedAuto = await Automation.findById(automation._id);
+            if (updatedAuto) {
+                const totalSuccess = (updatedAuto.metrics.totalSuccess || 0) + 1;
+                const totalExecutions = updatedAuto.metrics.totalExecutions || 1;
+                const successRate = Math.min(100, ((totalSuccess / totalExecutions) * 100).toFixed(1));
+
+                await Automation.findByIdAndUpdate(automation._id, {
+                    $set: {
+                        'metrics.totalSuccess': totalSuccess,
+                        'metrics.successRate': successRate
+                    }
+                });
+            }
+
             await AutomationState.findByIdAndDelete(state._id);
             break;
         }
 
-        // For now, take the first edge (simple flows)
-        // Multi-branching (Conditions) will pick specific edges
         const nextEdge = outgoingEdges[0];
         const nextNode = automation.nodes.find(n => n.id === nextEdge.target);
 
@@ -118,7 +163,6 @@ const executeWorkflow = async (automation, state, lastMessage) => {
         }
 
         console.log(`[Automation] Executing Node: ${nextNode.type} (${nextNode.id})`);
-
         const result = await handleNodeExecution(nextNode, automation, state, lastMessage);
 
         // Log the execution
@@ -134,26 +178,21 @@ const executeWorkflow = async (automation, state, lastMessage) => {
         });
 
         if (result.pause) {
-            // Node requested to wait (e.g. "Wait for Reply" or "Delay")
             state.currentNodeId = nextNode.id;
             state.waitingForReply = result.waitingForReply || false;
             state.lastActivity = new Date();
             await state.save();
             keepExecuting = false;
         } else if (result.success) {
-            currentNodeId = nextNode.id;
-            state.currentNodeId = currentNodeId;
+            state.currentNodeId = nextNode.id;
+            // Important: update the local state.currentNodeId for the next loop iteration
             await state.save();
         } else {
-            // Error occurred
             keepExecuting = false;
         }
     }
 };
 
-/**
- * Node Logic Dispatcher
- */
 const handleNodeExecution = async (node, automation, state, lastMessage) => {
     const config = node.data?.config || {};
     const user = await User.findById(state.userId);
@@ -199,7 +238,7 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                 if (!result.success) {
                     const errorStr = JSON.stringify(result.error || '');
                     const isAuthError = errorStr.includes('190') || errorStr.includes('Authentication');
-                    
+
                     if (isAuthError && userToken && systemToken) {
                         console.log(`[Automation] User token invalid (190). Retrying with system token...`);
                         result = await sendTextMessage(phoneId, systemToken, state.phoneNumber, text);
@@ -207,7 +246,17 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                 }
 
                 if (!result.success) {
+                    logger.error(`[Automation] Failed to send message to ${state.phoneNumber}: ${result.error}`);
                     return { success: false, error: result.error };
+                }
+
+                if (io) {
+                    io.emit('live_event', {
+                        type: 'automation_message',
+                        from: state.phoneNumber,
+                        body: text,
+                        timestamp: new Date()
+                    });
                 }
 
                 // Save to DB
@@ -228,14 +277,12 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
             }
 
         case 'condition':
-            // Logic for branching
-            // Returns the handle ID to follow
             return { success: true, pause: false };
 
         case 'templateNode':
             try {
                 const { templateName, language = 'en_US', variables = [] } = config;
-                
+
                 // Pricing Calculation
                 // Automation templates are typically utility or marketing. Defaulting to utility if not specified.
                 const category = config.category || 'utility';
@@ -246,11 +293,11 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                 const phoneId = user.phone_number_id || process.env.PHONE_NUMBER_ID;
 
                 let result = await sendTemplateMessage(
-                    phoneId, 
-                    userToken || systemToken, 
-                    state.phoneNumber, 
-                    templateName, 
-                    language, 
+                    phoneId,
+                    userToken || systemToken,
+                    state.phoneNumber,
+                    templateName,
+                    language,
                     variables
                 );
 
