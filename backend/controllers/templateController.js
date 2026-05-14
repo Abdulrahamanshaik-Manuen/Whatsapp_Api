@@ -194,7 +194,7 @@ export const requestCustomTemplate = async (req, res) => {
             created_by: req.user.user_id,
             is_custom_request: true,
             requested_by: req.user.user_id,
-            status: 'draft'
+            status: directSubmit ? 'pending_meta_approval' : 'pending_admin_approval'
         };
 
         const template = new Template(templateData);

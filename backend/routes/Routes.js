@@ -12,6 +12,7 @@ import analyticsRoutes from './analyticsRoutes.js';
 import automationRoutes from './automationRoutes.js';
 import subscriptionRoutes from './subscriptionRoutes.js';
 import productRoutes from './productRoutes.js';
+import adminRoutes from './adminRoutes.js';
 
 const router = express.Router();
 
@@ -34,5 +35,6 @@ router.use('/analytics', analyticsRoutes);
 router.use('/automations', automationRoutes);
 router.use('/subscription', subscriptionRoutes);
 router.use('/products', productRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

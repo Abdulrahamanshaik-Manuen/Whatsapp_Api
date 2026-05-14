@@ -43,7 +43,7 @@ const templateSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ["draft", "pending_meta_approval", "approved", "rejected"],
+        enum: ["draft", "pending_admin_approval", "pending_meta_approval", "approved", "rejected"],
         default: "draft"
     },
     created_by: {

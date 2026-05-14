@@ -19,7 +19,7 @@ const AutomationSchema = new mongoose.Schema({
   description: String,
   status: {
     type: String,
-    enum: ['active', 'paused', 'draft'],
+    enum: ['active', 'paused', 'draft', 'requested'],
     default: 'active'
   },
   // React Flow Structure

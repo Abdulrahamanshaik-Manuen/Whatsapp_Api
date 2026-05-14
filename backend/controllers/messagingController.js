@@ -138,6 +138,12 @@ export const sendMessage = async (req, res) => {
             user.meta_cost_total += meta_cost;
             user.platform_cost_total += platform_cost;
             user.total_cost += total_cost;
+
+            // Auto-suspend if limit reached
+            if (user.messages_used >= user.message_limit) {
+                user.subscription_status = 'suspended';
+            }
+
             await user.save();
 
             return res.status(200).json({ message: "Message sent successfully", data: messageLog });
@@ -293,6 +299,12 @@ export const sendBulkMessages = async (req, res) => {
             user.meta_cost_total += total_meta_cost_incurred;
             user.platform_cost_total += total_platform_cost_incurred;
             user.total_cost += total_cost_incurred;
+
+            // Auto-suspend if limit reached
+            if (user.messages_used >= user.message_limit) {
+                user.subscription_status = 'suspended';
+            }
+
             await user.save();
         }
 
@@ -458,6 +470,15 @@ export const sendReply = async (req, res) => {
             });
         }
 
+        // Global Limit Check
+        if (user.messages_used >= user.message_limit) {
+            return res.status(403).json({
+                error: "Message limit exceeded",
+                upgrade_required: true,
+                message: "You have exceeded your message limit. Please upgrade your subscription to continue replying."
+            });
+        }
+
         // Pricing for Service messages (FREE inside window)
         const meta_cost = calculateMetaCost({ category: 'text', isInsideWindow });
         const platform_cost = 0;
@@ -495,6 +516,18 @@ export const sendReply = async (req, res) => {
                 total_cost,
                 meta_message_id: result.data?.messages?.[0]?.id
             });
+
+            // Update usage
+            user.messages_used += 1;
+            user.total_cost += total_cost;
+
+            // Auto-suspend if limit reached
+            if (user.messages_used >= user.message_limit) {
+                user.subscription_status = 'suspended';
+            }
+
+            await user.save();
+
             return res.status(200).json(messageLog);
         } else {
             return res.status(500).json({ error: result.error });

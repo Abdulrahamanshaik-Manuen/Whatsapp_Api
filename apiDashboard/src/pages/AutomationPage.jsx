@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus, Zap, Play, Pause,
   Search, Filter, Trash2, Edit3, ChevronRight,
-  TrendingUp, Activity, Users, Clock, AlertCircle
+  TrendingUp, Activity, Users, Clock, AlertCircle, X, Send
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 export default function AutomationPage({ onNavigate }) {
   const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestData, setRequestData] = useState({ name: '', description: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   // Calculate dynamic stats
   const stats = {
@@ -41,8 +47,37 @@ export default function AutomationPage({ onNavigate }) {
     }
   };
 
-  const handleCreateNew = () => {
-    if (onNavigate) onNavigate('/automations/builder');
+  const handleAction = () => {
+    if (isAdmin) {
+      if (onNavigate) onNavigate('/automations/builder');
+    } else {
+      setShowRequestModal(true);
+    }
+  };
+
+  const submitRequest = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+        const token = localStorage.getItem('token');
+        await axios.post(`${API_BASE_URL}/automations`, {
+            ...requestData,
+            status: 'requested',
+            nodes: [],
+            edges: []
+        }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        alert("Automation request sent to Admin successfully!");
+        setShowRequestModal(false);
+        setRequestData({ name: '', description: '' });
+        fetchAutomations();
+    } catch (err) {
+        console.error("Request Error:", err);
+        alert("Failed to send request");
+    } finally {
+        setSubmitting(false);
+    }
   };
 
   const toggleStatus = async (id, currentStatus) => {
@@ -60,7 +95,7 @@ export default function AutomationPage({ onNavigate }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
       {/* Header */}
       <header className="px-8 pt-8 pb-4 bg-transparent flex flex-col">
         <div className="flex items-center justify-between">
@@ -69,11 +104,11 @@ export default function AutomationPage({ onNavigate }) {
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and manage your conversational flows</p>
           </div>
           <button
-            onClick={handleCreateNew}
+            onClick={handleAction}
             className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-sm font-bold rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 active:scale-95"
           >
             <Plus size={18} />
-            Create Workflow
+            {isAdmin ? 'Create Workflow' : 'Request Workflow'}
           </button>
         </div>
 
@@ -123,19 +158,82 @@ export default function AutomationPage({ onNavigate }) {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-800">No automations yet</h3>
-                  <p className="text-sm text-slate-400 max-w-xs">Start by creating your first workflow to automate your customer interactions.</p>
+                  <p className="text-sm text-slate-400 max-w-xs">
+                      {isAdmin ? 'Start by creating your first global template.' : 'Request your first custom workflow from our team.'}
+                  </p>
                 </div>
                 <button
-                  onClick={handleCreateNew}
+                  onClick={handleAction}
                   className="px-8 py-3 bg-slate-800 text-white text-xs font-bold rounded-2xl hover:bg-slate-900 transition-all shadow-xl shadow-slate-200"
                 >
-                  Get Started
+                  {isAdmin ? 'Get Started' : 'Request Now'}
                 </button>
               </div>
             )}
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Request Modal */}
+      {showRequestModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowRequestModal(false)}></div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 overflow-hidden"
+              >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                  
+                  <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                              <Bot size={22} />
+                          </div>
+                          <div>
+                              <h3 className="text-xl font-black text-slate-900 tracking-tight">Request Workflow</h3>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Our team will build it for you</p>
+                          </div>
+                      </div>
+                      <button onClick={() => setShowRequestModal(false)} className="text-slate-300 hover:text-slate-500 transition-colors">
+                          <X size={20} />
+                      </button>
+                  </div>
+
+                  <form onSubmit={submitRequest} className="space-y-6">
+                      <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Workflow Name</label>
+                          <input 
+                            required
+                            type="text" 
+                            placeholder="e.g., Lead Follow-up Flow"
+                            value={requestData.name}
+                            onChange={e => setRequestData({...requestData, name: e.target.value})}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:border-primary transition-all outline-none"
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Requirements / Description</label>
+                          <textarea 
+                            required
+                            rows={4}
+                            placeholder="Describe how the automation should work..."
+                            value={requestData.description}
+                            onChange={e => setRequestData({...requestData, description: e.target.value})}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:border-primary transition-all outline-none resize-none"
+                          />
+                      </div>
+                      <button 
+                        disabled={submitting}
+                        className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-3"
+                      >
+                         {submitting ? <Clock className="animate-spin" size={16} /> : <Send size={16} />}
+                         Send Request
+                      </button>
+                  </form>
+              </motion.div>
+          </div>
+      )}
     </div>
   );
 }
@@ -162,30 +260,37 @@ function StatCard({ label, value, icon: Icon, color }) {
 }
 
 function AutomationCard({ automation, onEdit, onToggle }) {
+  const isRequested = automation.status === 'requested';
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-6 flex flex-col group hover:border-primary/20 transition-all"
+      className={`bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-6 flex flex-col group hover:border-primary/20 transition-all ${isRequested ? 'opacity-80' : ''}`}
     >
       <div className="flex items-center justify-between mb-6">
-        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-          <Zap size={20} fill="currentColor" />
+        <div className={`w-12 h-12 ${isRequested ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-primary group-hover:bg-primary group-hover:text-white'} rounded-2xl flex items-center justify-center transition-all`}>
+          {isRequested ? <Clock size={20} /> : <Zap size={20} fill="currentColor" />}
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${automation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'}`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${automation.status === 'active' ? 'translate-x-6' : 'translate-x-1'}`}
-            />
-          </button>
-        </div>
+        {!isRequested && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${automation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${automation.status === 'active' ? 'translate-x-6' : 'translate-x-1'}`}
+              />
+            </button>
+          </div>
+        )}
+        {isRequested && (
+            <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg uppercase tracking-widest">Under Review</span>
+        )}
       </div>
 
       <div className="flex-1 space-y-1">
@@ -196,13 +301,20 @@ function AutomationCard({ automation, onEdit, onToggle }) {
       <div className="h-[1px] bg-slate-50 my-6"></div>
 
       <div className="flex items-center justify-end">
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-3 transition-all"
-        >
-          Open Builder
-          <ChevronRight size={14} />
-        </button>
+        {!isRequested ? (
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-3 transition-all"
+            >
+              Open Builder
+              <ChevronRight size={14} />
+            </button>
+        ) : (
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                <AlertCircle size={12} />
+                Builder Locked
+            </span>
+        )}
       </div>
     </motion.div>
   );

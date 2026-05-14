@@ -219,6 +219,12 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     return { success: false, error: "Customer service window expired. Automation cannot send free-form messages." };
                 }
 
+                // Global Limit Check
+                if (user.messages_used >= user.message_limit) {
+                    console.log(`[Automation] ❌ Blocking messageNode for ${user.name} - Limit Exceeded.`);
+                    return { success: false, error: "Message limit exceeded." };
+                }
+
                 // Replace variables in text
                 let text = config.message || '';
                 if (state.context) {
@@ -271,6 +277,15 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     created_at: new Date()
                 });
 
+                // Update Usage
+                user.messages_used += 1;
+                
+                if (user.messages_used >= user.message_limit) {
+                    user.subscription_status = 'suspended';
+                }
+
+                await user.save();
+
                 return { success: true };
             } catch (e) {
                 return { success: false, error: e.message };
@@ -287,6 +302,12 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                 // Automation templates are typically utility or marketing. Defaulting to utility if not specified.
                 const category = config.category || 'utility';
                 const meta_cost = calculateMetaCost({ category, isInsideWindow });
+
+                // Global Limit Check
+                if (user.messages_used >= user.message_limit) {
+                    console.log(`[Automation] ❌ Blocking templateNode for ${user.name} - Limit Exceeded.`);
+                    return { success: false, error: "Message limit exceeded." };
+                }
 
                 const userToken = user.access_token;
                 const systemToken = process.env.ACCESSTOKEN;
@@ -322,6 +343,11 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     // Update user totals
                     user.messages_used += 1;
                     user.meta_cost_total += meta_cost;
+
+                    if (user.messages_used >= user.message_limit) {
+                        user.subscription_status = 'suspended';
+                    }
+
                     await user.save();
                 }
 

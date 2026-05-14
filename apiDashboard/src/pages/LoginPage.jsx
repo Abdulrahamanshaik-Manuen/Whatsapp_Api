@@ -83,7 +83,11 @@ export default function LoginPage({ onNavigate }) {
 
         setSuccessMsg('Login successful! Redirecting...');
         setTimeout(() => {
-          onNavigate('/dashboard');
+          if (data.user.role === 'admin') {
+            onNavigate('/admin');
+          } else {
+            onNavigate('/dashboard');
+          }
         }, 1000);
       } else {
         setErrorMsg(data.error || 'Invalid credentials. Please try again.');
