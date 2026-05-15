@@ -32,22 +32,24 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
       transition-transform duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
-      <div className="p-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-white shadow-lg shadow-secondary/20">
-            <Zap size={22} fill="currentColor" />
+      <div className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-xl shadow-white/5 overflow-hidden">
+             <img src="/manuen_square.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
-            <h1 className="text-white font-display font-black text-xl tracking-tight leading-none">MANUEN</h1>
-            <p className="text-[9px] text-secondary font-black tracking-[0.2em] mt-1">INFOTECH</p>
+          <div className="flex flex-col">
+            <h1 className="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2">
+               Client Dashboard
+               <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+            </h1>
           </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden ml-auto text-white/40 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="lg:hidden text-white/40 hover:text-white transition-colors"
-        >
-          <X size={20} />
-        </button>
       </div>
 
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar no-scrollbar">

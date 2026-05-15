@@ -15,14 +15,20 @@ export default function Header({ toggleSidebar, onNavigate }) {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-20">
-      <div className="flex items-center gap-3">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-3 flex items-center justify-between sticky top-0 z-20">
+      <div className="flex items-center gap-6">
         <button
           onClick={toggleSidebar}
           className="lg:hidden text-slate-500 hover:text-slate-800 transition-colors"
         >
           <Menu size={22} />
         </button>
+        
+        {/* Main Logo in Header */}
+        <div className="hidden lg:flex items-center">
+           <img src="/manuen_square.png" alt="Icon" className="h-11 w-11 object-contain" />
+           <img src="/manuen_logo.png" alt="Manuen" className="h-11 object-contain -ml-5" />
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
