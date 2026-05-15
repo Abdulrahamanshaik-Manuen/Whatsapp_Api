@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, Bot, Zap, Plus, User, MoreVertical, 
+import {
+  Search, Bot, Zap, Plus, User, MoreVertical,
   Edit3, Trash2, CheckCircle, Clock, AlertCircle,
   Activity, Layers, MousePointer2, ChevronRight
 } from 'lucide-react';
@@ -11,13 +11,13 @@ export default function AutomationHub({ onNavigate }) {
   const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [tab, setTab] = useState('assignments'); // 'assignments' or 'requests'
+  const [tab, setTab] = useState('assignments');
 
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      
+
       const [reqRes, autoRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/admin/automation-requests`, { headers: { 'Authorization': `Bearer ${token}` } }),
         axios.get(`${API_BASE_URL}/admin/automations`, { headers: { 'Authorization': `Bearer ${token}` } })
@@ -36,9 +36,11 @@ export default function AutomationHub({ onNavigate }) {
     fetchData();
   }, []);
 
-  const filteredAutomations = automations.filter(a => 
-    a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    a.clientId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAutomations = automations.filter(a =>
+    a.status !== 'requested' && (
+      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.clientId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
 
   return (
@@ -51,7 +53,7 @@ export default function AutomationHub({ onNavigate }) {
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Deploy and manage custom conversational nodes for clients</p>
           </div>
 
-          <button 
+          <button
             onClick={() => onNavigate('/automations/builder')}
             className="flex items-center gap-2 px-6 py-3 bg-[#0F172A] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
           >
@@ -72,50 +74,50 @@ export default function AutomationHub({ onNavigate }) {
 
           {/* Tabs & Search */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
-             <div className="flex items-center gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-100">
-                <button 
-                  onClick={() => setTab('assignments')}
-                  className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'assignments' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                   Assignments
-                </button>
-                <button 
-                  onClick={() => setTab('requests')}
-                  className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'requests' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                   Requests ({requests.length})
-                </button>
-             </div>
+            <div className="flex items-center gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-100">
+              <button
+                onClick={() => setTab('assignments')}
+                className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'assignments' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Assignments
+              </button>
+              <button
+                onClick={() => setTab('requests')}
+                className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'requests' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Requests ({requests.length})
+              </button>
+            </div>
 
-             <div className="relative w-full md:w-80 group">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" />
-                <input 
-                  type="text"
-                  placeholder="Search by flow or client..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:bg-white focus:border-primary transition-all outline-none"
-                />
-             </div>
+            <div className="relative w-full md:w-80 group">
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Search by flow or client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:bg-white focus:border-primary transition-all outline-none"
+              />
+            </div>
           </div>
 
           {/* Content Area */}
           {tab === 'requests' ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {requests.length === 0 ? (
-                   <EmptyState icon={Bot} title="No Pending Requests" desc="All client automation needs are currently fulfilled." />
-                ) : requests.map(req => (
-                   <RequestCard key={req._id} request={req} onNavigate={onNavigate} />
-                ))}
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {requests.length === 0 ? (
+                <EmptyState icon={Bot} title="No Pending Requests" desc="All client automation needs are currently fulfilled." />
+              ) : requests.map(req => (
+                <RequestCard key={req._id} request={req} onNavigate={onNavigate} />
+              ))}
+            </div>
           ) : (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredAutomations.length === 0 ? (
-                   <EmptyState icon={Zap} title="No Active Assignments" desc="Start by creating a flow or fulfilling a request." />
-                ) : filteredAutomations.map(auto => (
-                   <AssignmentCard key={auto._id} automation={auto} onNavigate={onNavigate} />
-                ))}
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredAutomations.length === 0 ? (
+                <EmptyState icon={Zap} title="No Active Assignments" desc="Start by creating a flow or fulfilling a request." />
+              ) : filteredAutomations.map(auto => (
+                <AssignmentCard key={auto._id} automation={auto} onNavigate={onNavigate} />
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -163,7 +165,7 @@ function RequestCard({ request, onNavigate }) {
         <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 italic">"{request.description}"</p>
       </div>
 
-      <button 
+      <button
         onClick={() => onNavigate('/automations/builder', request)}
         className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
       >
@@ -191,26 +193,26 @@ function AssignmentCard({ automation, onNavigate }) {
       <div>
         <h4 className="text-base font-black text-slate-900 tracking-tight truncate">{automation.name}</h4>
         <div className="flex items-center gap-2 mt-1.5">
-           <User size={12} className="text-slate-300" />
-           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              {automation.clientId?.name || 'Global Template'}
-           </p>
+          <User size={12} className="text-slate-300" />
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+            {automation.clientId?.name || 'Global Template'}
+          </p>
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-         <div className="flex items-center gap-4 text-slate-300">
-            <div className="flex flex-col">
-               <span className="text-[8px] font-black uppercase">Nodes</span>
-               <span className="text-xs font-black text-slate-600">{automation.nodes?.length || 0}</span>
-            </div>
-         </div>
-         <button 
-           onClick={() => onNavigate('/automations/builder', automation)}
-           className="flex items-center gap-1.5 text-primary text-[10px] font-black uppercase tracking-widest hover:gap-2.5 transition-all"
-         >
-            Edit Flow <ChevronRight size={14} />
-         </button>
+        <div className="flex items-center gap-4 text-slate-300">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black uppercase">Nodes</span>
+            <span className="text-xs font-black text-slate-600">{automation.nodes?.length || 0}</span>
+          </div>
+        </div>
+        <button
+          onClick={() => onNavigate('/automations/builder', automation)}
+          className="flex items-center gap-1.5 text-primary text-[10px] font-black uppercase tracking-widest hover:gap-2.5 transition-all"
+        >
+          Edit Flow <ChevronRight size={14} />
+        </button>
       </div>
     </div>
   );

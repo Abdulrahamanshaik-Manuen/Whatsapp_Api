@@ -8,12 +8,14 @@ import AutomationHub from './AutomationHub';
 import AdminBilling from './AdminBilling';
 import AdminSettings from './AdminSettings';
 import AdminCreateTemplate from './AdminCreateTemplate';
+import AutomationBuilder from '../AutomationBuilder';
 
 const adminTabPathMap = {
   'Dashboard': '/admin',
   'User Management': '/admin/users',
   'Template Requests': '/admin/templates',
   'Automation Hub': '/admin/automations',
+  'Automation Builder': '/automations/builder',
   'Message Logs': '/admin/logs',
   'Billing & Subscriptions': '/admin/billing',
   'System Settings': '/admin/settings',
@@ -34,6 +36,10 @@ export default function AdminPanel({ onNavigate, initialPath }) {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [adminData, setAdminData] = useState(null);
+  const [selectedAutomationData, setSelectedAutomationData] = useState(() => {
+    const saved = localStorage.getItem('selectedAutomationData');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const fetchAdminData = async () => {
     try {
@@ -98,7 +104,7 @@ export default function AdminPanel({ onNavigate, initialPath }) {
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />
+        {activeTab !== 'Automation Builder' && <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />}
 
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
@@ -108,7 +114,29 @@ export default function AdminPanel({ onNavigate, initialPath }) {
           ) : activeTab === 'Template Requests' ? (
             <TemplateRequests onNavigateCreate={() => handleTabChange('Create Template')} />
           ) : activeTab === 'Automation Hub' ? (
-            <AutomationHub onNavigate={onNavigate} />
+            <AutomationHub onNavigate={(path, data) => {
+              if (path === '/automations/builder') {
+                if (data) {
+                  localStorage.setItem('selectedAutomationData', JSON.stringify(data));
+                  setSelectedAutomationData(data);
+                } else {
+                  localStorage.removeItem('selectedAutomationData');
+                  setSelectedAutomationData(null);
+                }
+                setActiveTab('Automation Builder');
+              }
+              onNavigate(path);
+            }} />
+          ) : activeTab === 'Automation Builder' ? (
+            <AutomationBuilder 
+              automation={selectedAutomationData}
+              onClose={() => {
+                localStorage.removeItem('selectedAutomationData');
+                setSelectedAutomationData(null);
+                setActiveTab('Automation Hub');
+                onNavigate('/admin/automations');
+              }} 
+            />
           ) : activeTab === 'Billing & Subscriptions' ? (
             <AdminBilling />
           ) : activeTab === 'System Settings' ? (

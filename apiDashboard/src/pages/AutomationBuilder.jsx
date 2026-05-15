@@ -16,7 +16,8 @@ import {
 import '@xyflow/react/dist/style.css';
 import {
   Save, Play, X, Zap, MessageSquare,
-  Settings, Trash2, ChevronLeft, Clock
+  Settings, Trash2, ChevronLeft, Clock, User,
+  Split, GitBranch, Bell, Tag, Database, Activity, Timer
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -78,10 +79,84 @@ const WaitNode = ({ data, selected }) => (
   </div>
 );
 
+const ConditionNode = ({ data, selected }) => (
+  <div className={`${nodeStyles}`} style={{ borderColor: selected ? '#F39C12' : '#FCF3CF' }}>
+    <Handle type="target" position={Position.Top} style={{ background: '#F39C12' }} />
+    <div className="flex items-center gap-3 mb-2">
+      <div className="w-8 h-8 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+        <GitBranch size={16} />
+      </div>
+      <div className="flex-1">
+        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none">Branch</p>
+        <h4 className="text-xs font-black text-slate-800 tracking-tight mt-1">
+          {data.config?.condition || 'If User Selection...'}
+        </h4>
+      </div>
+    </div>
+    <div className="space-y-1">
+      {data.config?.branches?.map((branch, i) => (
+        <div key={i} className="flex items-center justify-between bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+          <span className="text-[9px] font-bold text-slate-500">Option {branch.value}</span>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id={`branch-${i}`}
+            style={{ background: '#F39C12', top: 'auto', right: -4 }}
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ActionNode = ({ data, selected }) => {
+  const Icon = Bell;
+  const color = 'text-amber-500 bg-amber-50';
+
+  return (
+    <div className={`${nodeStyles}`} style={{ borderColor: selected ? '#3498DB' : '#D6EAF8' }}>
+      <Handle type="target" position={Position.Top} style={{ background: '#3498DB' }} />
+      <div className="flex items-center gap-3">
+        <div className={`w-8 h-8 ${color} rounded-xl flex items-center justify-center`}>
+          <Icon size={16} />
+        </div>
+        <div className="flex-1">
+          <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest leading-none">System</p>
+          <h4 className="text-xs font-black text-slate-800 tracking-tight mt-1 uppercase">
+            {data.config?.label || 'Notification'}
+          </h4>
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} style={{ background: '#3498DB' }} />
+    </div>
+  );
+};
+
+const DelayNode = ({ data, selected }) => (
+  <div className={`${nodeStyles}`} style={{ borderColor: selected ? '#95A5A6' : '#F2F4F4' }}>
+    <Handle type="target" position={Position.Top} style={{ background: '#95A5A6' }} />
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center">
+        <Timer size={16} />
+      </div>
+      <div className="flex-1">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Wait</p>
+        <h4 className="text-xs font-black text-slate-800 tracking-tight mt-1">
+          {data.config?.duration} {data.config?.unit || 'minutes'}
+        </h4>
+      </div>
+    </div>
+    <Handle type="source" position={Position.Bottom} style={{ background: '#95A5A6' }} />
+  </div>
+);
+
 const nodeTypes = {
   triggerNode: TriggerNode,
   messageNode: MessageNode,
-  waitNode: WaitNode
+  waitNode: WaitNode,
+  conditionNode: ConditionNode,
+  actionNode: ActionNode,
+  delayNode: DelayNode
 };
 
 const initialNodes = [
@@ -211,22 +286,34 @@ function BuilderCanvas({ onClose, automation }) {
   };
 
   const updateNodeConfig = (config) => {
+    if (!selectedNode) return;
+
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === selectedNode.id) {
-          return {
+          const updatedNode = {
             ...node,
             data: {
               ...node.data,
-              config: { ...node.data.config, ...config },
+              config: { ...(node.data.config || {}), ...config },
             },
           };
+          return updatedNode;
         }
         return node;
       })
     );
-    setSelectedNode(prev => ({ ...prev, data: { ...prev.data, config: { ...prev.data.config, ...config } } }));
   };
+
+  // Keep selectedNode in sync with nodes array
+  useEffect(() => {
+    if (selectedNode) {
+      const freshNode = nodes.find(n => n.id === selectedNode.id);
+      if (freshNode && JSON.stringify(freshNode.data) !== JSON.stringify(selectedNode.data)) {
+        setSelectedNode(freshNode);
+      }
+    }
+  }, [nodes, selectedNode]);
 
   const handleSave = async (newStatus = null) => {
     try {
@@ -295,10 +382,13 @@ function BuilderCanvas({ onClose, automation }) {
 
           <NodeSection title="Actions" onNodeAdd={onNodeAdd} nodes={[
             { type: 'messageNode', label: 'Send Text', icon: MessageSquare, color: 'text-emerald-500 bg-emerald-50' },
+            { type: 'actionNode', label: 'System Action', icon: Database, color: 'text-blue-500 bg-blue-50' },
           ]} />
 
           <NodeSection title="Logic" onNodeAdd={onNodeAdd} nodes={[
             { type: 'waitNode', label: 'Wait for Reply', icon: Clock, color: 'text-purple-500 bg-purple-50' },
+            { type: 'conditionNode', label: 'Branching', icon: GitBranch, color: 'text-amber-600 bg-amber-50' },
+            { type: 'delayNode', label: 'Delay', icon: Timer, color: 'text-slate-500 bg-slate-100' },
           ]} />
         </div>
 
@@ -410,23 +500,42 @@ function BuilderCanvas({ onClose, automation }) {
               </div>
 
               {isAdmin && (
-                 <div className="space-y-3">
+                <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-1">
-                       <User size={12} className="text-primary" />
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assign to Client</label>
+                      <User size={12} className="text-primary" />
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assign to Client</label>
                     </div>
-                    <select 
+                    <select
                       value={selectedClientId}
                       onChange={(e) => setSelectedClientId(e.target.value)}
                       className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-primary transition-all outline-none appearance-none cursor-pointer"
                     >
-                       <option value="">Global Template (No Client)</option>
-                       {clients.map(c => (
-                          <option key={c.id} value={c.id}>{c.name} ({c.businessName})</option>
-                       ))}
+                      <option value="">Global Template (No Client)</option>
+                      {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.businessName})</option>
+                      ))}
                     </select>
-                    <p className="text-[9px] text-slate-400 font-medium px-1 italic">Assigning to a client makes this flow visible in their dashboard.</p>
-                 </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Activity size={12} className="text-emerald-500" />
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Workflow Status</label>
+                    </div>
+                    <select
+                      value={automation?.status || 'active'}
+                      onChange={(e) => handleSave(e.target.value)}
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-emerald-500 transition-all outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="active">Active (Live)</option>
+                      <option value="paused">Paused</option>
+                      <option value="draft">Draft</option>
+                      <option value="requested">Requested (Pending)</option>
+                    </select>
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-medium px-1 italic">Promote to "Active" to move this from Requests to Assignments.</p>
+                </div>
               )}
 
               <div className="h-[1px] bg-slate-50 my-2"></div>
@@ -483,6 +592,100 @@ function BuilderCanvas({ onClose, automation }) {
                       className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-purple-500 transition-all outline-none"
                     />
                     <p className="text-[9px] text-slate-400 font-medium px-1 italic">This allows you to store the user's response and use it later.</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedNode.type === 'conditionNode' && (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conditions (Options)</label>
+                    <div className="space-y-2">
+                      {(selectedNode.data.config?.branches || []).map((branch, i) => (
+                        <div key={i} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={branch.value}
+                            onChange={(e) => {
+                              const newBranches = [...(selectedNode.data.config.branches || [])];
+                              newBranches[i].value = e.target.value;
+                              updateNodeConfig({ branches: newBranches });
+                            }}
+                            className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:border-amber-500 outline-none"
+                          />
+                          <button
+                            onClick={() => {
+                              const newBranches = (selectedNode.data.config.branches || []).filter((_, idx) => idx !== i);
+                              updateNodeConfig({ branches: newBranches });
+                            }}
+                            className="p-3 text-red-400 hover:text-red-500"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newBranches = [...(selectedNode.data.config?.branches || []), { value: '' }];
+                          updateNodeConfig({ branches: newBranches });
+                        }}
+                        className="w-full py-3 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-amber-200 hover:text-amber-500 transition-all"
+                      >
+                        + Add Option
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedNode.type === 'actionNode' && (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Action Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: 'notify', label: 'Notification', icon: Bell }
+                      ].map(act => (
+                        <button
+                          type="button"
+                          key={act.id}
+                          onClick={() => updateNodeConfig({ actionType: act.id, label: act.label })}
+                          className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${selectedNode.data.config?.actionType === act.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'}`}
+                        >
+                          <act.icon size={18} className={selectedNode.data.config?.actionType === act.id ? 'text-primary' : 'text-slate-400'} />
+                          <span className="text-[9px] font-black uppercase tracking-tighter">{act.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedNode.type === 'delayNode' && (
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="flex-1 space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duration</label>
+                      <input
+                        type="number"
+                        value={selectedNode.data.config?.duration || ''}
+                        onChange={(e) => updateNodeConfig({ duration: e.target.value })}
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-slate-400 transition-all outline-none"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit</label>
+                      <select
+                        value={selectedNode.data.config?.unit || 'minutes'}
+                        onChange={(e) => updateNodeConfig({ unit: e.target.value })}
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-slate-400 transition-all outline-none"
+                      >
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               )}
