@@ -108,6 +108,29 @@ function BuilderCanvas({ onClose, automation }) {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [showSettings, setShowSettings] = useState(!!automation);
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState(automation?.clientId?._id || automation?.clientId || '');
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchClients();
+    }
+  }, [isAdmin]);
+
+  const fetchClients = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_BASE_URL}/admin/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setClients(response.data.users);
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+    }
+  };
 
   useEffect(() => {
     if (automation) {
@@ -219,7 +242,7 @@ function BuilderCanvas({ onClose, automation }) {
         nodes: nodes,
         edges: edges,
         status: statusToSave,
-        clientId: automation?.clientId || null
+        clientId: selectedClientId || automation?.clientId || null
       };
 
       let response;
@@ -385,6 +408,26 @@ function BuilderCanvas({ onClose, automation }) {
                   className="w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[2rem] text-sm font-bold focus:bg-white focus:border-primary transition-all resize-none outline-none"
                 />
               </div>
+
+              {isAdmin && (
+                 <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                       <User size={12} className="text-primary" />
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assign to Client</label>
+                    </div>
+                    <select 
+                      value={selectedClientId}
+                      onChange={(e) => setSelectedClientId(e.target.value)}
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-primary transition-all outline-none appearance-none cursor-pointer"
+                    >
+                       <option value="">Global Template (No Client)</option>
+                       {clients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} ({c.businessName})</option>
+                       ))}
+                    </select>
+                    <p className="text-[9px] text-slate-400 font-medium px-1 italic">Assigning to a client makes this flow visible in their dashboard.</p>
+                 </div>
+              )}
 
               <div className="h-[1px] bg-slate-50 my-2"></div>
 

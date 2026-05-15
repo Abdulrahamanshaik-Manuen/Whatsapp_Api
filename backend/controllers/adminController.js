@@ -259,6 +259,18 @@ export const getAutomationRequests = async (req, res) => {
     }
 };
 
+export const getAllAutomations = async (req, res) => {
+    try {
+        const automations = await Automation.find()
+            .populate('clientId', 'name phone')
+            .populate('createdBy', 'name')
+            .sort({ createdAt: -1 });
+        res.json(automations);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch all automations" });
+    }
+};
+
 export const getBillingOverview = async (req, res) => {
     try {
         const users = await User.find({ role: 'client' }).populate('planId');

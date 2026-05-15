@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus, Zap, Play, Pause,
   Search, Filter, Trash2, Edit3, ChevronRight,
-  TrendingUp, Activity, Users, Clock, AlertCircle, X, Send
+  TrendingUp, Activity, Users, Clock, AlertCircle, X, Send, Bot
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,13 +101,15 @@ export default function AutomationPage({ onNavigate }) {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h1 className="text-3xl font-black text-primary tracking-tight">Automations</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and manage your conversational flows</p>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+               {isAdmin ? 'Design and manage global conversational flows' : 'Manage your conversational flows'}
+            </p>
           </div>
           <button
             onClick={handleAction}
-            className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-sm font-bold rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 active:scale-95"
+            className={`flex items-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-2xl hover:brightness-110 transition-all shadow-xl active:scale-95 ${isAdmin ? 'bg-primary shadow-primary/20' : 'bg-[#0F172A] shadow-slate-200'}`}
           >
-            <Plus size={18} />
+            {isAdmin ? <Plus size={18} /> : <Bot size={18} />}
             {isAdmin ? 'Create Workflow' : 'Request Workflow'}
           </button>
         </div>

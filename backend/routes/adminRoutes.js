@@ -18,6 +18,7 @@ router.post('/templates/sync', adminController.syncTemplatesWithMeta);
 router.put('/templates/:id/status', adminController.updateTemplateStatus);
 
 router.get('/automation-requests', adminController.getAutomationRequests);
+router.get('/automations', adminController.getAllAutomations);
 router.get('/billing', adminController.getBillingOverview);
 
 export default router;

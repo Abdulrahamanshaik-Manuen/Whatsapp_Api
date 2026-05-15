@@ -185,9 +185,17 @@ export default function TemplatesPage({ onNavigate }) {
 
   const filteredTemplates = templates.filter(t => {
     const matchesSearch = (t.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || (t.status || '').toUpperCase() === statusFilter;
+    
+    let matchesStatus = statusFilter === 'ALL';
+    if (!matchesStatus) {
+      const s = (t.status || '').toLowerCase();
+      if (statusFilter === 'ADMIN PENDING') matchesStatus = s === 'pending_admin_approval';
+      else if (statusFilter === 'META PENDING') matchesStatus = s === 'pending_meta_approval';
+      else matchesStatus = s.toUpperCase() === statusFilter;
+    }
+    
     return matchesSearch && matchesStatus;
-  });
+  }).sort((a, b) => (b._id || '').localeCompare(a._id || ''));
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
@@ -227,9 +235,9 @@ export default function TemplatesPage({ onNavigate }) {
           {/* Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard label="Total" value={templates.length} color="blue" icon={Layers} />
-            <StatCard label="Approved" value={templates.filter(t => t.status?.toUpperCase() === 'APPROVED').length} color="emerald" icon={CheckCircle2} />
-            <StatCard label="Pending" value={templates.filter(t => t.status?.toUpperCase() === 'PENDING').length} color="orange" icon={Clock} />
-            <StatCard label="Rejected" value={templates.filter(t => t.status?.toUpperCase() === 'REJECTED').length} color="rose" icon={AlertCircle} />
+            <StatCard label="Approved" value={templates.filter(t => t.status === 'approved').length} color="emerald" icon={CheckCircle2} />
+            <StatCard label="Pending Review" value={templates.filter(t => t.status.includes('pending')).length} color="orange" icon={Clock} />
+            <StatCard label="Rejected" value={templates.filter(t => t.status === 'rejected').length} color="rose" icon={AlertCircle} />
           </div>
 
           {/* 🔍 5. Search + Filters Bar */}
@@ -245,16 +253,17 @@ export default function TemplatesPage({ onNavigate }) {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-slate-50 border border-slate-100 rounded-xl">
-              {['ALL', 'APPROVED', 'PENDING', 'REJECTED'].map((status) => (
+            <div className="flex items-center gap-1.5 p-1 bg-slate-50 border border-slate-100 rounded-xl overflow-x-auto no-scrollbar">
+              {['ALL', 'ADMIN PENDING', 'META PENDING', 'APPROVED', 'REJECTED'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.1em] rounded-lg transition-all ${statusFilter === status
+                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.1em] rounded-lg transition-all whitespace-nowrap ${statusFilter === status
                     ? status === 'APPROVED' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                       : status === 'REJECTED' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
-                        : status === 'PENDING' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                          : 'bg-[#003B6D] text-white shadow-lg shadow-[#003B6D]/20'
+                        : status === 'META PENDING' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                          : status === 'ADMIN PENDING' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                            : 'bg-[#003B6D] text-white shadow-lg shadow-[#003B6D]/20'
                     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
                     }`}
                 >
@@ -329,15 +338,38 @@ export default function TemplatesPage({ onNavigate }) {
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                     {/* Status Badge */}
                     {(() => {
-                      const status = (template.status || 'PENDING').toUpperCase();
-                      const styles = {
-                        APPROVED: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                        PENDING: 'bg-amber-50 text-amber-600 border-amber-100',
-                        REJECTED: 'bg-rose-50 text-rose-600 border-rose-100'
-                      };
+                      const status = (template.status || 'DRAFT').toLowerCase();
+                      if (status === 'pending_admin_approval') {
+                        return (
+                          <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-amber-50 text-amber-600 border-amber-100">
+                            Admin Review
+                          </span>
+                        );
+                      }
+                      if (status === 'pending_meta_approval') {
+                        return (
+                          <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-blue-50 text-blue-600 border-blue-100">
+                            Meta Review
+                          </span>
+                        );
+                      }
+                      if (status === 'approved') {
+                        return (
+                          <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-100">
+                            Approved
+                          </span>
+                        );
+                      }
+                      if (status === 'rejected') {
+                        return (
+                          <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-rose-50 text-rose-600 border-rose-100">
+                            Rejected
+                          </span>
+                        );
+                      }
                       return (
-                        <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${styles[status] || styles.PENDING}`}>
-                          {status}
+                        <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-slate-50 text-slate-500 border-slate-100">
+                          Draft
                         </span>
                       );
                     })()}

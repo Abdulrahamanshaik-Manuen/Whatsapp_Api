@@ -139,7 +139,7 @@ export default function AdminCreateTemplate({ onBack }) {
       try {
          const token = localStorage.getItem('token');
          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-         
+
          const payload = {
             name: formData.name,
             category: formData.category,
@@ -195,7 +195,6 @@ export default function AdminCreateTemplate({ onBack }) {
                      </button>
                      <div className="flex items-baseline gap-3">
                         <h1 className="text-3xl font-black text-primary tracking-tight">Create Template</h1>
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest px-3 py-1 bg-slate-100 rounded-lg">Admin Design Studio</span>
                      </div>
                   </div>
                   <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and push professional Meta templates for clients</p>
@@ -216,7 +215,7 @@ export default function AdminCreateTemplate({ onBack }) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                <div className="lg:col-span-8 space-y-8">
                   <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-10 space-y-10">
-                     
+
                      {/* 01: Client Assignment (Admin Exclusive) */}
                      <div className="space-y-6">
                         <div className="flex items-center gap-3">
@@ -462,15 +461,15 @@ export default function AdminCreateTemplate({ onBack }) {
                               <div className="flex flex-col gap-1">
                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Interactive Buttons</label>
                                  <div className="flex items-center gap-3">
-                                    <button 
-                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Yes, I am interested' }, { type: 'QUICK_REPLY', text: 'Maybe later' }, { type: 'QUICK_REPLY', text: 'Not interested' }] })} 
+                                    <button
+                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Yes, I am interested' }, { type: 'QUICK_REPLY', text: 'Maybe later' }, { type: 'QUICK_REPLY', text: 'Not interested' }] })}
                                        className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors"
                                     >
                                        + Interest Sample
                                     </button>
                                     <span className="text-slate-200 text-[8px]">|</span>
-                                    <button 
-                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Book Now' }, { type: 'URL', text: 'View Schedule', url: 'https://' }, { type: 'PHONE_NUMBER', text: 'Call Support', phone_number: '+' }] })} 
+                                    <button
+                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Book Now' }, { type: 'URL', text: 'View Schedule', url: 'https://' }, { type: 'PHONE_NUMBER', text: 'Call Support', phone_number: '+' }] })}
                                        className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors"
                                     >
                                        + Booking Sample

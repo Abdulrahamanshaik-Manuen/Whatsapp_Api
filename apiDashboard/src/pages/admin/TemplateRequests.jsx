@@ -111,9 +111,17 @@ export default function TemplateRequests({ onNavigateCreate }) {
     const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.wabaId?.includes(searchQuery);
-    const matchesStatus = statusFilter === 'All' || t.status.toLowerCase().includes(statusFilter.toLowerCase());
+    
+    let matchesStatus = statusFilter === 'All';
+    if (!matchesStatus) {
+      const s = t.status.toLowerCase();
+      if (statusFilter === 'Admin Pending') matchesStatus = s === 'pending_admin_approval';
+      else if (statusFilter === 'Meta Pending') matchesStatus = s === 'pending_meta_approval';
+      else matchesStatus = s.includes(statusFilter.toLowerCase());
+    }
+    
     return matchesSearch && matchesStatus;
-  });
+  }).sort((a, b) => b.id.localeCompare(a.id));
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
@@ -165,11 +173,11 @@ export default function TemplateRequests({ onNavigateCreate }) {
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto no-scrollbar py-1">
-              {['All', 'Pending', 'Approved', 'Rejected'].map((status) => (
+              {['All', 'Admin Pending', 'Meta Pending', 'Approved', 'Rejected'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[100px] text-center ${statusFilter === status
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[120px] text-center ${statusFilter === status
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
                     }`}
@@ -423,17 +431,25 @@ export default function TemplateRequests({ onNavigateCreate }) {
 function StatusBadge({ status }) {
   const normalized = status.toLowerCase();
 
-  if (normalized.includes('pending')) {
+  if (normalized === 'pending_admin_approval') {
     return (
-      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-orange-100 text-orange-600 border-orange-200">
-        Pending
+      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-amber-50 text-amber-600 border-amber-100">
+        Admin Review
+      </span>
+    );
+  }
+
+  if (normalized === 'pending_meta_approval') {
+    return (
+      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-blue-50 text-blue-600 border-blue-100">
+        Meta Review
       </span>
     );
   }
 
   if (normalized === 'approved') {
     return (
-      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-secondary/10 text-secondary border-secondary/20">
+      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-emerald-50 text-emerald-600 border-emerald-100">
         Approved
       </span>
     );
@@ -441,15 +457,15 @@ function StatusBadge({ status }) {
 
   if (normalized === 'rejected') {
     return (
-      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-rose-100 text-rose-600 border-rose-200">
+      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-rose-50 text-rose-600 border-rose-100">
         Rejected
       </span>
     );
   }
 
   return (
-    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-slate-100 text-slate-500 border-slate-200">
-      Disabled
+    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-100">
+      {status || 'Draft'}
     </span>
   );
 }

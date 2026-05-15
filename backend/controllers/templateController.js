@@ -79,7 +79,7 @@ export const getAdminTemplates = async (req, res) => {
         const templates = await Template.find()
             .populate('created_by', 'name phone waba_id phone_number_id')
             .populate('requested_by', 'name phone waba_id phone_number_id')
-            .sort({ createdAt: -1 });
+            .sort({ _id: -1 });
         
         // Calculate stats
         const stats = {
@@ -216,8 +216,14 @@ export const submitToMeta = async (req, res) => {
 
 export const getClientTemplates = async (req, res) => {
     try {
-        // Clients can see all approved templates in the system
-        const templates = await Template.find({ status: 'approved' });
+        // Clients see all approved templates + any template they created themselves (even if pending)
+        const templates = await Template.find({
+            $or: [
+                { status: 'approved' },
+                { created_by: req.user.user_id },
+                { requested_by: req.user.user_id }
+            ]
+        }).sort({ createdAt: -1, _id: -1 });
         res.status(200).json(templates);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch templates", message: error.message });

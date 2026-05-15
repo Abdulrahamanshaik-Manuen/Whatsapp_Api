@@ -1,122 +1,229 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bot, Zap, Plus, User, MoreVertical, Edit3, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { 
+  Search, Bot, Zap, Plus, User, MoreVertical, 
+  Edit3, Trash2, CheckCircle, Clock, AlertCircle,
+  Activity, Layers, MousePointer2, ChevronRight
+} from 'lucide-react';
+import axios from 'axios';
 
 export default function AutomationHub({ onNavigate }) {
   const [requests, setRequests] = useState([]);
+  const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tab, setTab] = useState('assignments'); // 'assignments' or 'requests'
 
-  const fetchRequests = async () => {
+  const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE_URL}/admin/automations/requests`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setRequests(data);
-      }
+      
+      const [reqRes, autoRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/admin/automation-requests`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/admin/automations`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      setRequests(reqRes.data);
+      setAutomations(autoRes.data);
     } catch (err) {
-      console.error("Fetch Requests Error:", err);
+      console.error("Fetch Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRequests();
+    fetchData();
   }, []);
 
+  const filteredAutomations = automations.filter(a => 
+    a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.clientId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar">
-      <div className="max-w-[1400px] mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Automation Hub</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">Review client requests and build custom automation flows</p>
+    <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
+      {/* Header Section */}
+      <div className="px-8 pt-8 pb-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-black text-primary tracking-tight">Automation Hub</h1>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Deploy and manage custom conversational nodes for clients</p>
           </div>
+
           <button 
             onClick={() => onNavigate('/automations/builder')}
-            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0F172A] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
           >
-            <Plus size={16} /> Create Global Template
+            <Plus size={18} strokeWidth={3} /> Create Global Flow
           </button>
         </div>
+      </div>
 
-        {/* Requests Section */}
-        <div className="space-y-6">
-           <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                 <Clock size={20} />
-              </div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight">Pending Client Requests</h2>
-           </div>
+      <div className="px-8 pb-10">
+        <div className="max-w-7xl mx-auto space-y-8">
 
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loading ? (
-                <div className="col-span-full py-12 text-center text-slate-400 font-black uppercase tracking-widest animate-pulse">Scanning requests...</div>
-              ) : requests.length === 0 ? (
-                <div className="col-span-full py-16 bg-white rounded-[2.5rem] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
-                   <Bot size={40} className="text-slate-200 mb-4" />
-                   <h3 className="text-lg font-black text-slate-800">No new requests</h3>
-                   <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">All automation queues are empty</p>
-                </div>
-              ) : requests.map(req => (
-                <div key={req._id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 space-y-6 hover:shadow-md transition-all group">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black">
-                            {req.clientId?.name?.charAt(0) || 'C'}
-                         </div>
-                         <div>
-                            <p className="text-sm font-black text-slate-900">{req.clientId?.name || 'Unknown Client'}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{req.clientId?.phone}</p>
-                         </div>
-                      </div>
-                      <div className="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black uppercase tracking-widest">REQUESTED</div>
-                   </div>
+          {/* Stats Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard label="Total Flows" value={automations.length} icon={Layers} color="blue" />
+            <StatCard label="Pending Requests" value={requests.length} icon={Clock} color="orange" />
+            <StatCard label="Active Deployments" value={automations.filter(a => a.status === 'active').length} icon={Zap} color="emerald" />
+          </div>
 
-                   <div>
-                      <h4 className="text-base font-black text-slate-900 tracking-tight truncate">{req.name}</h4>
-                      <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2">{req.description || 'No detailed description provided.'}</p>
-                   </div>
+          {/* Tabs & Search */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
+             <div className="flex items-center gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-100">
+                <button 
+                  onClick={() => setTab('assignments')}
+                  className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'assignments' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                   Assignments
+                </button>
+                <button 
+                  onClick={() => setTab('requests')}
+                  className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${tab === 'requests' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                   Requests ({requests.length})
+                </button>
+             </div>
 
-                   <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => onNavigate('/automations/builder', { ...req, isAdminAction: true })}
-                        className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                      >
-                         <Zap size={14} fill="currentColor" /> Build & Assign
-                      </button>
-                      <button className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-100 transition-all">
-                         <Trash2 size={16} />
-                      </button>
-                   </div>
-                </div>
-              ))}
-           </div>
-        </div>
+             <div className="relative w-full md:w-80 group">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="text"
+                  placeholder="Search by flow or client..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-11 pr-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                />
+             </div>
+          </div>
 
-        {/* Managed Automations */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
-           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
-                    <CheckCircle size={24} className="text-secondary" />
-                 </div>
-                 <div>
-                    <h3 className="text-xl font-black tracking-tight">Active Managed Flows</h3>
-                    <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Powering automated client nodes</p>
-                 </div>
-              </div>
-              <button className="px-8 py-4 bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all">
-                 View All Assignments
-              </button>
-           </div>
+          {/* Content Area */}
+          {tab === 'requests' ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {requests.length === 0 ? (
+                   <EmptyState icon={Bot} title="No Pending Requests" desc="All client automation needs are currently fulfilled." />
+                ) : requests.map(req => (
+                   <RequestCard key={req._id} request={req} onNavigate={onNavigate} />
+                ))}
+             </div>
+          ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredAutomations.length === 0 ? (
+                   <EmptyState icon={Zap} title="No Active Assignments" desc="Start by creating a flow or fulfilling a request." />
+                ) : filteredAutomations.map(auto => (
+                   <AssignmentCard key={auto._id} automation={auto} onNavigate={onNavigate} />
+                ))}
+             </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon: Icon, color }) {
+  const colors = {
+    blue: 'bg-blue-50 text-blue-500',
+    orange: 'bg-orange-50 text-orange-500',
+    emerald: 'bg-emerald-50 text-emerald-500'
+  };
+  return (
+    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:scale-[1.02] transition-all">
+      <div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center`}>
+        <Icon size={24} />
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        <h3 className="text-2xl font-black text-slate-800 tracking-tight">{value}</h3>
+      </div>
+    </div>
+  );
+}
+
+function RequestCard({ request, onNavigate }) {
+  return (
+    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-7 space-y-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black">
+            {request.clientId?.name?.charAt(0) || 'C'}
+          </div>
+          <div>
+            <p className="text-sm font-black text-slate-900">{request.clientId?.name || 'Unknown Client'}</p>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{request.clientId?.phone}</p>
+          </div>
+        </div>
+        <div className="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-[8px] font-black uppercase tracking-widest">Requested</div>
+      </div>
+
+      <div>
+        <h4 className="text-base font-black text-slate-900 tracking-tight">{request.name}</h4>
+        <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 italic">"{request.description}"</p>
+      </div>
+
+      <button 
+        onClick={() => onNavigate('/automations/builder', request)}
+        className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+      >
+        <Zap size={14} fill="currentColor" /> Build & Assign
+      </button>
+    </div>
+  );
+}
+
+function AssignmentCard({ automation, onNavigate }) {
+  return (
+    <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm p-7 space-y-6 hover:shadow-xl transition-all group">
+      <div className="flex items-center justify-between">
+        <div className={`w-12 h-12 ${automation.status === 'active' ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-50 text-slate-400'} rounded-2xl flex items-center justify-center transition-colors group-hover:scale-110`}>
+          <Zap size={22} fill="currentColor" />
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${automation.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
+            {automation.status}
+          </span>
+          <p className="text-[8px] text-slate-300 font-bold uppercase tracking-[0.1em]">Version {automation.version || 1}</p>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-base font-black text-slate-900 tracking-tight truncate">{automation.name}</h4>
+        <div className="flex items-center gap-2 mt-1.5">
+           <User size={12} className="text-slate-300" />
+           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              {automation.clientId?.name || 'Global Template'}
+           </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+         <div className="flex items-center gap-4 text-slate-300">
+            <div className="flex flex-col">
+               <span className="text-[8px] font-black uppercase">Nodes</span>
+               <span className="text-xs font-black text-slate-600">{automation.nodes?.length || 0}</span>
+            </div>
+         </div>
+         <button 
+           onClick={() => onNavigate('/automations/builder', automation)}
+           className="flex items-center gap-1.5 text-primary text-[10px] font-black uppercase tracking-widest hover:gap-2.5 transition-all"
+         >
+            Edit Flow <ChevronRight size={14} />
+         </button>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, desc }) {
+  return (
+    <div className="col-span-full py-20 bg-white rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center px-6">
+      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-6">
+        <Icon size={40} />
+      </div>
+      <h3 className="text-xl font-black text-slate-800 tracking-tight">{title}</h3>
+      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2 max-w-xs leading-relaxed">{desc}</p>
     </div>
   );
 }
