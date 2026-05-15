@@ -11,6 +11,7 @@ const upload = multer({ dest: 'uploads/' });
 router.post('/admin', verifyToken, isAdmin, templateController.createTemplate);
 router.get('/admin', verifyToken, isAdmin, templateController.getAdminTemplates);
 router.put('/admin/:id', verifyToken, isAdmin, templateController.updateTemplate);
+router.put('/admin/:id/status', verifyToken, isAdmin, templateController.updateTemplateStatus);
 router.delete('/admin/:id', verifyToken, isAdmin, templateController.deleteTemplate);
 router.post('/admin/:id/submit', verifyToken, isAdmin, templateController.submitToMeta);
 router.get('/admin/:id/sync', verifyToken, isAdmin, templateController.syncTemplateStatus);

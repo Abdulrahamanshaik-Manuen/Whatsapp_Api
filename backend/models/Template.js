@@ -64,12 +64,8 @@ const templateSchema = new mongoose.Schema({
     },
     meta_rejection_reason: {
         type: String
-    },
-    created_at: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true });
 
 const Template = mongoose.model('Template', templateSchema);
 export default Template;

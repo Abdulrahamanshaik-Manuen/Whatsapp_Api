@@ -191,7 +191,6 @@ export default function TemplateRequests({ onNavigateCreate }) {
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Meta Source (Client)</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Requested</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
                 </tr>
               </thead>
@@ -237,14 +236,8 @@ export default function TemplateRequests({ onNavigateCreate }) {
                       <td className="px-6 py-4">
                         <StatusBadge status={template.status} />
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex flex-col items-end">
-                          <span className="text-[10px] font-black text-slate-700">{new Date(template.requestedOn).toLocaleDateString()}</span>
-                          <span className="text-[9px] font-bold text-slate-400 italic">Requested {formatTimeAgo(template.requestedOn)}</span>
-                        </div>
-                      </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center justify-center gap-1.5 transition-all">
                           {template.status.toLowerCase().includes('pending') && (
                             <>
                               <button
@@ -391,24 +384,32 @@ export default function TemplateRequests({ onNavigateCreate }) {
                 </div>
 
                 <div className="space-y-3">
-                   {selectedTemplate.status.includes('pending') && (
-                     <button 
+                  {selectedTemplate.status.toLowerCase().includes('pending') && (
+                    <>
+                      <button
                         onClick={() => handleStatusChange(selectedTemplate.id, 'approved')}
                         disabled={isSubmitting}
                         className="w-full py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"
-                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle size={16} />}
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
                         Approve & Submit to Meta
-                     </button>
-                   )}
+                      </button>
 
-                   <button 
-                      onClick={() => handleStatusChange(selectedTemplate.id, 'rejected')}
-                      className="w-full py-4 bg-white border border-rose-100 text-rose-500 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-50 transition-all flex items-center justify-center gap-2"
-                   >
-                      <XCircle size={16} />
-                      Reject Template
-                   </button>
+                      <button
+                        onClick={() => handleStatusChange(selectedTemplate.id, 'rejected')}
+                        className="w-full py-4 bg-white border border-rose-100 text-rose-500 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-50 transition-all flex items-center justify-center gap-2"
+                      >
+                        <XCircle size={16} />
+                        Reject Template
+                      </button>
+                    </>
+                  )}
+
+                  {selectedTemplate.status.toLowerCase() === 'approved' && (
+                    <div className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                      This template is already approved
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -98,7 +98,8 @@ export default function AdminCreateTemplate({ onBack }) {
       body: '',
       footer: '',
       buttons: [],
-      previewUrl: ''
+      previewUrl: '',
+      mediaHandle: ''
    });
 
    useEffect(() => {
@@ -135,7 +136,47 @@ export default function AdminCreateTemplate({ onBack }) {
    const handleSubmit = async (e) => {
       e.preventDefault();
       setLoading(true);
-      setTimeout(() => setLoading(false), 2000);
+      try {
+         const token = localStorage.getItem('token');
+         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+         
+         const payload = {
+            name: formData.name,
+            category: formData.category,
+            language: formData.language,
+            content: formData.body,
+            headerType: formData.headerType,
+            headerText: formData.headerText,
+            footer: formData.footer,
+            buttons: formData.buttons,
+            mediaHandle: formData.mediaHandle,
+            previewUrl: formData.previewUrl,
+            clientId: formData.clientId,
+            directSubmit: true // Admin always submits to Meta directly
+         };
+
+         const response = await fetch(`${API_BASE_URL}/templates/request`, {
+            method: 'POST',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+         });
+
+         const result = await response.json();
+         if (response.ok) {
+            alert("Template created and submitted to Meta successfully!");
+            if (onBack) onBack();
+         } else {
+            alert(result.error || "Failed to create template");
+         }
+      } catch (err) {
+         console.error("Submission Error:", err);
+         alert("An error occurred during submission");
+      } finally {
+         setLoading(false);
+      }
    };
 
    return (
@@ -161,9 +202,6 @@ export default function AdminCreateTemplate({ onBack }) {
                </div>
 
                <div className="flex items-center gap-3">
-                  <button className="px-6 py-3.5 bg-white border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 shadow-sm">
-                     Save Draft
-                  </button>
                   <button
                      onClick={handleSubmit}
                      disabled={loading || !formData.name || !formData.body}
@@ -211,7 +249,7 @@ export default function AdminCreateTemplate({ onBack }) {
                            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">02</div>
                            <h3 className="text-base font-black text-slate-900 tracking-tight">Template Identity</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                            <div className="space-y-3">
                               <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Template Name</label>
                               <div className="relative group">
@@ -229,13 +267,59 @@ export default function AdminCreateTemplate({ onBack }) {
                            </div>
                            <div className="space-y-3">
                               <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Category</label>
-                              <select
-                                 value={formData.category}
-                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                 className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl text-xs font-bold focus:border-[#25D366] transition-all outline-none appearance-none"
-                              >
-                                 {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
-                              </select>
+                              <div className="relative group">
+                                 <button
+                                    type="button"
+                                    onClick={() => document.getElementById('category-menu').classList.toggle('hidden')}
+                                    className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl text-xs font-bold flex items-center justify-between hover:bg-white hover:border-[#25D366]/30 transition-all outline-none"
+                                 >
+                                    <span className="text-slate-700 capitalize">{formData.category}</span>
+                                    <ChevronRight size={14} className="text-slate-400 rotate-90" />
+                                 </button>
+                                 <div id="category-menu" className="hidden absolute top-full left-0 w-full mt-2 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden">
+                                    {CATEGORIES.map((cat) => (
+                                       <button
+                                          key={cat.id}
+                                          type="button"
+                                          onClick={() => {
+                                             setFormData({ ...formData, category: cat.id });
+                                             document.getElementById('category-menu').classList.add('hidden');
+                                          }}
+                                          className="w-full px-6 py-3 text-left text-xs font-bold text-slate-600 hover:bg-[#25D366]/5 hover:text-[#25D366] transition-all border-b border-slate-50 last:border-0"
+                                       >
+                                          {cat.label}
+                                       </button>
+                                    ))}
+                                 </div>
+                              </div>
+                           </div>
+                           <div className="space-y-3">
+                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Language</label>
+                              <div className="relative group">
+                                 <button
+                                    type="button"
+                                    onClick={() => document.getElementById('language-menu').classList.toggle('hidden')}
+                                    className="w-full px-6 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl text-xs font-bold flex items-center justify-between hover:bg-white hover:border-[#25D366]/30 transition-all outline-none"
+                                 >
+                                    <span className="text-slate-700">{LANGUAGES.find(l => l.code === formData.language)?.name || 'Select Language'}</span>
+                                    <ChevronRight size={14} className="text-slate-400 rotate-90" />
+                                 </button>
+                                 <div id="language-menu" className="hidden absolute top-full left-0 w-full mt-2 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden">
+                                    {LANGUAGES.map((lang) => (
+                                       <button
+                                          key={lang.code}
+                                          type="button"
+                                          onClick={() => {
+                                             setFormData({ ...formData, language: lang.code });
+                                             document.getElementById('language-menu').classList.add('hidden');
+                                          }}
+                                          className="w-full px-6 py-3 text-left text-xs font-bold text-slate-600 hover:bg-[#25D366]/5 hover:text-[#25D366] transition-all border-b border-slate-50 last:border-0"
+                                       >
+                                          {lang.name}
+                                       </button>
+                                    ))}
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -278,6 +362,71 @@ export default function AdminCreateTemplate({ onBack }) {
                                  className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:border-[#25D366] transition-all outline-none"
                               />
                            )}
+                           {['IMAGE', 'VIDEO', 'DOCUMENT'].includes(formData.headerType) && (
+                              <div
+                                 onClick={() => document.getElementById('media-upload').click()}
+                                 className="w-full py-8 border-2 border-dashed border-slate-100 rounded-[2rem] bg-slate-50/30 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#25D366]/30 hover:bg-[#25D366]/5 transition-all group"
+                              >
+                                 <input
+                                    id="media-upload"
+                                    type="file"
+                                    className="hidden"
+                                    accept={formData.headerType === 'IMAGE' ? "image/*" : formData.headerType === 'VIDEO' ? "video/*" : ".pdf,.doc,.docx"}
+                                    onChange={async (e) => {
+                                       const file = e.target.files[0];
+                                       if (!file) return;
+                                       setLoading(true);
+                                       try {
+                                          const token = localStorage.getItem('token');
+                                          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+                                          const uploadData = new FormData();
+                                          uploadData.append('file', file);
+                                          const response = await fetch(`${API_BASE_URL}/templates/upload-sample`, {
+                                             method: 'POST',
+                                             headers: { 'Authorization': `Bearer ${token}` },
+                                             body: uploadData
+                                          });
+                                          const result = await response.json();
+                                          if (response.ok) {
+                                             setFormData({ ...formData, mediaHandle: result.handle, previewUrl: result.previewUrl });
+                                          } else {
+                                             alert(result.error || "Upload failed");
+                                          }
+                                       } catch (err) {
+                                          console.error("Upload Error:", err);
+                                          alert("Failed to upload media");
+                                       } finally {
+                                          setLoading(false);
+                                       }
+                                    }}
+                                 />
+                                 {formData.previewUrl ? (
+                                    <div className="relative w-full h-24 flex items-center justify-center">
+                                       {formData.headerType === 'IMAGE' ? (
+                                          <img src={formData.previewUrl} className="h-full rounded-xl shadow-lg" alt="Preview" />
+                                       ) : (
+                                          <div className="flex flex-col items-center gap-1.5 text-[#25D366]">
+                                             <CheckCheck size={24} />
+                                             <span className="text-[9px] font-bold uppercase tracking-widest">Media Ready</span>
+                                          </div>
+                                       )}
+                                       <div className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-sm border border-slate-100 text-[#25D366]">
+                                          <CheckCheck size={12} />
+                                       </div>
+                                    </div>
+                                 ) : (
+                                    <>
+                                       <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-slate-300 group-hover:text-[#25D366] transition-colors shadow-sm">
+                                          {loading ? <Loader2 size={20} className="animate-spin" /> : <UploadIcon size={20} />}
+                                       </div>
+                                       <div className="text-center">
+                                          <p className="text-xs font-bold text-slate-600">Select {formData.headerType.toLowerCase()} to upload</p>
+                                          <p className="text-[9px] text-slate-400 font-medium mt-1">Maximum size: 5MB</p>
+                                       </div>
+                                    </>
+                                 )}
+                              </div>
+                           )}
                         </div>
 
                         {/* Body Section */}
@@ -310,8 +459,25 @@ export default function AdminCreateTemplate({ onBack }) {
                         {/* Interactive Buttons */}
                         <div className="space-y-5">
                            <div className="flex items-center justify-between px-1">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Interactive Buttons</label>
-                              <button onClick={handleAddButton} className="text-[8px] font-black text-[#25D366] hover:underline uppercase tracking-widest">+ Add New Button</button>
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Interactive Buttons</label>
+                                 <div className="flex items-center gap-3">
+                                    <button 
+                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Yes, I am interested' }, { type: 'QUICK_REPLY', text: 'Maybe later' }, { type: 'QUICK_REPLY', text: 'Not interested' }] })} 
+                                       className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors"
+                                    >
+                                       + Interest Sample
+                                    </button>
+                                    <span className="text-slate-200 text-[8px]">|</span>
+                                    <button 
+                                       onClick={() => setFormData({ ...formData, buttons: [{ type: 'QUICK_REPLY', text: 'Book Now' }, { type: 'URL', text: 'View Schedule', url: 'https://' }, { type: 'PHONE_NUMBER', text: 'Call Support', phone_number: '+' }] })} 
+                                       className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors"
+                                    >
+                                       + Booking Sample
+                                    </button>
+                                 </div>
+                              </div>
+                              <button onClick={handleAddButton} className="text-[8px] font-black text-[#25D366] hover:underline uppercase tracking-widest">+ Custom Button</button>
                            </div>
 
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -342,8 +508,8 @@ export default function AdminCreateTemplate({ onBack }) {
                </div>
 
                {/* Preview Side - Sticky from Client UI */}
-               <div className="lg:col-span-4 sticky top-8 flex flex-col items-center">
-                  <div className="scale-[1.1] origin-top pt-4">
+               <div className="lg:col-span-4 flex flex-col items-center">
+                  <div className="sticky top-10 scale-[1.1] origin-top pt-4">
                      <MessagePreview template={formData} />
                   </div>
                </div>
