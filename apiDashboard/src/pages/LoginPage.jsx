@@ -59,10 +59,29 @@ export default function LoginPage({ onNavigate }) {
     };
   }, []);
 
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    if (val.length > 10) return;
+    if (val.length === 1 && !/^[6-9]/.test(val)) return;
+    setPhone(val);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
+
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length !== 10) {
+      setErrorMsg('Phone number must be exactly 10 digits.');
+      setLoading(false);
+      return;
+    }
+    if (!/^[6-9]/.test(cleaned)) {
+      setErrorMsg('Phone number must start with 6, 7, 8, or 9.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const data = await loginUser(phone, password);
@@ -228,7 +247,7 @@ export default function LoginPage({ onNavigate }) {
                   required
                   placeholder="Enter mobile number"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-secondary focus:ring-[4px] focus:ring-secondary/5 transition-all placeholder:text-slate-300 text-slate-800 font-medium text-sm"
                 />
               </div>

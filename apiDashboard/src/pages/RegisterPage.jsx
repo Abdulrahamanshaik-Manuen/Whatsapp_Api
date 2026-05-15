@@ -115,6 +115,13 @@ export default function RegisterPage({ onNavigate }) {
     waba_id: '', phone_number_id: '', access_token: '',
   });
   const set = k => e => setF(p => ({ ...p, [k]: e.target.value }));
+  
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    if (val.length > 10) return;
+    if (val.length === 1 && !/^[6-9]/.test(val)) return;
+    setF(p => ({ ...p, phone: val }));
+  };
 
   const startTimer = () => {
     setTimer(45);
@@ -129,7 +136,12 @@ export default function RegisterPage({ onNavigate }) {
 
   const sendOtp = () => withLoad(async () => {
     if (!f.phone.trim()) throw new Error('Phone number is required.');
-    const fullPhone = f.phone.startsWith('+') ? f.phone : `+91${f.phone.replace(/\s/g, '')}`;
+    
+    const cleaned = f.phone.replace(/\D/g, '');
+    if (cleaned.length !== 10) throw new Error('Phone number must be exactly 10 digits.');
+    if (!/^[6-9]/.test(cleaned)) throw new Error('Phone number must start with 6, 7, 8, or 9.');
+
+    const fullPhone = `+91${cleaned}`;
     const r = await fetch(`${API}/auth/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fullPhone }) });
     const d = await r.json(); if (!r.ok) throw new Error(d.error || d.message || 'Failed to send OTP');
     setF(p => ({ ...p, phone: fullPhone }));
@@ -173,6 +185,11 @@ export default function RegisterPage({ onNavigate }) {
   const saveBusiness = () => withLoad(async () => {
     if (!f.business_name.trim()) throw new Error('Business name is required.');
     if (!f.business_category) throw new Error('Please select a category.');
+    
+    if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) {
+      throw new Error('Invalid email format.');
+    }
+
     const token = localStorage.getItem('token');
     const r = await fetch(`${API}/business/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ business_name: f.business_name, business_category: f.business_category, business_description: f.business_description, email: f.email, city: f.city, country: f.country, logo_url: f.logo_url }) });
     const d = await r.json(); if (!r.ok) throw new Error(d.error || d.message || 'Failed to save profile');
@@ -243,7 +260,7 @@ export default function RegisterPage({ onNavigate }) {
                   </div>
                   <div className="relative flex-1">
                     <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input type="tel" placeholder="Enter your phone number" value={f.phone} onChange={set('phone')}
+                    <input type="tel" placeholder="Enter your phone number" value={f.phone.replace('+91', '')} onChange={handlePhoneChange}
                       className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all" />
                   </div>
                 </div>

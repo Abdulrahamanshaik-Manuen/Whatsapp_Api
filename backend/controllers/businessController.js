@@ -1,5 +1,11 @@
 import BusinessProfile from '../models/BusinessProfile.js';
 
+const validateEmail = (email) => {
+    if (!email) return true; // Optional field
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+};
+
 export const createProfile = async (req, res) => {
     try {
         const { 
@@ -12,6 +18,10 @@ export const createProfile = async (req, res) => {
         // Check if profile already exists
         const existing = await BusinessProfile.findOne({ user_id });
         if (existing) return res.status(400).json({ error: "Business profile already exists for this user" });
+
+        if (email && !validateEmail(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
 
         const profile = new BusinessProfile({
             user_id,
@@ -52,6 +62,10 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
+        if (req.body.email && !validateEmail(req.body.email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+
         const updated = await BusinessProfile.findOneAndUpdate(
             { user_id: req.user.user_id },
             req.body,

@@ -51,9 +51,10 @@ const AutomationSchema = new mongoose.Schema({
   }
 });
 
-AutomationSchema.pre('save', function() {
+AutomationSchema.pre('save', function () {
   this.updatedAt = Date.now();
 });
 
 const Automation = mongoose.model('Automation', AutomationSchema);
 export default Automation;
+

@@ -276,7 +276,7 @@ export const getBillingOverview = async (req, res) => {
         const users = await User.find({ role: 'client' }).populate('planId');
         const subscriptions = await Promise.all(users.map(async (user) => {
             const profile = await BusinessProfile.findOne({ user_id: user._id });
-            const messageCount = await Message.countDocuments({ user_id: user._id });
+            const messageCount = await Message.countDocuments({ user_id: user._id, status: { $ne: 'failed' } });
             
             const costResult = await Message.aggregate([
                 { $match: { user_id: user._id, status: { $ne: 'failed' } } },
@@ -289,7 +289,7 @@ export const getBillingOverview = async (req, res) => {
                 client: user.name,
                 businessName: profile?.business_name || 'N/A',
                 status: user.subscription_status,
-                messages: messageCount,
+                messages: user.messages_used || 0,
                 metaCost: `₹${metaCost.toFixed(2)}`,
                 platformRev: `₹${platformRev}`,
                 renewal: 'N/A',
@@ -308,9 +308,111 @@ export const getBillingOverview = async (req, res) => {
             stats: {
                 grossRevenue: subscriptions.reduce((acc, s) => acc + parseFloat(s.platformRev), 0),
                 metaCosts: totalMetaCost
-            }
+            },
+            plans: await Plan.find().sort({ created_at: -1 })
         });
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch billing overview" });
+    }
+};
+
+export const getAllMessages = async (req, res) => {
+    try {
+        const { search, status, type, page = 1, limit = 50 } = req.query;
+        const query = {};
+
+        if (status && status !== 'all') query.status = status;
+        if (type && type !== 'all') query.type = type;
+        if (search) {
+            // Search in 'to' or 'body' or 'template_name'
+            query.$or = [
+                { to: { $regex: search, $options: 'i' } },
+                { body: { $regex: search, $options: 'i' } },
+                { template_name: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const messages = await Message.find(query)
+            .populate('user_id', 'name phone')
+            .sort({ created_at: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Message.countDocuments(query);
+
+        // Aggregate stats for the current filter
+        const stats = {
+            totalSent: await Message.countDocuments({ ...query, status: { $in: ['sent', 'delivered', 'read'] } }),
+            delivered: await Message.countDocuments({ ...query, status: { $in: ['delivered', 'read'] } }),
+            failed: await Message.countDocuments({ ...query, status: 'failed' }),
+        };
+
+        const costResult = await Message.aggregate([
+            { $match: { ...query, status: { $ne: 'failed' } } },
+            { $group: { _id: null, total: { $sum: "$meta_cost" } } }
+        ]);
+        stats.totalCost = costResult.length > 0 ? costResult[0].total : 0;
+
+        res.json({
+            messages: messages.map(m => ({
+                id: m._id,
+                client: m.user_id?.name || 'Unknown',
+                phone: m.user_id?.phone || 'N/A',
+                to: m.to,
+                type: m.type,
+                content: m.body || m.template_name || 'N/A',
+                status: m.status,
+                cost: m.meta_cost || 0,
+                timestamp: m.created_at
+            })),
+            pagination: {
+                total,
+                page: parseInt(page),
+                pages: Math.ceil(total / limit)
+            },
+            stats
+        });
+    } catch (err) {
+        console.error("Get All Messages Error:", err);
+        res.status(500).json({ error: "Failed to fetch message logs" });
+    }
+};
+
+export const createPlan = async (req, res) => {
+    try {
+        const plan = new Plan(req.body);
+        await plan.save();
+        res.status(201).json({ message: "Plan created successfully", plan });
+    } catch (err) {
+        console.error("Create Plan Error:", err);
+        res.status(500).json({ error: "Failed to create plan" });
+    }
+};
+
+export const updatePlan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const plan = await Plan.findByIdAndUpdate(id, req.body, { new: true });
+        res.json({ message: "Plan updated successfully", plan });
+    } catch (err) {
+        console.error("Update Plan Error:", err);
+        res.status(500).json({ error: "Failed to update plan" });
+    }
+};
+
+export const deletePlan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Check if any users are using this plan
+        const usersCount = await User.countDocuments({ planId: id });
+        if (usersCount > 0) {
+            return res.status(400).json({ error: "Cannot delete plan: It is currently assigned to users." });
+        }
+        await Plan.findByIdAndDelete(id);
+        res.json({ message: "Plan deleted successfully" });
+    } catch (err) {
+        console.error("Delete Plan Error:", err);
+        res.status(500).json({ error: "Failed to delete plan" });
     }
 };

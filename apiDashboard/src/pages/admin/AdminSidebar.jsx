@@ -12,7 +12,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, onNavigate, isOp
     { name: 'Automation Hub', icon: Bot, path: '/admin/automations' },
     { name: 'Message Logs', icon: Clock, path: '/admin/logs' },
     { name: 'Billing & Subscriptions', icon: CreditCard, path: '/admin/billing' },
-    { name: 'Settings', icon: Settings, path: '/admin/settings' },
+    { name: 'System Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   return (

@@ -21,5 +21,11 @@ router.get('/automation-requests', adminController.getAutomationRequests);
 router.get('/automations/requests', adminController.getAutomationRequests); // Alias for cached clients
 router.get('/automations', adminController.getAllAutomations);
 router.get('/billing', adminController.getBillingOverview);
+router.get('/messages', adminController.getAllMessages);
+
+// Plan Management
+router.post('/plans', adminController.createPlan);
+router.put('/plans/:id', adminController.updatePlan);
+router.delete('/plans/:id', adminController.deletePlan);
 
 export default router;

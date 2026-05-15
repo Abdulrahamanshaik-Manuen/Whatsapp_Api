@@ -7,12 +7,34 @@ import * as otpService from '../services/otpService.js';
 import * as smsService from '../services/smsService.js';
 import jwt from 'jsonwebtoken';
 
+const validatePhone = (phone) => {
+    // Remove all non-digit characters
+    let cleaned = phone.replace(/\D/g, '');
+    
+    // If it starts with 91 and is 12 digits, take the last 10
+    if (cleaned.length === 12 && cleaned.startsWith('91')) {
+        cleaned = cleaned.slice(2);
+    }
+
+    // Check if exactly 10 digits
+    if (cleaned.length !== 10) return { valid: false, error: "Phone number must be exactly 10 digits" };
+    
+    // Check if starts with 6, 7, 8, or 9
+    if (!/^[6-9]/.test(cleaned)) return { valid: false, error: "Phone number must start with 6, 7, 8, or 9" };
+    
+    return { valid: true, cleaned };
+};
+
 export const sendOTP = async (req, res) => {
     try {
         const { phone } = req.body;
         if (!phone) return res.status(400).json({ error: "Phone number is required" });
 
-        const otpData = otpService.generateOTP(phone);
+        const validation = validatePhone(phone);
+        if (!validation.valid) return res.status(400).json({ error: validation.error });
+        
+        const fullPhone = `+91${validation.cleaned}`;
+        const otpData = otpService.generateOTP(fullPhone);
         
         // Save to DB
         await Otp.create(otpData);
@@ -49,17 +71,10 @@ export const register = async (req, res) => {
         let { name, phone, password, businessData } = req.body;
         if (!name || !phone || !password) return res.status(400).json({ error: "All fields are required" });
 
-        // Normalize Phone: 
-        // 1. Remove all non-digit characters
-        let cleaned = phone.replace(/\D/g, '');
-        // 2. Handle defaults
-        if (cleaned.length === 10) {
-            phone = `+91${cleaned}`;
-        } else if (!phone.startsWith('+')) {
-            phone = `+${cleaned}`;
-        } else {
-            phone = `+${cleaned}`; // Ensure it starts with + even if it was already there
-        }
+        // Normalize and Validate Phone
+        const validation = validatePhone(phone);
+        if (!validation.valid) return res.status(400).json({ error: validation.error });
+        phone = `+91${validation.cleaned}`;
 
         // Check if phone was verified
         const otpRecord = await Otp.findOne({ phone, is_verified: true }).sort({ expires_at: -1 });
@@ -111,17 +126,10 @@ export const login = async (req, res) => {
         let { phone, password } = req.body;
         if (!phone || !password) return res.status(400).json({ error: "Phone and password are required" });
 
-        // Normalize Phone: 
-        // 1. Remove all non-digit characters
-        let cleaned = phone.replace(/\D/g, '');
-        // 2. Handle defaults
-        if (cleaned.length === 10) {
-            phone = `+91${cleaned}`;
-        } else if (!phone.startsWith('+')) {
-            phone = `+${cleaned}`;
-        } else {
-            phone = `+${cleaned}`; // Ensure it starts with +
-        }
+        // Normalize and Validate Phone
+        const validation = validatePhone(phone);
+        if (!validation.valid) return res.status(400).json({ error: validation.error });
+        phone = `+91${validation.cleaned}`;
 
         const user = await User.findOne({ phone });
         if (!user) return res.status(401).json({ error: "Invalid credentials" });
