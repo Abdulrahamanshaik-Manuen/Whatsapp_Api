@@ -31,7 +31,6 @@ export default function AdminSidebar({ activeTab, setActiveTab, onNavigate, isOp
           <div className="flex flex-col">
             <h1 className="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2">
                Admin Dashboard
-               <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
             </h1>
           </div>
           <button

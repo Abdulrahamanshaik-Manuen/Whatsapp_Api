@@ -40,7 +40,6 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
           <div className="flex flex-col">
             <h1 className="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2">
                Client Dashboard
-               <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
             </h1>
           </div>
           <button
