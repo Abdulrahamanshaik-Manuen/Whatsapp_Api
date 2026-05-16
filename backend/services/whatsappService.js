@@ -38,7 +38,6 @@ export const submitTemplateToMeta = async (wabaId, accessToken, templateData) =>
             data: response.data
         };
     } catch (error) {
-        console.error('Meta Template Submission Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -70,7 +69,6 @@ export const getTemplateStatusFromMeta = async (wabaId, accessToken, templateNam
             id: template.id
         };
     } catch (error) {
-        console.error('Meta Template Status Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -128,7 +126,6 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
             delete body.template.components;
         }
 
-        console.log(`[WhatsAppService] Sending to ${formattedTo} via ${META_API_URL}`);
 
         const response = await axios.post(url, body, {
             headers: {
@@ -142,7 +139,6 @@ export const sendTemplateMessage = async (phone_number_id, accessToken, to, temp
             data: response.data
         };
     } catch (error) {
-        console.error('Meta Send Template Message Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -173,7 +169,6 @@ export const sendTextMessage = async (phone_number_id, accessToken, to, text) =>
             data: response.data
         };
     } catch (error) {
-        console.error('Meta Send Text Message Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -222,7 +217,6 @@ export const sendMediaMessage = async (phone_number_id, accessToken, to, type, m
             data: response.data
         };
     } catch (error) {
-        console.error(`Meta Send ${type} Message Error:`, error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -245,7 +239,6 @@ export const getAllTemplatesFromMeta = async (wabaId, accessToken) => {
             data: response.data.data // The array of templates
         };
     } catch (error) {
-        console.error('Meta Fetch All Templates Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -286,7 +279,6 @@ export const uploadMediaSampleToMeta = async (appId, accessToken, fileBuffer, fi
             handle: uploadResponse.data.h
         };
     } catch (error) {
-        console.error('Meta Media Upload Error:', error.response?.data || error.message);
         return {
             success: false,
             error: error.response?.data?.error?.message || error.message
@@ -306,7 +298,6 @@ export const getMediaUrl = async (mediaId, accessToken) => {
         });
         return response.data.url;
     } catch (error) {
-        console.error('Meta Media URL Error:', error.response?.data || error.message);
         return null;
     }
 };

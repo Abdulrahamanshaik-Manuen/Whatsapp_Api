@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, Filter, MessageSquare, 
-  Clock, CheckCircle2, AlertCircle, RefreshCcw,
-  ChevronLeft, ChevronRight, MoreVertical, ExternalLink,
-  Target, BarChart2, Users, Loader2, Send, CheckCheck
+import {
+  Search, MessageSquare,
+  CheckCircle2, AlertCircle, RefreshCcw,
+  ChevronLeft, ChevronRight, MoreVertical,
+  Users, Send, CheckCheck
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -36,20 +36,26 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
 };
 
 export default function MessagesPage() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('cached_message_logs');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!messages.length);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-  const [stats, setStats] = useState({ total: 0, delivered: 0, read: 0, failed: 0 });
+  const [stats, setStats] = useState(() => {
+    const saved = localStorage.getItem('cached_message_stats');
+    return saved ? JSON.parse(saved) : { total: 0, delivered: 0, read: 0, failed: 0 };
+  });
 
   useEffect(() => {
     fetchMessages();
   }, [page, searchQuery, statusFilter]);
 
   const fetchMessages = async () => {
-    setLoading(true);
+    if (messages.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const statusParam = statusFilter !== 'All' ? `&status=${statusFilter.toLowerCase()}` : '';
@@ -61,6 +67,8 @@ export default function MessagesPage() {
         setMessages(data.messages);
         setPagination(data.pagination);
         setStats(data.stats);
+        localStorage.setItem('cached_message_logs', JSON.stringify(data.messages));
+        localStorage.setItem('cached_message_stats', JSON.stringify(data.stats));
       }
     } catch (err) {
       console.error("Failed to fetch messages:", err);
@@ -84,7 +92,7 @@ export default function MessagesPage() {
     <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
       {/* Main Content Area - Scrollable */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10">
-        
+
         {/* Title Row */}
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
@@ -101,144 +109,144 @@ export default function MessagesPage() {
         </div>
 
         {/* Stats Grid */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <StatCard label="Total Sent" value={stats.total} color="primary" icon={Send} />
-            <StatCard label="Delivered" value={stats.delivered} color="secondary" icon={CheckCircle2} />
-            <StatCard label="Read" value={stats.read} color="blue" icon={CheckCheck} />
-            <StatCard label="Failed" value={stats.failed} color="rose" icon={AlertCircle} />
-         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard label="Total Sent" value={stats.total} color="primary" icon={Send} />
+          <StatCard label="Delivered" value={stats.delivered} color="secondary" icon={CheckCircle2} />
+          <StatCard label="Read" value={stats.read} color="blue" icon={CheckCheck} />
+          <StatCard label="Failed" value={stats.failed} color="rose" icon={AlertCircle} />
+        </div>
 
         {/* Filters & Table Card */}
         <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-6 space-y-6">
-           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full md:w-96">
-                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search by phone number..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                   className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto no-scrollbar py-1">
-                {['All', 'Sent', 'Delivered', 'Read', 'Failed'].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[100px] text-center ${statusFilter === status
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                      : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
-                      }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-           </div>
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:w-96">
+              <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by phone number..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+              />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto no-scrollbar py-1">
+              {['All', 'Sent', 'Delivered', 'Read', 'Failed'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap min-w-[100px] text-center ${statusFilter === status
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                    }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
 
-           <div className="h-[1px] bg-slate-50 w-full"></div>
+          <div className="h-[1px] bg-slate-50 w-full"></div>
 
-           {/* Table Area */}
-           <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50">
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Template / Type</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Cost</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Timestamp</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {loading ? (
-                    Array(5).fill(0).map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        <td colSpan="6" className="px-6 py-5">
-                          <div className="h-4 bg-slate-50 rounded-lg w-full"></div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : messages.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-20 text-center">
-                        <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-200">
-                          <MessageSquare size={32} />
-                        </div>
-                        <h3 className="text-lg font-black text-slate-800 tracking-tight">No message logs found</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Try adjusting your search or filters</p>
+          {/* Table Area */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50">
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipient</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Template / Type</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Cost</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Timestamp</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {loading ? (
+                  Array(5).fill(0).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td colSpan="6" className="px-6 py-5">
+                        <div className="h-4 bg-slate-50 rounded-lg w-full"></div>
                       </td>
                     </tr>
-                  ) : (
-                    messages.map(msg => (
-                      <tr key={msg._id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-100 text-slate-400 flex items-center justify-center shadow-sm">
-                              <Users size={16} className="text-slate-400" />
-                            </div>
-                            <span className="text-xs font-black text-slate-700 tracking-tight">+{msg.to}</span>
+                  ))
+                ) : messages.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-20 text-center">
+                      <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-200">
+                        <MessageSquare size={32} />
+                      </div>
+                      <h3 className="text-lg font-black text-slate-800 tracking-tight">No message logs found</h3>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Try adjusting your search or filters</p>
+                    </td>
+                  </tr>
+                ) : (
+                  messages.map(msg => (
+                    <tr key={msg._id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-100 text-slate-400 flex items-center justify-center shadow-sm">
+                            <Users size={16} className="text-slate-400" />
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="space-y-0.5">
-                            <p className="text-xs font-black text-slate-800">{msg.template_name || 'Direct Message'}</p>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{msg.template_type || msg.type}</p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${getStatusColor(msg.status)}`}>
-                            {msg.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-xs font-black text-slate-800 tracking-tight">${msg.total_cost?.toFixed(3)}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                           <div className="flex flex-col items-end">
-                              <span className="text-[10px] font-black text-slate-700">{new Date(msg.created_at || msg.createdAt).toLocaleDateString()}</span>
-                              <span className="text-[9px] font-bold text-slate-400">{new Date(msg.created_at || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                           <button className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-xl transition-all opacity-0 group-hover:opacity-100">
-                            <MoreVertical size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-           </div>
+                          <span className="text-xs font-black text-slate-700 tracking-tight">+{msg.to}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-black text-slate-800">{msg.template_name || 'Direct Message'}</p>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{msg.template_type || msg.type}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${getStatusColor(msg.status)}`}>
+                          {msg.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-xs font-black text-slate-800 tracking-tight">${msg.total_cost?.toFixed(3)}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="text-[10px] font-black text-slate-700">{new Date(msg.created_at || msg.createdAt).toLocaleDateString()}</span>
+                          <span className="text-[9px] font-bold text-slate-400">{new Date(msg.created_at || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                          <MoreVertical size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-           {/* Pagination Card Footer */}
-           <div className="flex items-center justify-between pt-6 border-t border-slate-50">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Showing <span className="text-slate-800">{messages.length}</span> of <span className="text-slate-800">{pagination.total}</span> logs
-              </p>
-              <div className="flex items-center gap-2">
-                <button 
-                   onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                  disabled={page === 1}
-                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <div className="flex items-center gap-1.5 px-2">
-                   <span className="text-[10px] font-black text-slate-800">Page {page} of {pagination.pages}</span>
-                </div>
-                <button 
-                   onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
-                  disabled={page === pagination.pages}
-                  className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight size={16} />
-                </button>
+          {/* Pagination Card Footer */}
+          <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Showing <span className="text-slate-800">{messages.length}</span> of <span className="text-slate-800">{pagination.total}</span> logs
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className="flex items-center gap-1.5 px-2">
+                <span className="text-[10px] font-black text-slate-800">Page {page} of {pagination.pages}</span>
               </div>
-           </div>
+              <button
+                onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
+                disabled={page === pagination.pages}
+                className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
         </div>
 
       </main>

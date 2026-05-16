@@ -40,8 +40,11 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
 };
 
 export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
-  const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState(() => {
+    const saved = localStorage.getItem('cached_contacts');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!contacts.length);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -105,7 +108,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
   }, [filters]);
 
   const fetchContacts = async () => {
-    setLoading(true);
+    if (contacts.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       let url = `${API_BASE_URL}/contacts?`;
@@ -118,6 +121,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
       const data = await response.json();
       if (response.ok) {
         setContacts(data);
+        localStorage.setItem('cached_contacts', JSON.stringify(data));
       }
     } catch (err) {
       console.error("Failed to fetch contacts:", err);
@@ -247,7 +251,6 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
       });
 
       if (response.ok) {
-        console.log("Message sent successfully, navigating to inbox...");
         setChatMessage('');
         setShowChatModal(false);
 

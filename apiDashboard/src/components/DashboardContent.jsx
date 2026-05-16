@@ -14,8 +14,11 @@ import { getDashboardStats } from '../utils/api';
 const COLORS = ['#63C132', '#E2E8F0']; // Secondary (Green) and Light Gray
 
 export default function DashboardContent({ activeTab, toggleSidebar, onNavigate, setActiveTab }) {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(() => {
+    const saved = localStorage.getItem('cached_dashboard_stats');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [loading, setLoading] = useState(!data);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('Last 7 Days');
 
@@ -32,6 +35,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
         return;
       }
 
+      if (!data) setLoading(true);
       const rangeMap = {
         'Last 24 Hours': '24h',
         'Last 7 Days': '7d',
@@ -45,6 +49,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
           console.error("Fetch Stats Error:", result.error);
         } else {
           setData(result);
+          localStorage.setItem('cached_dashboard_stats', JSON.stringify(result));
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);

@@ -221,7 +221,10 @@ function BuilderCanvas({ onClose, automation }) {
   const { screenToFlowPosition, fitView } = useReactFlow();
 
   useEffect(() => {
-    setTimeout(() => fitView({ padding: 0.2 }), 100);
+    setTimeout(() => fitView({ 
+      padding: 0.3,
+      duration: 800,
+    }), 100);
   }, [fitView]);
 
   const onConnect = useCallback(
@@ -343,7 +346,6 @@ function BuilderCanvas({ onClose, automation }) {
         });
       }
 
-      console.log("[Automation Builder] Workflow saved:", response.data);
       alert("Workflow saved successfully!");
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.message;
@@ -360,63 +362,79 @@ function BuilderCanvas({ onClose, automation }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#f1f5f9] overflow-hidden font-sans">
-      {/* Node Sidebar */}
-      <aside className="w-80 bg-white border-r border-slate-200 flex flex-col z-10 shadow-2xl">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
-              <Zap size={20} fill="currentColor" />
+    <div className="flex h-full bg-[#f1f5f9] overflow-hidden font-sans relative">
+      {/* Node Sidebar - Only for Admins */}
+      {isAdmin && (
+        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col z-10 shadow-2xl">
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
+                <Zap size={20} fill="currentColor" />
+              </div>
+              <h2 className="text-xl font-black text-slate-800 tracking-tighter">Flow Builder</h2>
             </div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tighter">Flow Builder</h2>
+            <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
+              <ChevronLeft size={20} className="text-slate-400" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
-            <ChevronLeft size={20} className="text-slate-400" />
-          </button>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-          <NodeSection title="Triggers" onNodeAdd={onNodeAdd} nodes={[
-            { type: 'triggerNode', label: 'Trigger', icon: Zap, color: 'text-red-500 bg-red-50' },
-          ]} />
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            <NodeSection title="Triggers" onNodeAdd={onNodeAdd} nodes={[
+              { type: 'triggerNode', label: 'Trigger', icon: Zap, color: 'text-red-500 bg-red-50' },
+            ]} />
 
-          <NodeSection title="Actions" onNodeAdd={onNodeAdd} nodes={[
-            { type: 'messageNode', label: 'Send Text', icon: MessageSquare, color: 'text-emerald-500 bg-emerald-50' },
-            { type: 'actionNode', label: 'System Action', icon: Database, color: 'text-blue-500 bg-blue-50' },
-          ]} />
+            <NodeSection title="Actions" onNodeAdd={onNodeAdd} nodes={[
+              { type: 'messageNode', label: 'Send Text', icon: MessageSquare, color: 'text-emerald-500 bg-emerald-50' },
+              { type: 'actionNode', label: 'System Action', icon: Database, color: 'text-blue-500 bg-blue-50' },
+            ]} />
 
-          <NodeSection title="Logic" onNodeAdd={onNodeAdd} nodes={[
-            { type: 'waitNode', label: 'Wait for Reply', icon: Clock, color: 'text-purple-500 bg-purple-50' },
-            { type: 'conditionNode', label: 'Branching', icon: GitBranch, color: 'text-amber-600 bg-amber-50' },
-            { type: 'delayNode', label: 'Delay', icon: Timer, color: 'text-slate-500 bg-slate-100' },
-          ]} />
-        </div>
+            <NodeSection title="Logic" onNodeAdd={onNodeAdd} nodes={[
+              { type: 'waitNode', label: 'Wait for Reply', icon: Clock, color: 'text-purple-500 bg-purple-50' },
+              { type: 'conditionNode', label: 'Branching', icon: GitBranch, color: 'text-amber-600 bg-amber-50' },
+              { type: 'delayNode', label: 'Delay', icon: Timer, color: 'text-slate-500 bg-slate-100' },
+            ]} />
+          </div>
 
-        <div className="p-6 border-t border-slate-100 space-y-3 bg-slate-50/50">
-          <button
-            onClick={() => handleSave()}
-            disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white text-[11px] font-black rounded-2xl hover:bg-slate-800 transition-all uppercase tracking-widest shadow-xl shadow-slate-200 disabled:opacity-50"
-          >
-            <Save size={16} />
-            {isSaving ? 'Saving...' : 'Save Workflow'}
-          </button>
-        </div>
-      </aside>
+          <div className="p-6 border-t border-slate-100 space-y-3 bg-slate-50/50">
+            <button
+              onClick={() => handleSave()}
+              disabled={isSaving}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white text-[11px] font-black rounded-2xl hover:bg-slate-800 transition-all uppercase tracking-widest shadow-xl shadow-slate-200 disabled:opacity-50"
+            >
+              <Save size={16} />
+              {isSaving ? 'Saving...' : 'Save Workflow'}
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {!isAdmin && (
+         <div className="absolute top-6 left-6 z-20 pointer-events-none">
+            <button 
+              onClick={onClose} 
+              className="flex items-center gap-2 px-5 py-3 bg-slate-900 text-white border border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 pointer-events-auto"
+            >
+                <ChevronLeft size={14} /> Exit Viewer
+            </button>
+         </div>
+      )}
 
       {/* Canvas Area */}
       <div className="flex-1 relative h-full w-full" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          onNodesChange={isAdmin ? onNodesChange : undefined}
+          onEdgesChange={isAdmin ? onEdgesChange : undefined}
+          onConnect={isAdmin ? onConnect : undefined}
+          onDrop={isAdmin ? onDrop : undefined}
+          onDragOver={isAdmin ? onDragOver : undefined}
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
           fitView
+          nodesDraggable={isAdmin}
+          nodesConnectable={isAdmin}
+          elementsSelectable={true}
           className="bg-slate-50"
           defaultEdgeOptions={{
             style: { stroke: '#06D6A0', strokeWidth: 3 },
@@ -482,20 +500,22 @@ function BuilderCanvas({ onClose, automation }) {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Automation Name</label>
                 <input
+                  readOnly={!isAdmin}
                   type="text"
                   value={workflowInfo.name}
                   onChange={(e) => setWorkflowInfo(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g. Welcome Greeting"
-                  className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                  className={`w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
                 <textarea
+                  readOnly={!isAdmin}
                   value={workflowInfo.description}
                   onChange={(e) => setWorkflowInfo(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Describe what this workflow does..."
-                  className="w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[2rem] text-sm font-bold focus:bg-white focus:border-primary transition-all resize-none outline-none"
+                  className={`w-full h-32 p-5 bg-slate-50 border-2 border-transparent rounded-[2rem] text-sm font-bold focus:bg-white focus:border-primary transition-all resize-none outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                 />
               </div>
 
@@ -557,10 +577,11 @@ function BuilderCanvas({ onClose, automation }) {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Message Content</label>
                     <textarea
+                      readOnly={!isAdmin}
                       value={selectedNode.data.config?.message || ''}
                       onChange={(e) => updateNodeConfig({ message: e.target.value })}
                       placeholder="Hello! How can we help you today?"
-                      className="w-full h-40 p-5 bg-slate-50 border-2 border-transparent rounded-[2rem] text-sm font-bold focus:bg-white focus:border-secondary transition-all resize-none outline-none"
+                      className={`w-full h-40 p-5 bg-slate-50 border-2 border-transparent rounded-[2rem] text-sm font-bold focus:bg-white focus:border-secondary transition-all resize-none outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                     />
                   </div>
                 </div>
@@ -571,10 +592,11 @@ function BuilderCanvas({ onClose, automation }) {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keywords (Comma separated)</label>
                     <input
+                      readOnly={!isAdmin}
                       type="text"
                       value={selectedNode.data.config?.keywords?.join(', ') || ''}
                       onChange={(e) => updateNodeConfig({ keywords: e.target.value.split(',').map(k => k.trim()) })}
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                      className={`w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                     />
                   </div>
                 </div>
@@ -585,13 +607,13 @@ function BuilderCanvas({ onClose, automation }) {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Save reply as variable</label>
                     <input
+                      readOnly={!isAdmin}
                       type="text"
                       value={selectedNode.data.config?.variableName || ''}
                       onChange={(e) => updateNodeConfig({ variableName: e.target.value })}
                       placeholder="e.g. customer_name"
-                      className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-purple-500 transition-all outline-none"
+                      className={`w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-purple-500 transition-all outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                     />
-                    <p className="text-[9px] text-slate-400 font-medium px-1 italic">This allows you to store the user's response and use it later.</p>
                   </div>
                 </div>
               )}
@@ -604,6 +626,7 @@ function BuilderCanvas({ onClose, automation }) {
                       {(selectedNode.data.config?.branches || []).map((branch, i) => (
                         <div key={i} className="flex gap-2">
                           <input
+                            readOnly={!isAdmin}
                             type="text"
                             value={branch.value}
                             onChange={(e) => {
@@ -611,29 +634,33 @@ function BuilderCanvas({ onClose, automation }) {
                               newBranches[i].value = e.target.value;
                               updateNodeConfig({ branches: newBranches });
                             }}
-                            className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:border-amber-500 outline-none"
+                            className={`flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold focus:border-amber-500 outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                           />
-                          <button
-                            onClick={() => {
-                              const newBranches = (selectedNode.data.config.branches || []).filter((_, idx) => idx !== i);
-                              updateNodeConfig({ branches: newBranches });
-                            }}
-                            className="p-3 text-red-400 hover:text-red-500"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => {
+                                const newBranches = (selectedNode.data.config.branches || []).filter((_, idx) => idx !== i);
+                                updateNodeConfig({ branches: newBranches });
+                              }}
+                              className="p-3 text-red-400 hover:text-red-500"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
                         </div>
                       ))}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newBranches = [...(selectedNode.data.config?.branches || []), { value: '' }];
-                          updateNodeConfig({ branches: newBranches });
-                        }}
-                        className="w-full py-3 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-amber-200 hover:text-amber-500 transition-all"
-                      >
-                        + Add Option
-                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newBranches = [...(selectedNode.data.config?.branches || []), { value: '' }];
+                            updateNodeConfig({ branches: newBranches });
+                          }}
+                          className="w-full py-3 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-amber-200 hover:text-amber-500 transition-all"
+                        >
+                          + Add Option
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -648,10 +675,11 @@ function BuilderCanvas({ onClose, automation }) {
                         { id: 'notify', label: 'Notification', icon: Bell }
                       ].map(act => (
                         <button
+                          disabled={!isAdmin}
                           type="button"
                           key={act.id}
                           onClick={() => updateNodeConfig({ actionType: act.id, label: act.label })}
-                          className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${selectedNode.data.config?.actionType === act.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'}`}
+                          className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${selectedNode.data.config?.actionType === act.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'} ${!isAdmin ? 'cursor-default opacity-80' : ''}`}
                         >
                           <act.icon size={18} className={selectedNode.data.config?.actionType === act.id ? 'text-primary' : 'text-slate-400'} />
                           <span className="text-[9px] font-black uppercase tracking-tighter">{act.label}</span>
@@ -668,18 +696,20 @@ function BuilderCanvas({ onClose, automation }) {
                     <div className="flex-1 space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duration</label>
                       <input
+                        readOnly={!isAdmin}
                         type="number"
                         value={selectedNode.data.config?.duration || ''}
                         onChange={(e) => updateNodeConfig({ duration: e.target.value })}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-slate-400 transition-all outline-none"
+                        className={`w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:border-slate-400 transition-all outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                       />
                     </div>
                     <div className="flex-1 space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit</label>
                       <select
+                        disabled={!isAdmin}
                         value={selectedNode.data.config?.unit || 'minutes'}
                         onChange={(e) => updateNodeConfig({ unit: e.target.value })}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-slate-400 transition-all outline-none"
+                        className={`w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-xs font-bold focus:bg-white focus:border-slate-400 transition-all outline-none ${!isAdmin ? 'cursor-default' : ''}`}
                       >
                         <option value="minutes">Minutes</option>
                         <option value="hours">Hours</option>
@@ -694,23 +724,30 @@ function BuilderCanvas({ onClose, automation }) {
         </div>
 
         <div className="p-8 border-t border-slate-100 space-y-3 bg-slate-50/50">
-          <button
-            onClick={() => handleSave()}
-            disabled={isSaving}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-white text-[11px] font-black rounded-2xl hover:bg-primary/90 transition-all uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
-          >
-            <Save size={16} />
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => handleSave()}
+                disabled={isSaving}
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-white text-[11px] font-black rounded-2xl hover:bg-primary/90 transition-all uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+              >
+                <Save size={16} />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
 
-          {selectedNode && (
-            <button onClick={() => {
-              setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
-              setSelectedNode(null);
-            }} className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-50 text-red-600 text-[10px] font-black rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest">
-              <Trash2 size={14} />
-              Delete Node
-            </button>
+              {selectedNode && (
+                <button onClick={() => {
+                  setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
+                  setSelectedNode(null);
+                }} className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-50 text-red-600 text-[10px] font-black rounded-2xl hover:bg-red-100 transition-all uppercase tracking-widest">
+                  <Trash2 size={14} />
+                  Delete Node
+                </button>
+              )}
+            </>
+          )}
+          {!isAdmin && (
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Viewer Mode Active</p>
           )}
         </div>
       </aside>

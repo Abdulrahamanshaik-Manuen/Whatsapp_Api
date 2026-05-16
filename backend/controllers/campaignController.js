@@ -101,7 +101,6 @@ export const previewCampaign = async (req, res) => {
             preview_contacts: finalContacts.slice(0, 5)
         });
     } catch (err) {
-        console.error("Preview Campaign Error:", err);
         res.status(500).json({ error: "Failed to generate preview" });
     }
 };
@@ -173,7 +172,6 @@ export const createCampaign = async (req, res) => {
 
         res.status(201).json({ message: "Campaign initialized", campaign });
     } catch (err) {
-        console.error("Create Campaign Error:", err);
         res.status(500).json({ error: "Failed to create campaign" });
     }
 };
@@ -184,7 +182,6 @@ export const getCampaigns = async (req, res) => {
         const campaigns = await Campaign.find({ user_id: userId }).sort({ created_at: -1 });
         res.json(campaigns);
     } catch (err) {
-        console.error("Fetch Campaigns Error:", err);
         res.status(500).json({ error: "Failed to fetch campaigns" });
     }
 };
@@ -201,7 +198,6 @@ export const getCampaignStatus = async (req, res) => {
 
         res.json(campaign);
     } catch (err) {
-        console.error("Campaign Status Error:", err);
         res.status(500).json({ error: "Failed to fetch campaign status" });
     }
 };

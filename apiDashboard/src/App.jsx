@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AlertProvider } from './context/AlertContext';
+
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -17,6 +19,15 @@ function getCurrentPath() {
 }
 
 export default function App() {
+    return (
+        <AlertProvider>
+            <AppContent />
+        </AlertProvider>
+    );
+}
+
+function AppContent() {
+
     const [activePath, setActivePath] = useState(getCurrentPath);
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdmin = user.role === 'admin';

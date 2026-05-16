@@ -7,7 +7,6 @@ dotenv.config();
 const seedPlans = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log("Connected to MongoDB");
 
         await Plan.deleteMany({}); // Clear existing
 
@@ -65,7 +64,6 @@ const seedPlans = async () => {
         ];
 
         await Plan.insertMany(plans);
-        console.log("Initial plans seeded successfully!");
         process.exit();
     } catch (error) {
         console.error("Error seeding plans:", error);

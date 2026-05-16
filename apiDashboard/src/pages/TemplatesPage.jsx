@@ -138,8 +138,11 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
 };
 
 export default function TemplatesPage({ onNavigate }) {
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState(() => {
+    const saved = localStorage.getItem('cached_templates');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!templates.length);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -149,7 +152,7 @@ export default function TemplatesPage({ onNavigate }) {
   }, []);
 
   async function fetchTemplates() {
-    setLoading(true);
+    if (templates.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/templates`, {
@@ -157,7 +160,9 @@ export default function TemplatesPage({ onNavigate }) {
       });
       const data = await response.json();
       if (response.ok) {
-        setTemplates(Array.isArray(data) ? data : []);
+        const templateList = Array.isArray(data) ? data : [];
+        setTemplates(templateList);
+        localStorage.setItem('cached_templates', JSON.stringify(templateList));
       }
     } catch (err) {
       console.error("Failed to fetch templates:", err);

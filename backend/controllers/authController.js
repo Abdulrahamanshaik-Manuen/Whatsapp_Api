@@ -44,7 +44,6 @@ export const sendOTP = async (req, res) => {
 
         res.status(200).json({ message: "OTP sent successfully" });
     } catch (err) {
-        console.error("Send OTP Error:", err);
         res.status(500).json({ error: "Failed to send OTP" });
     }
 };
@@ -61,7 +60,6 @@ export const verifyOTP = async (req, res) => {
 
         res.status(200).json({ message: result.message });
     } catch (err) {
-        console.error("Verify OTP Error:", err);
         res.status(500).json({ error: "Failed to verify OTP" });
     }
 };
@@ -116,7 +114,6 @@ export const register = async (req, res) => {
             user: { id: user._id, name: user.name, phone: user.phone } 
         });
     } catch (err) {
-        console.error("Registration Error:", err);
         res.status(500).json({ error: "Registration failed", message: err.message, stack: err.stack });
     }
 };
@@ -151,7 +148,6 @@ export const login = async (req, res) => {
             profile = await BusinessProfile.findOne({ user_id: user._id });
             hasProfile = !!profile;
         } catch (profileErr) {
-            console.error("Profile Check Error:", profileErr);
         }
 
         res.status(200).json({ 
@@ -167,7 +163,6 @@ export const login = async (req, res) => {
             hasProfile
         });
     } catch (err) {
-        console.error("Login Error:", err);
         res.status(500).json({ error: "Login failed", message: err.message });
     }
 };
@@ -186,7 +181,6 @@ export const forgotPassword = async (req, res) => {
 
         res.status(200).json({ message: "OTP sent successfully for password reset" });
     } catch (err) {
-        console.error("Forgot Password Error:", err);
         res.status(500).json({ error: "Failed to process forgot password request" });
     }
 };
@@ -216,38 +210,30 @@ export const resetPassword = async (req, res) => {
 
         res.status(200).json({ message: "Password reset successfully" });
     } catch (err) {
-        console.error("Reset Password Error:", err);
         res.status(500).json({ error: "Failed to reset password" });
     }
 };
 
 export const getMe = async (req, res) => {
     try {
-        console.log("getMe called for user_id:", req.user?.user_id);
         const user = await User.findById(req.user.user_id).select('-password').populate('planId');
         if (!user) {
-            console.log("User not found in DB");
             return res.status(404).json({ error: "User not found" });
         }
 
-        console.log("Fetching business profile...");
         const business = await BusinessProfile.findOne({ user_id: user._id });
         
-        console.log("Counting contacts...");
         // Count contacts for Audience Reach
         const contactCount = await Contact.countDocuments({ userId: user._id.toString() });
 
-        console.log("Preparing response stats...");
         // Add calculated stats to user object
         const userObj = user.toObject();
         userObj.contacts_count = contactCount;
         userObj.platform_status = user.whatsapp_connected ? 'Optimal' : 'Disconnected';
         userObj.platform_uptime = '99.9%';
 
-        console.log("getMe successful");
         res.json({ user: userObj, business });
     } catch (err) {
-        console.error("getMe Error Detailed:", err);
         res.status(500).json({ error: "Failed to fetch user data", message: err.message });
     }
 };

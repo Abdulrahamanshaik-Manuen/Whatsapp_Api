@@ -113,7 +113,6 @@ export const sendMessage = async (req, res) => {
                 }
             }
         } catch (err) {
-            console.error("Failed to construct preview body:", err.message);
         }
 
         // Save Message Log
@@ -152,7 +151,6 @@ export const sendMessage = async (req, res) => {
         }
 
     } catch (err) {
-        console.error("Send Message Error:", err);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -271,7 +269,6 @@ export const sendBulkMessages = async (req, res) => {
                     }
                 }
             } catch (err) {
-                console.error("Failed to construct bulk preview body:", err.message);
             }
 
             results.logs.push({
@@ -319,7 +316,6 @@ export const sendBulkMessages = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Bulk Send Error:", err);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -369,7 +365,6 @@ export const getMessages = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error("Fetch Messages Error:", err);
         res.status(500).json({ error: "Failed to fetch message logs" });
     }
 };
@@ -408,7 +403,6 @@ export const getConversations = async (req, res) => {
 
         res.status(200).json(conversations);
     } catch (err) {
-        console.error("Fetch Conversations Error:", err);
         res.status(500).json({ error: "Failed to fetch conversations" });
     }
 };
@@ -425,7 +419,6 @@ export const getMessagesByContact = async (req, res) => {
 
         res.status(200).json(messages);
     } catch (err) {
-        console.error("Fetch Thread Error:", err);
         res.status(500).json({ error: "Failed to fetch message thread" });
     }
 };
@@ -533,7 +526,6 @@ export const sendReply = async (req, res) => {
             return res.status(500).json({ error: result.error });
         }
     } catch (err) {
-        console.error("Send Reply Error:", err);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -561,7 +553,6 @@ export const getUsageDashboard = async (req, res) => {
             upgrade_required
         });
     } catch (err) {
-        console.error("Dashboard Usage Error:", err);
         res.status(500).json({ error: "Internal server error fetching usage" });
     }
 };

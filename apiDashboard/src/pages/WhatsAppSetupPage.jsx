@@ -9,7 +9,13 @@ import {
 } from 'lucide-react';
 
 export default function WhatsAppSetupPage({ userData, onUpdate }) {
-  const [view, setView] = useState('setup'); // 'setup' or 'success'
+  const [liveStatus, setLiveStatus] = useState(() => {
+    const saved = localStorage.getItem('whatsapp_liveStatus');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const isConnected = liveStatus?.whatsapp_connected || userData?.whatsapp_connected;
+  const [view, setView] = useState(isConnected ? 'success' : 'setup');
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
@@ -18,13 +24,10 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
     access_token: userData?.access_token || ''
   });
 
-  const [liveStatus, setLiveStatus] = useState(null);
-
   const API_BASE = window.location.origin.includes('localhost')
     ? 'http://localhost:5000'
     : window.location.origin;
 
-  const isConnected = liveStatus?.whatsapp_connected || userData?.whatsapp_connected;
 
   useEffect(() => {
     fetchStatus();
@@ -54,6 +57,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
 
       if (data.webhook_url) {
         setLiveStatus(data);
+        localStorage.setItem('whatsapp_liveStatus', JSON.stringify(data));
         onUpdate(data);
         
         setSettings({
@@ -119,35 +123,47 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
     { id: 3, title: 'Webhook Sync', icon: Zap, desc: 'Live Activation' },
   ];
 
-  const CopyableField = ({ label, value }) => (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
-      <div className="relative group">
-        <input
-          readOnly
-          value={value || 'Pending...'}
-          className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none pr-12 truncate"
-        />
-        <button
-          onClick={() => {
-            if (value) {
-              navigator.clipboard.writeText(value);
-              alert('Copied!');
-            }
-          }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-all bg-white rounded-lg shadow-sm border border-slate-100"
-        >
-          <Copy size={14} />
-        </button>
+  const CopyableField = ({ label, value, masked = false }) => {
+    const displayValue = (masked && value && value.length > 10)
+      ? `${value.substring(0, 15)}...${'*'.repeat(20)}`
+      : (value || 'Pending...');
+
+    return (
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+        <div className="relative group">
+          <input
+            readOnly
+            value={displayValue}
+            className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none pr-12 truncate"
+          />
+          <button
+            onClick={() => {
+              if (value) {
+                navigator.clipboard.writeText(value);
+                alert('Copied!');
+              }
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-all bg-white rounded-lg shadow-sm border border-slate-100"
+          >
+            <Copy size={14} />
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Success View Component
   const SuccessView = () => (
     <div className="max-w-7xl mx-auto px-8 lg:px-12 pt-12 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+      <div className="mb-10 space-y-1">
+        <h1 className="text-3xl font-black text-primary tracking-tight">WhatsApp Setup</h1>
+        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
+          Manage your official Business API integration and credentials
+        </p>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-12 space-y-6">
           <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-2xl shadow-slate-200/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8">
                <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-2 border border-emerald-100">
@@ -178,17 +194,11 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                   <CopyableField label="Webhook URL" value={liveStatus?.webhook_url || `${API_BASE}/api/webhook`} />
                   <CopyableField label="Verify Token" value={liveStatus?.verify_token || "whatsapp_token"} />
                   <div className="md:col-span-2">
-                    <CopyableField label="Access Token" value={liveStatus?.access_token || settings.access_token} />
+                    <CopyableField label="Access Token" value={liveStatus?.access_token || settings.access_token} masked={true} />
                   </div>
                </div>
 
-               <div className="pt-8 border-t border-slate-50 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                     <div className="flex -space-x-2">
-                        {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-emerald-500 flex items-center justify-center text-white text-[10px] font-black"><Check size={12} strokeWidth={3} /></div>)}
-                     </div>
-                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">System Synchronized</p>
-                  </div>
+                <div className="pt-8 border-t border-slate-50 flex items-center justify-end">
                   <button 
                     onClick={() => setView('setup')}
                     className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all active:scale-95 shadow-lg shadow-slate-900/20"
@@ -198,27 +208,6 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                </div>
             </div>
           </div>
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
-           <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white space-y-6 shadow-2xl shadow-slate-900/30 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-              <h4 className="text-xl font-black tracking-tight">Mission Control</h4>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">Your instance is optimized for bulk messaging and automated workflows.</p>
-              <div className="space-y-4">
-                 <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Server Health</span>
-                    <span className="text-xs font-black text-emerald-400">EXCELLENT</span>
-                 </div>
-                 <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Sync Status</span>
-                    <span className="text-xs font-black text-emerald-400">ACTIVE</span>
-                 </div>
-              </div>
-              <button className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg shadow-primary/20">
-                 Open Inbox
-              </button>
-           </div>
         </div>
       </div>
     </div>

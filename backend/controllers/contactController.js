@@ -124,27 +124,21 @@ export const uploadContacts = async (req, res) => {
             return res.status(400).json({ error: "File is required" });
         }
 
-        console.log("Uploading file to Cloudinary:", req.file.originalname);
 
         // 1. Save to Cloudinary
         const cloudinaryResult = await uploadToCloudinary(req.file.path);
         const cloudinaryUrl = cloudinaryResult.secure_url;
-        console.log("File saved to Cloudinary:", cloudinaryUrl);
 
         // 2. Fetch from Cloudinary (as per user requirement "fetched from cloudinary")
-        console.log("Fetching file back from Cloudinary...");
         const response = await axios.get(cloudinaryUrl, {
             responseType: 'arraybuffer',
             timeout: 10000 // 10s timeout
         });
         const fileBuffer = Buffer.from(response.data);
-        console.log("File fetched successfully, buffer size:", fileBuffer.length);
 
         // 3. Parse the fetched data
         // We pass the buffer and the original name to ensure correct extension detection
-        console.log("Starting data parse...");
         const rawData = await parseFile(fileBuffer, req.file.originalname);
-        console.log(`Successfully parsed ${rawData.length} rows`);
 
         const results = {
             success: 0,
@@ -155,7 +149,6 @@ export const uploadContacts = async (req, res) => {
 
         for (const [index, item] of rawData.entries()) {
             try {
-                console.log(`Processing row ${index + 1}:`, item);
                 const { valid, data, error } = validateContactData(item);
                 if (!valid) {
                     results.failed++;
@@ -186,7 +179,6 @@ export const uploadContacts = async (req, res) => {
         // Clean up local temp file
         fs.unlink(req.file.path, (err) => { if (err) console.error("Error deleting temp file:", err); });
 
-        console.log("All rows processed. Success:", results.success, "Failed:", results.failed);
         res.status(200).json(results);
     } catch (error) {
         console.error("Upload controller error:", error);

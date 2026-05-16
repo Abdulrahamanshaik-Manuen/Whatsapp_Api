@@ -10,8 +10,11 @@ import {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export default function CampaignsPage({ onNavigate }) {
-  const [campaigns, setCampaigns] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState(() => {
+    const saved = localStorage.getItem('cached_campaigns');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!campaigns.length);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
@@ -20,6 +23,7 @@ export default function CampaignsPage({ onNavigate }) {
   }, []);
 
   const fetchCampaigns = async () => {
+    if (campaigns.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/campaigns`, {
@@ -28,6 +32,7 @@ export default function CampaignsPage({ onNavigate }) {
       const data = await response.json();
       if (Array.isArray(data)) {
         setCampaigns(data);
+        localStorage.setItem('cached_campaigns', JSON.stringify(data));
       }
     } catch (err) {
       console.error("Failed to fetch campaigns:", err);

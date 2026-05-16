@@ -13,6 +13,7 @@ import automationRoutes from './automationRoutes.js';
 import subscriptionRoutes from './subscriptionRoutes.js';
 import productRoutes from './productRoutes.js';
 import adminRoutes from './adminRoutes.js';
+import notificationRoutes from './notificationRoutes.js';
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.get('/', (req, res) => {
 
 // Authentication and Business Routes
 router.use('/auth', authRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/business', businessRoutes);
 router.use('/whatsapp', whatsappRoutes);
 router.use('/webhook', webhookRoutes);

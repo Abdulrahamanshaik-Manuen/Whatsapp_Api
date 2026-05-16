@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import SupportModal from '../components/SupportModal';
 import DashboardContent from '../components/DashboardContent';
 import CampaignsPage from './CampaignsPage';
 import MessagesPage from './MessagesPage';
@@ -50,8 +51,14 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     return localStorage.getItem('activeDashboardTab') || 'Dashboard';
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [businessData, setBusinessData] = useState(null);
+  const [userData, setUserData] = useState(() => {
+    const saved = localStorage.getItem('userData');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [businessData, setBusinessData] = useState(() => {
+    const saved = localStorage.getItem('businessData');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [selectedTemplateData, setSelectedTemplateData] = useState(() => {
     const saved = localStorage.getItem('selectedTemplateData');
     return saved ? JSON.parse(saved) : null;
@@ -60,6 +67,7 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     const saved = localStorage.getItem('selectedAutomationData');
     return saved ? JSON.parse(saved) : null;
   });
+  const [showSupport, setShowSupport] = useState(false);
 
   const fetchUserData = async () => {
     try {
@@ -72,6 +80,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
       if (response.ok) {
         setUserData(data.user);
         setBusinessData(data.business);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        localStorage.setItem('businessData', JSON.stringify(data.business));
       }
     } catch (err) {
       console.error("Fetch User Data Error:", err);
@@ -98,15 +108,19 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     const targetPath = tabPathMap[activeTab];
     const currentPath = normalize(window.location.pathname);
     
-    console.log('[Dashboard] Tab Sync:', { activeTab, targetPath, currentPath });
 
     if (targetPath && normalize(targetPath) !== currentPath) {
-      console.log('[Dashboard] Navigating to:', targetPath);
-      // onNavigate(targetPath);
     }
   }, [activeTab, onNavigate]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('activeDashboardTab');
+    if (onNavigate) onNavigate('/login');
+  };
 
   return (
     <div className="flex h-screen bg-[#F5F7FA] font-['Inter',_sans-serif] overflow-hidden relative">
@@ -125,10 +139,19 @@ export default function DashboardPage({ onNavigate, initialPath }) {
         setIsOpen={setIsSidebarOpen}
         onNavigate={onNavigate}
         userData={userData}
+        onLogout={handleLogout}
+        setShowSupport={setShowSupport}
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />
+        <Header 
+          toggleSidebar={toggleSidebar} 
+          onNavigate={onNavigate} 
+          userData={userData} 
+          businessData={businessData}
+          onLogout={handleLogout}
+          setActiveTab={setActiveTab}
+        />
 
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
@@ -225,6 +248,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           )}
         </main>
       </div>
+
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
     </div>
   );
 }

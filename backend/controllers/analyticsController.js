@@ -11,7 +11,7 @@ export const getDashboardStats = async (req, res) => {
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const { range = '7d' } = req.query;
 
-        // 1. KPI Stats
+        // KPI Stats
         const stats = await Message.aggregate([
             { $match: { user_id: userObjectId, status: { $ne: 'failed' } } },
             {
@@ -30,7 +30,7 @@ export const getDashboardStats = async (req, res) => {
         const user = await User.findById(userId);
         const contactCount = await Contact.countDocuments({ user_id: userObjectId });
 
-        // 2. Performance Chart
+        // Performance Chart
         const performance = [];
         let daysToFetch = range === '30d' ? 30 : (range === '24h' ? 24 : 7);
 
@@ -40,7 +40,7 @@ export const getDashboardStats = async (req, res) => {
                 const d = new Date();
                 d.setHours(d.getHours() - i, 0, 0, 0);
                 const hourStr = d.getHours() + ':00';
-                
+
                 const startOfHour = new Date(d);
                 const endOfHour = new Date(d);
                 endOfHour.setMinutes(59, 59, 999);
@@ -58,7 +58,7 @@ export const getDashboardStats = async (req, res) => {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
                 const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                
+
                 const startOfDay = new Date(d);
                 startOfDay.setHours(0, 0, 0, 0);
                 const endOfDay = new Date(d);
@@ -73,12 +73,12 @@ export const getDashboardStats = async (req, res) => {
             }
         }
 
-        // 3. Recent Campaigns
+        // Recent Campaigns
         const recentCampaigns = await Campaign.find({ user_id: userObjectId })
             .sort({ created_at: -1 })
             .limit(3);
 
-        // 4. Top Templates
+        // Top Templates
         const topTemplates = await Message.aggregate([
             { $match: { user_id: userObjectId, template_name: { $ne: null }, status: { $ne: 'failed' } } },
             {
@@ -92,7 +92,7 @@ export const getDashboardStats = async (req, res) => {
             { $limit: 4 }
         ]);
 
-        // 5. Usage Overview
+        // Usage Overview
 
         res.json({
             kpi: {
@@ -123,7 +123,6 @@ export const getDashboardStats = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Dashboard Analytics Error:", err);
         res.status(500).json({ error: "Failed to fetch dashboard analytics" });
     }
 };

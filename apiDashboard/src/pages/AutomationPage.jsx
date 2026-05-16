@@ -10,8 +10,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export default function AutomationPage({ onNavigate }) {
-  const [automations, setAutomations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [automations, setAutomations] = useState(() => {
+    const saved = localStorage.getItem('cached_automations');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!automations.length);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestData, setRequestData] = useState({ name: '', description: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -34,12 +37,14 @@ export default function AutomationPage({ onNavigate }) {
   }, []);
 
   const fetchAutomations = async () => {
+    if (automations.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_BASE_URL}/automations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setAutomations(response.data);
+      localStorage.setItem('cached_automations', JSON.stringify(response.data));
     } catch (err) {
       console.error("Failed to fetch automations:", err);
     } finally {
@@ -147,6 +152,7 @@ export default function AutomationPage({ onNavigate }) {
               <AutomationCard
                 key={auto._id}
                 automation={auto}
+                isAdmin={isAdmin}
                 onEdit={() => onNavigate('/automations/builder', auto)}
                 onToggle={() => toggleStatus(auto._id, auto.status)}
               />
@@ -261,7 +267,7 @@ function StatCard({ label, value, icon: Icon, color }) {
   );
 }
 
-function AutomationCard({ automation, onEdit, onToggle }) {
+function AutomationCard({ automation, isAdmin, onEdit, onToggle }) {
   const isRequested = automation.status === 'requested';
 
   return (
@@ -278,11 +284,12 @@ function AutomationCard({ automation, onEdit, onToggle }) {
         {!isRequested && (
           <div className="flex items-center gap-3">
             <button
+              disabled={!isAdmin}
               onClick={(e) => {
                 e.stopPropagation();
-                onToggle();
+                if (isAdmin) onToggle();
               }}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${automation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${automation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'} ${!isAdmin ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${automation.status === 'active' ? 'translate-x-6' : 'translate-x-1'}`}
@@ -302,13 +309,17 @@ function AutomationCard({ automation, onEdit, onToggle }) {
 
       <div className="h-[1px] bg-slate-50 my-6"></div>
 
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${automation.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{automation.status}</span>
+        </div>
         {!isRequested ? (
             <button
               onClick={onEdit}
               className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-3 transition-all"
             >
-              Open Builder
+              {isAdmin ? 'Open Builder' : 'View Flow'}
               <ChevronRight size={14} />
             </button>
         ) : (

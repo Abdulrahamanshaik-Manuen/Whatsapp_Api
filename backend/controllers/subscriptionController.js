@@ -6,21 +6,16 @@ export const getPlans = async (req, res) => {
         const plans = await Plan.find({ is_active: true }).sort({ price: 1 });
         res.status(200).json(plans);
     } catch (error) {
-        console.error("getPlans Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
 export const getSubscriptionStatus = async (req, res) => {
     try {
-        console.log("getSubscriptionStatus called for user_id:", req.user?.user_id);
         const user = await User.findById(req.user.user_id).populate('planId');
         if (!user) {
-            console.log("User not found in getSubscriptionStatus");
             return res.status(404).json({ error: "User not found" });
         }
-
-        console.log("Plan info:", user.planId ? user.planId.name : "No Plan");
 
         res.status(200).json({
             plan: user.planId,
@@ -32,9 +27,7 @@ export const getSubscriptionStatus = async (req, res) => {
                 contact_limit: user.planId?.contact_limit || 1000
             }
         });
-        console.log("getSubscriptionStatus successful");
     } catch (error) {
-        console.error("getSubscriptionStatus Error Detailed:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -67,7 +60,6 @@ export const subscribeToPlan = async (req, res) => {
             user: updatedUser
         });
     } catch (error) {
-        console.error("subscribeToPlan Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -85,7 +77,6 @@ export const createPlan = async (req, res) => {
         await plan.save();
         res.status(201).json(plan);
     } catch (error) {
-        console.error("createPlan Error:", error);
         res.status(500).json({ error: error.message });
     }
 };

@@ -26,15 +26,12 @@ if (redisUrl.startsWith('rediss://')) {
 export const bulkMessageQueue = new Queue('bulkMessageQueue', redisUrl, queueOptions);
 
 bulkMessageQueue.on('error', (error) => {
-    console.error('Bull Queue Redis Error:', error.message);
 });
 
 bulkMessageQueue.on('waiting', (jobId) => {
-    console.log(`Job ${jobId} is waiting...`);
 });
 
 bulkMessageQueue.on('active', (jobId) => {
-    console.log(`Job ${jobId} is now active...`);
 });
 
 const META_PRICING = {
@@ -112,8 +109,6 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         const accessToken = envToken || dbToken; // Prioritize the one in .env since we just verified it
 
-        console.log(`[Worker] Using Token Source: ${envToken ? '.env' : 'Database'}`);
-        console.log(`[Worker] Token Snippet: ${accessToken ? accessToken.substring(0, 15) + '...' : 'MISSING'}`);
 
         if (!phone_number_id || !accessToken) {
             throw new Error('WhatsApp configuration missing (phone_number_id or access_token)');
@@ -128,19 +123,12 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                 const templateDoc = await Template.findOne({ name: template_name });
                 if (templateDoc && templateDoc.header && templateDoc.header.media_url && !templateDoc.header.media_url.includes('scontent.whatsapp.net')) {
                     finalHeaderImage = templateDoc.header.media_url;
-                    console.log(`[Worker] Using database-saved image for ${template_name}: ${finalHeaderImage}`);
-                } else if (template_name === 'interior_design') {
-                    // Fallback to the recovered permanent Cloudinary link for this specific template
-                    finalHeaderImage = 'https://res.cloudinary.com/dcsfxv6g1/image/upload/v1778567550/whatsapp_templates/interior_design_approved.jpg';
-                    console.log(`[Worker] Using permanent Cloudinary link for interior_design`);
                 }
             } catch (err) {
-                console.warn(`[Worker] Failed to fetch template media for ${template_name}:`, err.message);
             }
         }
 
         // Use whatsappService
-        console.log(`[Worker] Attempting to send template "${template_name}" to ${to} with image ${finalHeaderImage}...`);
         let result = await whatsappService.sendTemplateMessage(
             phone_number_id,
             accessToken,
@@ -153,7 +141,6 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
 
         // Fallback to 'en' if 'en_US' fails (common Meta issue)
         if (!result.success && result.error?.includes('language')) {
-            console.log(`[Worker] Retrying with language "en" for ${to}...`);
             result = await whatsappService.sendTemplateMessage(
                 phone_number_id,
                 accessToken,
@@ -166,7 +153,6 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
         }
 
         if (result.success) {
-            console.log(`[Worker] ✅ Successfully handed to Meta for ${to}. Meta ID: ${result.data?.messages?.[0]?.id}`);
             meta_message_id = result.data?.messages?.[0]?.id;
             status = 'pending'; // Set to pending, webhook will update to 'sent' and increment count
 
@@ -181,10 +167,8 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                     }
                 });
             } catch (usageErr) {
-                console.error(`[Worker] Failed to update usage for ${user_id}:`, usageErr.message);
             }
         } else {
-            console.error(`[Worker] ❌ Meta Rejection for ${to}:`, result.error);
             status = 'failed';
             // Save the last error to the campaign for dashboard visibility
             if (campaign_id) {
@@ -213,7 +197,6 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                     }
                 }
             } catch (tempErr) {
-                console.warn(`[Worker] Could not fetch template for preview:`, tempErr.message);
             }
 
             const cleanTo = to.replace(/\D/g, '');
@@ -238,19 +221,14 @@ bulkMessageQueue.process('send-message', 5, async (job) => { // concurrency of 5
                 };
 
                 const newMessage = await Message.create(logEntry);
-                console.log(`[Worker] 📝 Log created for ${cleanTo}. ID: ${newMessage._id}`);
-            } else {
-                console.log(`[Worker] ⏭️ Skipping duplicate log for ${cleanTo} (Meta ID: ${meta_message_id})`);
             }
 
         } catch (logErr) {
-            console.error(`[Worker] ❌ Failed to create message log for ${to}:`, logErr.message);
         }
 
         // Update Campaign stats - We now rely on the WEBHOOK to increment sent_count 
         // to avoid double-counting (Worker API Success + Meta Sent Webhook).
         if (campaign_id) {
-            console.log(`[Worker] Campaign ${campaign_id} message handed to Meta. Waiting for webhook confirmation.`);
         }
 
         return { status: 'sent', to };
@@ -286,7 +264,6 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
     const { campaign_id, finalContacts, template_id, template_name, template_type, variable_values, user_id, header_image } = job.data;
 
     try {
-        console.log(`Launching Campaign: ${campaign_id}`);
 
         // Mark campaign as running
         await Campaign.findByIdAndUpdate(campaign_id, { status: 'running' });
@@ -321,7 +298,6 @@ bulkMessageQueue.process('launch-campaign', async (job) => {
 
         return { status: 'launched', count: finalContacts.length };
     } catch (err) {
-        console.error(`Launch Campaign Error for ${campaign_id}:`, err.message);
         throw err;
     }
 });
@@ -338,6 +314,5 @@ bulkMessageQueue.on('global:completed', async (jobId) => {
 bulkMessageQueue.on('global:drained', async () => {
     // Note: In a production multi-tenant app, you'd want to track which campaign just finished.
     // Since jobs are added in bulk, we can look for 'running' campaigns and check if their counts match.
-    console.log("Queue drained. Updating active campaigns to completed.");
     await Campaign.updateMany({ status: 'running' }, { status: 'completed' });
 });

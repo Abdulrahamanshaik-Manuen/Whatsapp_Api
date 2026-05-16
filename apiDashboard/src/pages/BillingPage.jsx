@@ -37,9 +37,15 @@ const StatCard = ({ label, value, color, icon: Icon, target }) => {
 
 export default function BillingPage({ userData }) {
   const [isAnnual, setIsAnnual] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [subStatus, setSubStatus] = useState(null);
-  const [availablePlans, setAvailablePlans] = useState([]);
+  const [subStatus, setSubStatus] = useState(() => {
+    const saved = localStorage.getItem('cached_sub_status');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [availablePlans, setAvailablePlans] = useState(() => {
+    const saved = localStorage.getItem('cached_plans');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [loading, setLoading] = useState(!subStatus);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -47,7 +53,7 @@ export default function BillingPage({ userData }) {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
+    if (!subStatus) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const [statusRes, plansRes] = await Promise.all([
@@ -62,6 +68,8 @@ export default function BillingPage({ userData }) {
 
       setSubStatus(statusData);
       setAvailablePlans(plansData);
+      localStorage.setItem('cached_sub_status', JSON.stringify(statusData));
+      localStorage.setItem('cached_plans', JSON.stringify(plansData));
     } catch (error) {
       console.error("Error fetching billing data:", error);
     } finally {

@@ -34,7 +34,6 @@ export const createGroup = async (req, res) => {
 
         res.status(201).json(group);
     } catch (error) {
-        console.error("Create Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -45,11 +44,9 @@ export const createGroup = async (req, res) => {
 export const getGroups = async (req, res) => {
     try {
         const user_id = req.user.user_id;
-        console.log("Fetching groups for user:", user_id);
         const groups = await Group.find({ user_id }).sort({ createdAt: -1 });
         res.json(groups);
     } catch (error) {
-        console.error("Get Groups Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -73,7 +70,6 @@ export const getGroupById = async (req, res) => {
 
         res.json(group);
     } catch (error) {
-        console.error("Get Group By ID Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -109,7 +105,6 @@ export const updateGroup = async (req, res) => {
 
         res.json(group);
     } catch (error) {
-        console.error("Update Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -129,7 +124,6 @@ export const deleteGroup = async (req, res) => {
 
         res.json({ message: 'Group deleted successfully' });
     } catch (error) {
-        console.error("Delete Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -164,7 +158,6 @@ export const addContactsToGroup = async (req, res) => {
 
         res.json(group);
     } catch (error) {
-        console.error("Add Contacts to Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -188,7 +181,6 @@ export const removeContactFromGroup = async (req, res) => {
 
         res.json(group);
     } catch (error) {
-        console.error("Remove Contact from Group Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -213,7 +205,6 @@ export const getGroupContacts = async (req, res) => {
 
         res.json(contacts);
     } catch (error) {
-        console.error("Get Group Contacts Error:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -259,7 +250,6 @@ export const grantGroupConsent = async (req, res) => {
             upsertedCount: result.upsertedCount
         });
     } catch (error) {
-        console.error("Grant Group Consent Error:", error);
         res.status(500).json({ error: error.message });
     }
 };

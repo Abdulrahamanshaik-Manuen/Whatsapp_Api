@@ -44,7 +44,6 @@ export const createProfile = async (req, res) => {
         await profile.save();
         res.status(201).json({ message: "Business profile created successfully", profile });
     } catch (err) {
-        console.error("Create Profile Error:", err);
         res.status(500).json({ error: "Failed to create business profile" });
     }
 };
@@ -55,7 +54,6 @@ export const getProfile = async (req, res) => {
         if (!profile) return res.status(404).json({ error: "Business profile not found" });
         res.status(200).json(profile);
     } catch (err) {
-        console.error("Get Profile Error:", err);
         res.status(500).json({ error: "Failed to fetch business profile" });
     }
 };
@@ -74,7 +72,6 @@ export const updateProfile = async (req, res) => {
         if (!updated) return res.status(404).json({ error: "Business profile not found" });
         res.status(200).json({ message: "Profile updated successfully", profile: updated });
     } catch (err) {
-        console.error("Update Profile Error:", err);
         res.status(500).json({ error: "Failed to update business profile" });
     }
 };

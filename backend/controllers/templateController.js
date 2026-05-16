@@ -4,6 +4,8 @@ import Template from '../models/Template.js';
 import User from '../models/User.js';
 import * as whatsappService from '../services/whatsappService.js';
 import * as cloudinaryService from '../services/cloudinaryService.js';
+import Notification from '../models/Notification.js';
+import { notifyAdmins } from './notificationController.js';
 
 // ── ADMIN CONTROLLERS ────────────────────────────────────────────────────────
 
@@ -67,6 +69,14 @@ export const updateTemplateStatus = async (req, res) => {
         );
 
         if (!template) return res.status(404).json({ error: "Template not found" });
+
+        // Notify Client
+        await Notification.create({
+            userId: template.requested_by || template.created_by,
+            title: 'Template Status Updated',
+            message: `Your template "${template.name}" status has been changed to ${status} by Admin.${meta_rejection_reason ? ' Reason: ' + meta_rejection_reason : ''}`,
+            type: status === 'approved' ? 'success' : (status === 'rejected' ? 'error' : 'info')
+        });
 
         res.status(200).json({ message: `Template status updated to ${status}`, template });
     } catch (error) {
@@ -148,7 +158,6 @@ export const submitToMeta = async (req, res) => {
                     template.header.handle = finalMediaHandle;
                 }
             } catch (err) {
-                console.error('Deferred Meta Upload Error during admin approval:', err.message);
             }
         }
 
@@ -207,7 +216,6 @@ export const submitToMeta = async (req, res) => {
             res.status(400).json({ error: "Meta submission failed", details: result.error });
         }
     } catch (error) {
-        console.error('Submit to Meta Error:', error);
         res.status(500).json({ error: "Internal server error", message: error.message });
     }
 };
@@ -258,7 +266,6 @@ export const uploadSample = async (req, res) => {
             res.status(400).json({ error: "Cloudinary upload failed", details: cloudinaryResult.error });
         }
     } catch (error) {
-        console.error('Upload Sample Error:', error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -297,10 +304,8 @@ export const requestCustomTemplate = async (req, res) => {
                 if (metaResult.success) {
                     finalMediaHandle = metaResult.handle;
                 } else {
-                    console.error('Deferred Meta Upload Error:', metaResult.error);
                 }
             } catch (err) {
-                console.error('Error fetching media for Meta upload:', err.message);
             }
         }
 
@@ -387,13 +392,21 @@ export const requestCustomTemplate = async (req, res) => {
 
         await template.save();
 
+        // Notify Admin of new request
+        if (req.user.role !== 'admin') {
+            await notifyAdmins(
+                'New Template Request',
+                `Client "${targetUser.name}" has requested a new template: "${cleanName}".`,
+                'info'
+            );
+        }
+
         const message = directSubmit
             ? "Template submitted to Meta successfully! Approval usually takes 24–48 hours."
             : "Template request sent to Admin for review. Approval usually takes 24–48 hours.";
 
         res.status(201).json({ message, template });
     } catch (error) {
-        console.error('Request Template Error:', error);
         res.status(500).json({ error: "Failed to request template", message: error.message });
     }
 };
@@ -522,11 +535,9 @@ export const syncAllTemplatesFromMeta = async (req, res) => {
                 sync_version: "1.2"
             });
         } else {
-            console.error('Sync failed. Meta Error:', result.error);
             return res.status(400).json({ error: result.error });
         }
     } catch (error) {
-        console.error('Template Sync Exception:', error);
         res.status(500).json({ error: "Internal server error during synchronization." });
     }
 };

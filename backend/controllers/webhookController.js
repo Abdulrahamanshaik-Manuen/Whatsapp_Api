@@ -3,6 +3,7 @@ import Campaign from '../models/Campaign.js';
 import User from '../models/User.js';
 import Contact from '../models/Contact.js';
 import Template from '../models/Template.js';
+import Notification from '../models/Notification.js';
 import { processAutomation } from '../services/automationService.js';
 import logger from '../utils/logger.js';
 
@@ -15,7 +16,6 @@ export const verifyWebhook = (req, res) => {
 
     if (mode && token) {
         if (mode === 'subscribe' && token === verifyToken) {
-            console.log('WEBHOOK_VERIFIED');
             res.status(200).send(challenge);
         } else {
             res.sendStatus(403);
@@ -56,7 +56,6 @@ export const handleWebhookEvent = async (req, res) => {
                     // console.log(`[Webhook] Status Update: ${status} for ID ${meta_message_id} (${message ? 'Campaign: ' + message.campaign_id : 'Direct Message'})`);
 
                     if (status === 'failed') {
-                        console.error(`[Webhook] ❌ Delivery Failed! Reason:`, JSON.stringify(statusUpdate.errors || 'Unknown Meta Error', null, 2));
                     }
 
                     // Only update if the status has actually changed to avoid double-counting
@@ -75,7 +74,6 @@ export const handleWebhookEvent = async (req, res) => {
                                 await Campaign.findByIdAndUpdate(message.campaign_id, {
                                     $inc: { [incField]: 1 }
                                 });
-                                console.log(`[Webhook] Incremented ${incField} for Campaign ${message.campaign_id}`);
                             }
                         }
                     }
@@ -127,7 +125,6 @@ export const handleWebhookEvent = async (req, res) => {
                             { consent: false, consent_timestamp: now, customer_service_window_active: false },
                             { returnDocument: 'after' }
                         );
-                        console.log(`User ${cleanFrom} opted out. Consent revoked.`);
                     }
 
                     // Idempotency check: Don't save if we already have this message
@@ -144,7 +141,6 @@ export const handleWebhookEvent = async (req, res) => {
                         });
                         logger.info(`Incoming from ${cleanFrom}: ${bodyText}`);
                     } else {
-                        console.log(`Skipped duplicate incoming message: ${meta_message_id}`);
                     }
 
                     // Trigger Automation Engine
@@ -157,23 +153,29 @@ export const handleWebhookEvent = async (req, res) => {
                 const { event, message_template_id, message_template_name, reason } = value;
                 const status = event.toLowerCase();
 
-                if (['approved', 'rejected'].includes(status)) {
-                    await Template.findOneAndUpdate(
-                        { name: message_template_name },
-                        {
-                            status: status,
-                            meta_template_id: message_template_id,
-                            meta_rejection_reason: reason || null
-                        },
-                        { returnDocument: 'after' }
-                    );
-                    console.log(`Template "${message_template_name}" status updated to: ${status}`);
+                // Handle all status updates (approved, rejected, flagged, disabled, etc.)
+                const updatedTemplate = await Template.findOneAndUpdate(
+                    { name: message_template_name },
+                    {
+                        status: status,
+                        meta_template_id: message_template_id,
+                        meta_rejection_reason: reason || null
+                    },
+                    { returnDocument: 'after' }
+                );
+
+                if (updatedTemplate) {
+                    await Notification.create({
+                        userId: updatedTemplate.user_id,
+                        title: `Template ${status.toUpperCase()}`,
+                        message: `Your template "${message_template_name}" status has changed to: ${status}.${reason ? ' Reason: ' + reason : ''}`,
+                        type: status === 'approved' ? 'success' : (status === 'rejected' || status === 'disabled' ? 'error' : 'warning')
+                    });
                 }
             }
 
             res.status(200).send('EVENT_RECEIVED');
         } catch (err) {
-            console.error('Error processing webhook:', err.message);
             res.sendStatus(500);
         }
     } else {

@@ -4,6 +4,7 @@ import AutomationLog from '../models/AutomationLog.js';
 import User from '../models/User.js';
 import Contact from '../models/Contact.js';
 import Message from '../models/Message.js';
+import Notification from '../models/Notification.js';
 import { sendTemplateMessage, sendTextMessage } from './whatsappService.js';
 import { calculateMetaCost } from '../utils/pricingEngine.js';
 import axios from 'axios';
@@ -12,7 +13,6 @@ import logger from '../utils/logger.js';
 
 export const processAutomation = async (userId, fromNumber, messageText) => {
     try {
-        console.log(`[Automation] Processing message for ${fromNumber}: "${messageText}" (UserID: ${userId})`);
 
         // Search for Triggers first - This allows "Restart" keywords like 'hello' to reset the flow
         const automations = await Automation.find({
@@ -64,7 +64,6 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
         let state = await AutomationState.findOne({ phoneNumber: fromNumber, userId });
 
         if (state) {
-            console.log(`[Automation] Resuming existing flow for ${fromNumber}...`);
             const automation = await Automation.findById(state.automationId);
             if (automation && automation.status === 'active') {
                 return await executeWorkflow(automation, state, messageText);
@@ -73,9 +72,7 @@ export const processAutomation = async (userId, fromNumber, messageText) => {
             }
         }
 
-        console.log(`[Automation] No matching triggers or active flows for "${messageText}"`);
     } catch (err) {
-        console.error("[Automation Engine Error]:", err);
     }
 };
 
@@ -88,7 +85,6 @@ const checkTriggerMatch = (node, messageText) => {
 
     if (type === 'keyword') {
         const keywords = config.keywords || [];
-        console.log(`[Automation] Keywords to check: ${JSON.stringify(keywords)}`);
         return keywords.some(kw => {
             const target = kw.toLowerCase().trim();
             const match = config.matchType === 'exact' ? text === target : text.includes(target);
@@ -109,7 +105,6 @@ const executeWorkflow = async (automation, state, lastMessage) => {
     if (state.waitingForReply) {
         const currentNode = automation.nodes.find(n => n.id === state.currentNodeId);
         if (currentNode) {
-            console.log(`[Automation] Resuming execution for node: ${currentNode.type} (${currentNode.id})`);
             const result = await handleNodeExecution(currentNode, automation, state, lastMessage);
 
             if (result.pause) {
@@ -118,7 +113,6 @@ const executeWorkflow = async (automation, state, lastMessage) => {
             }
 
             if (!result.success) {
-                console.error(`[Automation] Error resuming node:`, result.error);
                 return;
             }
 
@@ -133,7 +127,6 @@ const executeWorkflow = async (automation, state, lastMessage) => {
         const outgoingEdges = automation.edges.filter(e => e.source === currentNodeId);
 
         if (outgoingEdges.length === 0) {
-            console.log(`[Automation] Workflow "${automation.name}" ended for ${state.phoneNumber}`);
 
             // Update Success Metrics
             const updatedAuto = await Automation.findById(automation._id);
@@ -162,7 +155,6 @@ const executeWorkflow = async (automation, state, lastMessage) => {
             break;
         }
 
-        console.log(`[Automation] Executing Node: ${nextNode.type} (${nextNode.id})`);
         const result = await handleNodeExecution(nextNode, automation, state, lastMessage);
 
         // Log the execution
@@ -215,13 +207,11 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
         case 'messageNode':
             try {
                 if (!isInsideWindow) {
-                    console.log(`[Automation] ❌ Blocking messageNode for ${state.phoneNumber} - Window Expired.`);
                     return { success: false, error: "Customer service window expired. Automation cannot send free-form messages." };
                 }
 
                 // Global Limit Check
                 if (user.messages_used >= user.message_limit) {
-                    console.log(`[Automation] ❌ Blocking messageNode for ${user.name} - Limit Exceeded.`);
                     return { success: false, error: "Message limit exceeded." };
                 }
 
@@ -238,7 +228,6 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                 const systemToken = process.env.ACCESSTOKEN;
                 const phoneId = user.phone_number_id || process.env.PHONE_NUMBER_ID;
 
-                console.log(`[Automation] Attempting message with user token...`);
                 let result = await sendTextMessage(phoneId, userToken || systemToken, state.phoneNumber, text);
 
                 if (!result.success) {
@@ -246,7 +235,6 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     const isAuthError = errorStr.includes('190') || errorStr.includes('Authentication');
 
                     if (isAuthError && userToken && systemToken) {
-                        console.log(`[Automation] User token invalid (190). Retrying with system token...`);
                         result = await sendTextMessage(phoneId, systemToken, state.phoneNumber, text);
                     }
                 }
@@ -305,7 +293,6 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
 
                 // Global Limit Check
                 if (user.messages_used >= user.message_limit) {
-                    console.log(`[Automation] ❌ Blocking templateNode for ${user.name} - Limit Exceeded.`);
                     return { success: false, error: "Message limit exceeded." };
                 }
 
@@ -372,6 +359,19 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
         case 'ai_reply':
             // Integration with Gemini
             return { success: true };
+
+        case 'notificationNode':
+            try {
+                await Notification.create({
+                    userId: user._id,
+                    title: config.title || 'Automation Alert',
+                    message: config.message || `Automation "${automation.name}" triggered for ${state.phoneNumber}`,
+                    type: config.type || 'info'
+                });
+                return { success: true };
+            } catch (e) {
+                return { success: false, error: e.message };
+            }
 
         default:
             return { success: true };

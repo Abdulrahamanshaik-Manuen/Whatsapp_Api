@@ -1,27 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Search, Plus, Users, Tag, MoreVertical,
-  Trash2, Edit2, X, Check, Loader2,
-  Calendar, FolderOpen, ChevronRight, UserPlus,
-  Mail, Phone, Filter,
-  MessageSquare, Info, ShieldCheck, Download
+  Search, Plus, Users, Trash2, Edit2, X, Check, Loader2,
+  Calendar, FolderOpen, UserPlus, ShieldCheck
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
 export default function GroupsPage() {
-  const [groups, setGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [groupContacts, setGroupContacts] = useState([]);
+  const [groups, setGroups] = useState(() => {
+    const saved = localStorage.getItem('cached_groups');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedGroup, setSelectedGroup] = useState(() => {
+    const saved = localStorage.getItem('cached_selected_group');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [groupContacts, setGroupContacts] = useState(() => {
+    const saved = localStorage.getItem('cached_group_contacts');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [allContacts, setAllContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [contactsLoading, setContactsLoading] = useState(false);
+  const [loading, setLoading] = useState(!groups.length);
+  const [contactsLoading, setContactsLoading] = useState(!groupContacts.length && selectedGroup);
   const [searchQuery, setSearchQuery] = useState('');
   const [contactSearchQuery, setContactSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState('contacts'); // contacts, about, activity
+  const [activeTab, setActiveTab] = useState('contacts');
 
   // Form states
   const [groupForm, setGroupForm] = useState({
@@ -45,7 +51,7 @@ export default function GroupsPage() {
   }, [selectedGroup]);
 
   const fetchGroups = async () => {
-    setLoading(true);
+    if (groups.length === 0) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/groups`, {
@@ -53,9 +59,17 @@ export default function GroupsPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        setGroups(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        if (data.length > 0 && !selectedGroup) {
-          setSelectedGroup(data[0]);
+        const sortedGroups = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setGroups(sortedGroups);
+        localStorage.setItem('cached_groups', JSON.stringify(sortedGroups));
+
+        // Only auto-select if we don't have a cached selection OR if cached one is no longer in the list
+        if (data.length > 0) {
+          const stillExists = selectedGroup ? data.find(g => g._id === selectedGroup._id) : false;
+          if (!selectedGroup || !stillExists) {
+            setSelectedGroup(sortedGroups[0]);
+            localStorage.setItem('cached_selected_group', JSON.stringify(sortedGroups[0]));
+          }
         }
       }
     } catch (err) {
@@ -79,14 +93,17 @@ export default function GroupsPage() {
   };
 
   const fetchGroupContacts = async (groupId) => {
-    setContactsLoading(true);
+    if (groupContacts.length === 0) setContactsLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/groups/${groupId}/contacts`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      if (response.ok) setGroupContacts(data);
+      if (response.ok) {
+        setGroupContacts(data);
+        localStorage.setItem('cached_group_contacts', JSON.stringify(data));
+      }
     } catch (err) {
       console.error("Failed to fetch group contacts:", err);
     } finally {
@@ -323,7 +340,13 @@ export default function GroupsPage() {
                 filteredGroups.map((group) => (
                   <div
                     key={group._id}
-                    onClick={() => setSelectedGroup(group)}
+                    onClick={() => {
+                      setSelectedGroup(group);
+                      localStorage.setItem('cached_selected_group', JSON.stringify(group));
+                      // Clear group contacts so it fetches new ones for this group
+                      setGroupContacts([]);
+                      localStorage.removeItem('cached_group_contacts');
+                    }}
                     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${selectedGroup?._id === group._id
                       ? 'bg-white border-primary/30 shadow-xl shadow-primary/10 ring-1 ring-primary/20'
                       : 'bg-[#F9FAFB] border-transparent hover:bg-white hover:border-slate-200 hover:shadow-lg hover:shadow-slate-200/50'

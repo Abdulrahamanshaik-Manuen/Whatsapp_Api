@@ -171,7 +171,6 @@ export const updateUserDetails = async (req, res) => {
 
         res.json({ message: "User updated successfully", user });
     } catch (err) {
-        console.error("Update User Details Error:", err);
         res.status(500).json({ error: "Failed to update user details" });
     }
 };
@@ -374,7 +373,6 @@ export const getAllMessages = async (req, res) => {
             stats
         });
     } catch (err) {
-        console.error("Get All Messages Error:", err);
         res.status(500).json({ error: "Failed to fetch message logs" });
     }
 };
@@ -385,7 +383,6 @@ export const createPlan = async (req, res) => {
         await plan.save();
         res.status(201).json({ message: "Plan created successfully", plan });
     } catch (err) {
-        console.error("Create Plan Error:", err);
         res.status(500).json({ error: "Failed to create plan" });
     }
 };
@@ -396,7 +393,6 @@ export const updatePlan = async (req, res) => {
         const plan = await Plan.findByIdAndUpdate(id, req.body, { new: true });
         res.json({ message: "Plan updated successfully", plan });
     } catch (err) {
-        console.error("Update Plan Error:", err);
         res.status(500).json({ error: "Failed to update plan" });
     }
 };
@@ -412,7 +408,6 @@ export const deletePlan = async (req, res) => {
         await Plan.findByIdAndDelete(id);
         res.json({ message: "Plan deleted successfully" });
     } catch (err) {
-        console.error("Delete Plan Error:", err);
         res.status(500).json({ error: "Failed to delete plan" });
     }
 };
