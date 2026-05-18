@@ -11,7 +11,10 @@ import {
   ResponsiveContainer, BarChart, Bar, Cell
 } from 'recharts';
 
+import { useSocket } from '../../context/SocketContext';
+
 export default function AdminDashboard() {
+  const { socket } = useSocket();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
 
@@ -55,7 +58,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+    
+    if (socket) {
+      socket.on('admin_stats_update', () => {
+        fetchStats();
+      });
+    }
+
+    return () => {
+      if (socket) socket.off('admin_stats_update');
+    };
+  }, [socket]);
 
   if (loading) {
     return (

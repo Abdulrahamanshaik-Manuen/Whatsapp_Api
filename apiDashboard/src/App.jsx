@@ -18,11 +18,15 @@ function getCurrentPath() {
     return path;
 }
 
+import { SocketProvider } from './context/SocketContext';
+
 export default function App() {
     return (
-        <AlertProvider>
-            <AppContent />
-        </AlertProvider>
+        <SocketProvider>
+            <AlertProvider>
+                <AppContent />
+            </AlertProvider>
+        </SocketProvider>
     );
 }
 

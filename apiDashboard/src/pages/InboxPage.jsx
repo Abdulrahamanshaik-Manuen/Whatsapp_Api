@@ -20,7 +20,10 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+import { useSocket } from '../context/SocketContext';
+
 const InboxPage = () => {
+  const { socket } = useSocket();
   const [conversations, setConversations] = useState(() => {
     const saved = localStorage.getItem('cached_conversations');
     return saved ? JSON.parse(saved) : [];
@@ -44,9 +47,60 @@ const InboxPage = () => {
   useEffect(() => {
     fetchConversations();
     fetchGroups();
-    const interval = setInterval(fetchConversations, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    if (socket) {
+      socket.on('new_message', (data) => {
+        const { message, contact } = data;
+        
+        // Update messages if this is the active chat
+        if (activeChat && activeChat._id === message.to) {
+          setMessages(prev => [...prev, message]);
+        }
+        
+        // Update conversations list
+        setConversations(prev => {
+          const exists = prev.find(c => c._id === message.to);
+          if (exists) {
+            return prev.map(c => c._id === message.to ? {
+              ...c,
+              lastMessage: message,
+              lastIncomingMessageAt: message.direction === 'incoming' ? message.created_at : c.lastIncomingMessageAt,
+              unreadCount: (activeChat && activeChat._id === message.to) ? 0 : (c.unreadCount + 1)
+            } : c).sort((a, b) => new Date(b.lastMessage?.created_at) - new Date(a.lastMessage?.created_at));
+          } else {
+            // New conversation
+            return [{
+              _id: message.to,
+              contactInfo: contact,
+              lastMessage: message,
+              lastIncomingMessageAt: message.direction === 'incoming' ? message.created_at : null,
+              unreadCount: 1
+            }, ...prev];
+          }
+        });
+      });
+
+      socket.on('message_status_update', (data) => {
+        const { meta_message_id, status } = data;
+        setMessages(prev => prev.map(m => m.meta_message_id === meta_message_id ? { ...m, status } : m));
+        
+        // Update in conversations as well if it's the last message
+        setConversations(prev => prev.map(c => {
+          if (c.lastMessage?.meta_message_id === meta_message_id) {
+            return { ...c, lastMessage: { ...c.lastMessage, status } };
+          }
+          return c;
+        }));
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('new_message');
+        socket.off('message_status_update');
+      }
+    };
+  }, [socket, activeChat]);
 
   const fetchGroups = async () => {
     try {

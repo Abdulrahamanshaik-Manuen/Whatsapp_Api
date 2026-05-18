@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, Plus, Users, Trash2, Edit2, X, Check, Loader2,
-  Calendar, FolderOpen, UserPlus, ShieldCheck
+  Calendar, FolderOpen, UserPlus, ShieldCheck, ShieldAlert, CheckCircle2, AlertCircle, TrendingUp, Globe, Layers, Activity
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -247,6 +247,14 @@ export default function GroupsPage() {
 
   const handleGrantConsent = async () => {
     if (!selectedGroup) return;
+
+    // Check if consent is already granted for all contacts
+    const allConsented = groupContacts.length > 0 && groupContacts.every(c => c.consent);
+    if (allConsented) {
+      alert("Consent already granted for all members in this group.");
+      return;
+    }
+
     if (!window.confirm("Grant marketing consent to all members of this group? This will allow you to send marketing campaigns to them.")) return;
 
     setSubmitting(true);
@@ -261,7 +269,7 @@ export default function GroupsPage() {
       const data = await response.json();
       if (response.ok) {
         alert(data.message);
-        fetchGroupContacts(selectedGroup._id); // Refresh to show verified status if needed
+        fetchGroupContacts(selectedGroup._id); // Refresh to show verified status
       } else {
         alert(data.error || "Failed to grant consent");
       }
@@ -306,6 +314,34 @@ export default function GroupsPage() {
               Create Group
             </button>
           </div>
+        </div>
+
+        {/* Global Stat Cards */}
+        <div className="max-w-7xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatCard 
+            label="Total Groups" 
+            value={groups.length} 
+            icon={FolderOpen} 
+            color="primary" 
+          />
+          <StatCard 
+            label="Total Members" 
+            value={groups.reduce((acc, g) => acc + (g.contactCount || 0), 0)} 
+            icon={Users} 
+            color="secondary" 
+          />
+          <StatCard 
+            label="Verified Contacts" 
+            value={allContacts.filter(c => c.consent_status === 'verified').length} 
+            icon={ShieldCheck} 
+            color="blue" 
+          />
+          <StatCard 
+            label="Active Search" 
+            value={filteredGroups.length} 
+            icon={Activity} 
+            color="rose" 
+          />
         </div>
       </div>
 
@@ -572,12 +608,23 @@ export default function GroupsPage() {
                                       {new Date(contact.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                      <button
-                                        onClick={() => handleRemoveContact(contact.phoneNumber)}
-                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                      >
-                                        <Trash2 size={16} />
-                                      </button>
+                                      <div className="flex items-center justify-end gap-2">
+                                        {contact.consent ? (
+                                          <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shadow-sm" title="Consent Granted">
+                                            <Check size={14} />
+                                          </div>
+                                        ) : (
+                                          <div className="w-6 h-6 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center shadow-sm" title="No Consent">
+                                            <X size={14} />
+                                          </div>
+                                        )}
+                                        <button
+                                          onClick={() => handleRemoveContact(contact.phoneNumber)}
+                                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                      </div>
                                     </td>
                                   </tr>
                                 ))
@@ -783,6 +830,32 @@ export default function GroupsPage() {
     </div>
   );
 }
+
+const StatCard = ({ label, value, color, icon: Icon }) => {
+  const colors = {
+    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
+    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
+    blue: 'from-blue-500/10 to-cyan-500/10 text-blue-600 border-blue-100',
+    indigo: 'from-indigo-500/10 to-blue-500/10 text-indigo-600 border-indigo-100',
+    orange: 'from-orange-500/10 to-amber-500/10 text-orange-600 border-orange-100',
+    rose: 'from-rose-500/10 to-pink-500/10 text-rose-600 border-rose-100'
+  };
+
+  return (
+    <div className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+      <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
+      <div className="flex items-center gap-4 relative z-10">
+        <div className={`w-12 h-12 bg-gradient-to-br ${colors[color]} rounded-xl flex items-center justify-center`}>
+          <Icon size={24} />
+        </div>
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+          <p className="text-2xl font-black text-primary tracking-tight leading-none">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Separate component for Add Members Modal
 function AddMembersModal({ isOpen, onClose, contacts, onAdd, submitting }) {

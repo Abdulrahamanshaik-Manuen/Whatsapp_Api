@@ -28,4 +28,8 @@ router.post('/plans', adminController.createPlan);
 router.put('/plans/:id', adminController.updatePlan);
 router.delete('/plans/:id', adminController.deletePlan);
 
+// System Settings
+router.get('/settings', adminController.getSettings);
+router.put('/settings', adminController.updateSettings);
+
 export default router;

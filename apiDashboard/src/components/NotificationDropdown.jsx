@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, Trash2, Info, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useSocket } from '../context/SocketContext';
 
 export default function NotificationDropdown({ onClose }) {
+    const { socket } = useSocket();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
     const fetchNotifications = async () => {
         try {
@@ -26,7 +26,21 @@ export default function NotificationDropdown({ onClose }) {
 
     useEffect(() => {
         fetchNotifications();
-    }, []);
+        
+        if (socket) {
+            socket.on('new_notification', (notification) => {
+                setNotifications(prev => [notification, ...prev]);
+                // Optional: Play a sound or show a toast
+                if (window.Notification && window.Notification.permission === 'granted') {
+                    new window.Notification(notification.title, { body: notification.message });
+                }
+            });
+        }
+
+        return () => {
+            if (socket) socket.off('new_notification');
+        };
+    }, [socket]);
 
     const markAsRead = async (id) => {
         try {

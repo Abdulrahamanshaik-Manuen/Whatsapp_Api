@@ -64,6 +64,13 @@ export const handleWebhookEvent = async (req, res) => {
                         message.status = status;
                         await message.save();
 
+                        // Emit status update to the user
+                        req.io.to(message.user_id.toString()).emit('message_status_update', {
+                            meta_message_id,
+                            status,
+                            contactId: message.to
+                        });
+
                         // Update Campaign analytics if linked
                         if (message.campaign_id) {
                             const incField = `${status}_count`;
@@ -73,6 +80,12 @@ export const handleWebhookEvent = async (req, res) => {
                             if (campaign && campaign[incField] !== undefined) {
                                 await Campaign.findByIdAndUpdate(message.campaign_id, {
                                     $inc: { [incField]: 1 }
+                                });
+                                // Emit campaign progress update
+                                req.io.to(message.user_id.toString()).emit('campaign_progress', {
+                                    campaignId: message.campaign_id,
+                                    status,
+                                    recipient: recipient_id
                                 });
                             }
                         }
@@ -105,7 +118,7 @@ export const handleWebhookEvent = async (req, res) => {
                     const cleanFrom = from.replace(/\D/g, '');
 
                     // Update/Create Contact and Reset 24-hour window
-                    await Contact.findOneAndUpdate(
+                    const contact = await Contact.findOneAndUpdate(
                         { phoneNumber: cleanFrom, userId: user._id },
                         {
                             last_customer_message_at: now,
@@ -130,7 +143,7 @@ export const handleWebhookEvent = async (req, res) => {
                     // Idempotency check: Don't save if we already have this message
                     const existingMsg = await Message.findOne({ meta_message_id });
                     if (!existingMsg) {
-                        await Message.create({
+                        const savedMsg = await Message.create({
                             user_id: user._id,
                             to: cleanFrom,
                             direction: 'incoming',
@@ -140,7 +153,15 @@ export const handleWebhookEvent = async (req, res) => {
                             meta_message_id
                         });
                         logger.info(`Incoming from ${cleanFrom}: ${bodyText}`);
-                    } else {
+
+                        // Emit new message to user
+                        req.io.to(user._id.toString()).emit('new_message', {
+                            message: savedMsg,
+                            contact: contact
+                        });
+
+                        // Also emit to admin if needed (optional)
+                        req.io.to('admin_room').emit('admin_stats_update', { type: 'new_message' });
                     }
 
                     // Trigger Automation Engine
@@ -165,12 +186,20 @@ export const handleWebhookEvent = async (req, res) => {
                 );
 
                 if (updatedTemplate) {
-                    await Notification.create({
+                    const notification = await Notification.create({
                         userId: updatedTemplate.user_id,
                         title: `Template ${status.toUpperCase()}`,
                         message: `Your template "${message_template_name}" status has changed to: ${status}.${reason ? ' Reason: ' + reason : ''}`,
                         type: status === 'approved' ? 'success' : (status === 'rejected' || status === 'disabled' ? 'error' : 'warning')
                     });
+
+                    // Emit template update and notification
+                    req.io.to(updatedTemplate.user_id.toString()).emit('template_status_update', {
+                        templateId: updatedTemplate._id,
+                        status: status,
+                        name: message_template_name
+                    });
+                    req.io.to(updatedTemplate.user_id.toString()).emit('new_notification', notification);
                 }
             }
 

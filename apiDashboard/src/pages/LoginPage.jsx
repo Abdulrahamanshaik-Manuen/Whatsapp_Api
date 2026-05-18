@@ -4,8 +4,10 @@ import {
   BarChart3, Users, Loader2, MessageCircle, Tag, CheckCheck, Zap, BarChart2, TrendingUp, Smartphone, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { loginUser } from '../utils/api';
+import { useSocket } from '../context/SocketContext';
 
 export default function LoginPage({ onNavigate }) {
+  const { joinRoom } = useSocket();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -99,6 +101,9 @@ export default function LoginPage({ onNavigate }) {
         // Store Token and User Info
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Join Socket Room
+        joinRoom(data.user.id, data.user.role);
 
         setSuccessMsg('Login successful! Redirecting...');
         setTimeout(() => {

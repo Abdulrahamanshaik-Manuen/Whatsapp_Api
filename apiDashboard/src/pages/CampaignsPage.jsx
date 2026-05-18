@@ -9,7 +9,10 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+import { useSocket } from '../context/SocketContext';
+
 export default function CampaignsPage({ onNavigate }) {
+  const { socket } = useSocket();
   const [campaigns, setCampaigns] = useState(() => {
     const saved = localStorage.getItem('cached_campaigns');
     return saved ? JSON.parse(saved) : [];
@@ -20,7 +23,27 @@ export default function CampaignsPage({ onNavigate }) {
 
   useEffect(() => {
     fetchCampaigns();
-  }, []);
+    
+    if (socket) {
+      socket.on('campaign_progress', (data) => {
+        const { campaignId, status } = data;
+        setCampaigns(prev => prev.map(c => {
+          if (c._id === campaignId) {
+            const countField = `${status}_count`;
+            return {
+              ...c,
+              [countField]: (c[countField] || 0) + 1
+            };
+          }
+          return c;
+        }));
+      });
+    }
+
+    return () => {
+      if (socket) socket.off('campaign_progress');
+    };
+  }, [socket]);
 
   const fetchCampaigns = async () => {
     if (campaigns.length === 0) setLoading(true);

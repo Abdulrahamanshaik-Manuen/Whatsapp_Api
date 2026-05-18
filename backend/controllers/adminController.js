@@ -4,21 +4,22 @@ import Message from '../models/Message.js';
 import BusinessProfile from '../models/BusinessProfile.js';
 import Automation from '../models/Automation.js';
 import Plan from '../models/Plan.js';
+import SystemConfig from '../models/SystemConfig.js';
 import moment from 'moment';
 
 export const getPlatformStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments({ role: 'client' });
-        
+
         const totalMessages = await Message.countDocuments();
         const outgoingMessages = await Message.countDocuments({ direction: 'outgoing' });
-        const deliveredMessages = await Message.countDocuments({ 
-            direction: 'outgoing', 
-            status: { $in: ['delivered', 'read'] } 
+        const deliveredMessages = await Message.countDocuments({
+            direction: 'outgoing',
+            status: { $in: ['delivered', 'read'] }
         });
-        
-        const deliveryRate = outgoingMessages > 0 
-            ? Math.round((deliveredMessages / outgoingMessages) * 100) 
+
+        const deliveryRate = outgoingMessages > 0
+            ? Math.round((deliveredMessages / outgoingMessages) * 100)
             : 0;
 
         const pendingTemplates = await Template.countDocuments({ status: 'pending_admin_approval' });
@@ -35,9 +36,9 @@ export const getPlatformStats = async (req, res) => {
         ]);
         const metaCost = costResult.length > 0 ? costResult[0].totalCost : 0;
 
-        const startOfCurrentWeek = moment().startOf('isoWeek').toDate(); 
+        const startOfCurrentWeek = moment().startOf('isoWeek').toDate();
         const endOfCurrentWeek = moment().endOf('isoWeek').toDate();
-        
+
         const throughputData = await Message.aggregate([
             { $match: { created_at: { $gte: startOfCurrentWeek, $lte: endOfCurrentWeek } } },
             {
@@ -69,9 +70,9 @@ export const getPlatformStats = async (req, res) => {
         for (let i = 3; i >= 0; i--) {
             const weekStart = moment().subtract(i, 'weeks').startOf('isoWeek');
             const weekEnd = moment().subtract(i, 'weeks').endOf('isoWeek');
-            const count = await User.countDocuments({ 
-                role: 'client', 
-                created_at: { $gte: weekStart.toDate(), $lte: weekEnd.toDate() } 
+            const count = await User.countDocuments({
+                role: 'client',
+                created_at: { $gte: weekStart.toDate(), $lte: weekEnd.toDate() }
             });
             userGrowth.push({
                 week: i === 0 ? 'This Week' : `${weekStart.format('DD MMM')}`,
@@ -100,7 +101,7 @@ export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({ role: 'client' }).select('-password').populate('planId');
         const plans = await Plan.find({}, 'name _id message_limit');
-        
+
         const stats = {
             total: users.length,
             active: users.filter(u => u.subscription_status === 'active').length,
@@ -110,10 +111,10 @@ export const getAllUsers = async (req, res) => {
         const enhancedUsers = await Promise.all(users.map(async (user) => {
             const profile = await BusinessProfile.findOne({ user_id: user._id });
             const lastMessage = await Message.findOne({ user_id: user._id }).sort({ created_at: -1 });
-            
+
             const usageLimit = user.planId?.message_limit || 0;
-            const usagePercentage = usageLimit > 0 
-                ? Math.min(100, Math.round((user.messages_used / usageLimit) * 100)) 
+            const usagePercentage = usageLimit > 0
+                ? Math.min(100, Math.round((user.messages_used / usageLimit) * 100))
                 : 0;
 
             return {
@@ -144,10 +145,10 @@ export const updateUserDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, businessName, status, planId, limit } = req.body;
-        
-        const updateData = { 
-            name, 
-            subscription_status: status 
+
+        const updateData = {
+            name,
+            subscription_status: status
         };
 
         // Update plan if provided
@@ -194,7 +195,7 @@ export const getAllTemplates = async (req, res) => {
         profiles.forEach(p => {
             profileMap[p.user_id.toString()] = p.business_name;
         });
-        
+
         const stats = {
             total: templates.length,
             pending: templates.filter(t => t.status.includes('pending')).length,
@@ -276,7 +277,7 @@ export const getBillingOverview = async (req, res) => {
         const subscriptions = await Promise.all(users.map(async (user) => {
             const profile = await BusinessProfile.findOne({ user_id: user._id });
             const messageCount = await Message.countDocuments({ user_id: user._id, status: { $ne: 'failed' } });
-            
+
             const costResult = await Message.aggregate([
                 { $match: { user_id: user._id, status: { $ne: 'failed' } } },
                 { $group: { _id: null, total: { $sum: "$meta_cost" } } }
@@ -409,5 +410,36 @@ export const deletePlan = async (req, res) => {
         res.json({ message: "Plan deleted successfully" });
     } catch (err) {
         res.status(500).json({ error: "Failed to delete plan" });
+    }
+};
+
+// --- System Settings ---
+export const getSettings = async (req, res) => {
+    try {
+        const configs = await SystemConfig.find();
+        const settings = configs.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {});
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch settings" });
+    }
+};
+
+export const updateSettings = async (req, res) => {
+    try {
+        const updates = req.body;
+        const operations = Object.entries(updates).map(([key, value]) => ({
+            updateOne: {
+                filter: { key },
+                update: { value, updated_at: new Date() },
+                upsert: true
+            }
+        }));
+        await SystemConfig.bulkWrite(operations);
+        res.json({ message: "Settings updated successfully" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update settings" });
     }
 };
