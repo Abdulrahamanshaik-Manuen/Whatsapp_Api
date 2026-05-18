@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Send, MessageSquare, LayoutTemplate, Users, BarChart2,
-  Settings, Bell, Search, ChevronDown, TrendingUp,
-  Plus, ArrowRight, Crown, Smartphone, Zap, IndianRupee, ShieldCheck,
-  Calendar, LayoutDashboard, Menu, Loader2, Bot, Clock, AlertCircle, RefreshCw,
-  UserPlus, TrendingDown, ArrowUpRight
+  Send, Users, IndianRupee, ShieldCheck,
+  Loader2, Bot, Clock, AlertCircle, RefreshCw,
+  UserPlus
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -15,8 +13,15 @@ import { useSocket } from '../../context/SocketContext';
 
 export default function AdminDashboard() {
   const { socket } = useSocket();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState(() => {
+    const cached = localStorage.getItem('admin_dashboard_stats');
+    return cached ? JSON.parse(cached) : {};
+  });
+  const [systemLogs, setSystemLogs] = useState(() => {
+    const cached = localStorage.getItem('admin_dashboard_logs');
+    return cached ? JSON.parse(cached) : [];
+  });
 
   // Global fix for Recharts "black box" outline
   useEffect(() => {
@@ -48,6 +53,7 @@ export default function AdminDashboard() {
       const data = await response.json();
       if (response.ok) {
         setStats(data);
+        localStorage.setItem('admin_dashboard_stats', JSON.stringify(data));
       }
     } catch (err) {
       console.error("Fetch Stats Error:", err);
@@ -56,30 +62,45 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchLogs = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/admin/system-logs`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSystemLogs(data);
+        localStorage.setItem('admin_dashboard_logs', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Fetch Logs Error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
-    
+    fetchLogs();
+
     if (socket) {
       socket.on('admin_stats_update', () => {
         fetchStats();
       });
+      socket.on('new_system_log', (log) => {
+        setSystemLogs(prev => [log, ...prev].slice(0, 50));
+      });
     }
 
     return () => {
-      if (socket) socket.off('admin_stats_update');
+      if (socket) {
+        socket.off('admin_stats_update');
+        socket.off('new_system_log');
+      }
     };
   }, [socket]);
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-background h-full">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-primary" size={40} />
-          <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em]">Loading platform data...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   const performanceData = stats?.performance || [];
   const userGrowthData = stats?.userGrowth || [];
@@ -242,93 +263,149 @@ export default function AdminDashboard() {
 
               {/* Bar Chart for User Growth - Minimized padding and offsets */}
               <div className="h-[140px] w-full">
-                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                      data={userGrowthData} 
-                      margin={{ top: 0, right: 0, left: -20, bottom: 5 }}
-                      style={{ outline: 'none' }}
-                    >
-                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
-                       <XAxis 
-                          dataKey="week" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
-                          dy={8}
-                       />
-                       <Tooltip 
-                          cursor={{fill: '#f1f5f9'}}
-                          content={({ active, payload }) => {
-                             if (active && payload && payload.length) {
-                                return (
-                                   <div className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl">
-                                      {payload[0].value} New Clients
-                                   </div>
-                                );
-                             }
-                             return null;
-                          }}
-                       />
-                       <Bar dataKey="users" radius={[6, 6, 0, 0]} barSize={40}>
-                          {userGrowthData.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={index === userGrowthData.length - 1 ? '#63C132' : '#E2E8F0'} />
-                          ))}
-                       </Bar>
-                    </BarChart>
-                 </ResponsiveContainer>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={userGrowthData}
+                    margin={{ top: 0, right: 0, left: -20, bottom: 5 }}
+                    style={{ outline: 'none' }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                    <XAxis
+                      dataKey="week"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
+                      dy={8}
+                    />
+                    <Tooltip
+                      cursor={{ fill: '#f1f5f9' }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl">
+                              {payload[0].value} New Clients
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="users" radius={[6, 6, 0, 0]} barSize={40}>
+                      {userGrowthData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === userGrowthData.length - 1 ? '#63C132' : '#E2E8F0'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
-                 <div className="space-y-0.5">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Total Active Nodes</p>
-                    <p className="text-lg font-black text-primary">{stats?.totalUsers}</p>
-                 </div>
+                <div className="space-y-0.5">
+                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Total Active Nodes</p>
+                  <p className="text-lg font-black text-primary">{stats?.totalUsers}</p>
+                </div>
               </div>
             </div>
 
             <div className="bg-slate-900 rounded-2xl md:rounded-[1.5rem] p-6 text-white relative overflow-hidden shadow-2xl shadow-primary/40 h-[180px] group border border-white/10">
-               {/* Animated Mesh Gradient Background */}
-               <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/30 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-secondary/40 transition-colors"></div>
-               <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/20 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2"></div>
-               
-               <div className="relative z-10 flex flex-col justify-between h-full">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <h3 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Platform Revenue</h3>
-                      <h4 className="text-3xl font-black tracking-tighter text-white drop-shadow-sm">
-                        ₹{(stats?.mrr + stats?.metaCost)?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </h4>
-                    </div>
+              {/* Animated Mesh Gradient Background */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/30 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-secondary/40 transition-colors"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/20 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2"></div>
+
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Platform Revenue</h3>
+                    <h4 className="text-3xl font-black tracking-tighter text-white drop-shadow-sm">
+                      ₹{(stats?.mrr + stats?.metaCost)?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {/* Visual Breakdown Bar */}
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
+                    <div
+                      className="h-full bg-secondary transition-all duration-1000 ease-out"
+                      style={{ width: `${(stats?.mrr / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
+                    ></div>
+                    <div
+                      className="h-full bg-white/20 transition-all duration-1000 ease-out"
+                      style={{ width: `${(stats?.metaCost / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
+                    ></div>
                   </div>
 
-                  <div className="space-y-3">
-                    {/* Visual Breakdown Bar */}
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
-                      <div 
-                        className="h-full bg-secondary transition-all duration-1000 ease-out" 
-                        style={{ width: `${(stats?.mrr / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
-                      ></div>
-                      <div 
-                        className="h-full bg-white/20 transition-all duration-1000 ease-out" 
-                        style={{ width: `${(stats?.metaCost / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
-                      ></div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-6">
-                        <div className="space-y-0.5">
-                          <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Subscriptions</p>
-                          <p className="text-[11px] font-bold text-white">₹{stats?.mrr?.toLocaleString()}</p>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Usage/Meta</p>
-                          <p className="text-[11px] font-bold text-secondary">₹{stats?.metaCost?.toLocaleString()}</p>
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-6">
+                      <div className="space-y-0.5">
+                        <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Subscriptions</p>
+                        <p className="text-[11px] font-bold text-white">₹{stats?.mrr?.toLocaleString()}</p>
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Usage/Meta</p>
+                        <p className="text-[11px] font-bold text-secondary">₹{stats?.metaCost?.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
-               </div>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* System Logs & Errors Section */}
+        <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-base font-black text-primary tracking-tight">System Logs & Errors</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Real-time Backend Security & Infrastructure Tracking</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={fetchLogs} className="p-2 bg-slate-50 text-slate-400 hover:text-primary rounded-lg transition-colors">
+                <RefreshCw size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className="h-[300px] overflow-y-auto custom-scrollbar border border-slate-50 rounded-xl">
+            {systemLogs.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center bg-slate-50/50">
+                <ShieldCheck size={32} className="text-emerald-400 mb-3" />
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No System Errors Detected</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {systemLogs.map((log, index) => (
+                  <div key={index} className="p-4 hover:bg-slate-50/50 transition-colors flex gap-4">
+                    <div className="shrink-0 mt-0.5">
+                      {log.level === 'error' ? (
+                        <div className="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center"><AlertCircle size={16} /></div>
+                      ) : log.level === 'warn' ? (
+                        <div className="w-8 h-8 bg-amber-50 text-amber-500 rounded-lg flex items-center justify-center"><AlertCircle size={16} /></div>
+                      ) : (
+                        <div className="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><Bot size={16} /></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${log.level === 'error' ? 'bg-rose-100 text-rose-600' : log.level === 'warn' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                          {log.source || 'internal'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold">
+                          {new Date(log.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold text-slate-800 break-words leading-relaxed">{log.message}</p>
+                      {log.stack && (
+                        <pre className="mt-2 p-3 bg-slate-900 text-slate-300 text-[10px] rounded-lg overflow-x-auto font-mono opacity-80 group-hover:opacity-100 transition-opacity">
+                          {log.stack.split('\n')[0]}...
+                        </pre>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

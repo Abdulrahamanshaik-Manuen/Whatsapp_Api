@@ -6,35 +6,61 @@ import {
   Database, Plus, ExternalLink, Globe
 } from 'lucide-react';
 
-const StatCard = ({ label, value, color, icon: Icon }) => {
-  const colors = {
-    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
-    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
-    blue: 'from-blue-500/10 to-cyan-500/10 text-blue-600 border-blue-100',
-    purple: 'from-purple-500/10 to-pink-500/10 text-purple-600 border-purple-100',
-    orange: 'from-orange-500/10 to-amber-500/10 text-orange-600 border-orange-100',
-    rose: 'from-rose-500/10 to-pink-500/10 text-rose-600 border-rose-100'
+const StatCard = ({ label, value, color, icon: Icon, trend }) => {
+  const bgColors = {
+    primary: 'bg-primary/10 text-primary',
+    secondary: 'bg-secondary text-white shadow-lg shadow-secondary/20',
+    blue: 'bg-blue-500/10 text-blue-600',
+    purple: 'bg-purple-500/10 text-purple-600',
+    orange: 'bg-orange-500/10 text-orange-600',
+    amber: 'bg-amber-500/10 text-amber-600',
+    rose: 'bg-rose-500/10 text-rose-600',
+    emerald: 'bg-emerald-500/10 text-emerald-600',
+    slate: 'bg-slate-500/10 text-slate-600',
+  };
+  const lineColors = {
+    primary: 'bg-primary',
+    secondary: 'bg-secondary',
+    blue: 'bg-blue-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
+    emerald: 'bg-emerald-500',
+    slate: 'bg-slate-500',
   };
 
   return (
-    <div className={`bg-white p-5 rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300`}>
-      <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
-      <div className="flex items-center gap-4 relative z-10">
-        <div className={`w-12 h-12 bg-gradient-to-br ${colors[color]} rounded-xl flex items-center justify-center`}>
-          <Icon size={24} />
+    <div className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 flex-shrink-0 ${bgColors[color] || bgColors.primary} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+          <Icon size={24} strokeWidth={2.5} />
         </div>
-        <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
-          <p className="text-2xl font-black text-primary tracking-tight leading-none">{value}</p>
+        <div className="space-y-0.5 min-w-0">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-black text-primary truncate">{value}</h3>
+            {trend && (
+              <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                {trend}
+              </span>
+            )}
+          </div>
         </div>
       </div>
+      <div className={`absolute bottom-0 left-0 h-1 w-0 ${lineColors[color] || lineColors.primary} opacity-20 group-hover:w-full transition-all duration-500`}></div>
     </div>
   );
 };
 
 export default function TemplateRequests({ onNavigateCreate }) {
-  const [data, setData] = useState({ templates: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, disabled: 0 } });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('admin_templates_data');
+  });
+  const [data, setData] = useState(() => {
+    const cached = localStorage.getItem('admin_templates_data');
+    return cached ? JSON.parse(cached) : { templates: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, disabled: 0 } };
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
@@ -47,7 +73,10 @@ export default function TemplateRequests({ onNavigateCreate }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
-      if (response.ok) setData(result);
+      if (response.ok) {
+        setData(result);
+        localStorage.setItem('admin_templates_data', JSON.stringify(result));
+      }
     } catch (err) {
       console.error("Fetch Templates Error:", err);
     } finally {
@@ -81,7 +110,9 @@ export default function TemplateRequests({ onNavigateCreate }) {
     }
   };
 
-  useEffect(() => { fetchTemplates(); }, []);
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);

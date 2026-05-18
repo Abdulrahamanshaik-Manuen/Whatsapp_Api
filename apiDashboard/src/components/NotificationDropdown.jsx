@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Bell, X, Check, Trash2, CheckCircle, AlertTriangle, AlertCircle, Info 
+} from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 
 export default function NotificationDropdown({ onClose }) {

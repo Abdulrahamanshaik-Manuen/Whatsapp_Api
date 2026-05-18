@@ -290,6 +290,53 @@ export default function BillingPage({ userData }) {
 
             {/* Side Column: History & Support */}
             <div className="lg:col-span-4 space-y-8">
+              {/* Meta Billing Card */}
+              <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                  <h3 className="text-sm font-black text-primary tracking-tight uppercase">Meta Billing</h3>
+                  <ExternalLink size={16} className="text-slate-300" />
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                     <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                        Message charges are billed directly by Meta based on your WhatsApp Business Account usage.
+                     </p>
+                  </div>
+                  <div className="space-y-3">
+                     <a 
+                        href="https://business.facebook.com/billing_hub/payment_methods" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
+                     >
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                              <Receipt size={14} />
+                           </div>
+                           <span className="text-xs font-black text-slate-700">Payment Methods</span>
+                        </div>
+                        <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
+                     </a>
+                     
+                     <a 
+                        href="https://business.facebook.com/settings/whatsapp-business-accounts/" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
+                     >
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                              <MessageSquare size={14} />
+                           </div>
+                           <span className="text-xs font-black text-slate-700">WABA Settings</span>
+                        </div>
+                        <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
+                     </a>
+                  </div>
+                </div>
+              </div>
+
+
               <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                   <h3 className="text-sm font-black text-primary tracking-tight uppercase">Ledger History</h3>

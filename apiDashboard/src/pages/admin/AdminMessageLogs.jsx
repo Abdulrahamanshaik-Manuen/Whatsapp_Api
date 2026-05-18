@@ -8,10 +8,21 @@ import {
 } from 'lucide-react';
 
 export default function AdminMessageLogs() {
-  const [messages, setMessages] = useState([]);
-  const [stats, setStats] = useState({ totalSent: 0, delivered: 0, failed: 0, totalCost: 0 });
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('admin_message_logs_data');
+  });
+  const [messages, setMessages] = useState(() => {
+    const cached = localStorage.getItem('admin_message_logs_data');
+    return cached ? JSON.parse(cached).messages || [] : [];
+  });
+  const [stats, setStats] = useState(() => {
+    const cached = localStorage.getItem('admin_message_logs_data');
+    return cached && JSON.parse(cached).stats ? JSON.parse(cached).stats : { totalSent: 0, delivered: 0, failed: 0, totalCost: 0 };
+  });
+  const [pagination, setPagination] = useState(() => {
+    const cached = localStorage.getItem('admin_message_logs_data');
+    return cached && JSON.parse(cached).pagination ? JSON.parse(cached).pagination : { total: 0, page: 1, pages: 1 };
+  });
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [type, setType] = useState('all');
@@ -22,7 +33,7 @@ export default function AdminMessageLogs() {
     try {
       const token = localStorage.getItem('token');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE_URL}/admin/messages?search=${search}&status=${status}&type=${type}&page=${page}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/messages?search=${search}&status=${status}&type=${type}&page=${page}&limit=20`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -30,6 +41,10 @@ export default function AdminMessageLogs() {
         setMessages(result.messages);
         setPagination(result.pagination);
         if (result.stats) setStats(result.stats);
+
+        if (page === 1 && search === '' && status === 'all' && type === 'all') {
+          localStorage.setItem('admin_message_logs_data', JSON.stringify(result));
+        }
       }
     } catch (err) {
       console.error("Fetch Messages Error:", err);
@@ -87,25 +102,25 @@ export default function AdminMessageLogs() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
            <StatCard 
               label="Total Sent" 
-              value={stats.totalSent.toLocaleString()} 
+              value={loading && stats.totalSent === 0 ? "..." : stats.totalSent.toLocaleString()} 
               color="primary" 
               icon={Send} 
            />
            <StatCard 
               label="Delivered" 
-              value={stats.delivered.toLocaleString()} 
+              value={loading && stats.delivered === 0 ? "..." : stats.delivered.toLocaleString()} 
               color="secondary" 
               icon={CheckCircle2} 
            />
            <StatCard 
               label="Failed" 
-              value={stats.failed.toLocaleString()} 
+              value={loading && stats.failed === 0 ? "..." : stats.failed.toLocaleString()} 
               color="rose" 
               icon={AlertCircle} 
            />
            <StatCard 
               label="Total Cost" 
-              value={`₹${stats.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
+              value={loading && stats.totalCost === 0 ? "..." : `₹${stats.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
               color="amber" 
               icon={IndianRupee} 
            />
@@ -155,11 +170,6 @@ export default function AdminMessageLogs() {
 
         {/* Logs Table */}
         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/40 overflow-hidden relative">
-           {loading && (
-             <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                <Loader2 className="animate-spin text-primary" size={30} />
-             </div>
-           )}
            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
                  <thead>
@@ -235,7 +245,7 @@ export default function AdminMessageLogs() {
            </div>
 
            {/* Pagination */}
-           {pagination.pages > 1 && (
+           {true && (
              <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                    Showing Page <span className="text-primary">{pagination.page}</span> of <span className="text-primary">{pagination.pages}</span>
@@ -266,24 +276,39 @@ export default function AdminMessageLogs() {
 }
 
 function StatCard({ label, value, color, icon: Icon, trend }) {
-  const colors = {
-    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
-    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
-    rose: 'from-rose-500/10 to-rose-600/10 text-rose-600 border-rose-100',
-    amber: 'from-amber-500/10 to-amber-600/10 text-amber-600 border-amber-100',
+  const bgColors = {
+    primary: 'bg-primary/10 text-primary',
+    secondary: 'bg-secondary text-white shadow-lg shadow-secondary/20',
+    blue: 'bg-blue-500/10 text-blue-600',
+    purple: 'bg-purple-500/10 text-purple-600',
+    orange: 'bg-orange-500/10 text-orange-600',
+    amber: 'bg-amber-500/10 text-amber-600',
+    rose: 'bg-rose-500/10 text-rose-600',
+    emerald: 'bg-emerald-500/10 text-emerald-600',
+    slate: 'bg-slate-500/10 text-slate-600',
+  };
+  const lineColors = {
+    primary: 'bg-primary',
+    secondary: 'bg-secondary',
+    blue: 'bg-blue-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
+    emerald: 'bg-emerald-500',
+    slate: 'bg-slate-500',
   };
 
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-      <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`}></div>
-      <div className="flex items-center gap-4 relative z-10">
-        <div className={`w-14 h-14 bg-gradient-to-br ${colors[color]} rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-slate-200/50`}>
-          <Icon size={28} strokeWidth={2.5} />
+    <div className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 flex-shrink-0 ${bgColors[color] || bgColors.primary} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+          <Icon size={24} strokeWidth={2.5} />
         </div>
-        <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] leading-none mb-2">{label}</p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-black text-primary tracking-tighter leading-none">{value}</p>
+        <div className="space-y-0.5 min-w-0">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-black text-primary truncate">{value}</h3>
             {trend && (
               <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                 {trend}
@@ -292,6 +317,7 @@ function StatCard({ label, value, color, icon: Icon, trend }) {
           </div>
         </div>
       </div>
+      <div className={`absolute bottom-0 left-0 h-1 w-0 ${lineColors[color] || lineColors.primary} opacity-20 group-hover:w-full transition-all duration-500`}></div>
     </div>
   );
 }

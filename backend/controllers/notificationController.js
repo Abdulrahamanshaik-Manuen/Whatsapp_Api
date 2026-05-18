@@ -1,9 +1,9 @@
 import Notification from '../models/Notification.js';
-import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 
 export const notifyAdmins = async (title, message, type = 'info') => {
     try {
-        const admins = await User.find({ role: 'admin' });
+        const admins = await Admin.find({});
         const notifications = admins.map(admin => ({
             userId: admin._id,
             title,

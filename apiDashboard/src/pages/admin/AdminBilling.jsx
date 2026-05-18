@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  CreditCard, IndianRupee, Users, Clock, ArrowUpRight, 
-  Download, Search, Smartphone, Zap, BarChart3, Loader2,
-  TrendingUp, TrendingDown, Activity, ShieldCheck, ArrowDownLeft,
-  Plus, Edit2, Trash2, X, Check, AlertCircle, Info, Settings,
-  ChevronRight
+import {
+   CreditCard, IndianRupee, Users, Clock, ArrowUpRight,
+   Download, Search, Smartphone, Zap, BarChart3, Loader2,
+   TrendingUp, TrendingDown, Activity, ShieldCheck, ArrowDownLeft,
+   Plus, Edit2, Trash2, X, Check, AlertCircle, Info, Settings,
+   ChevronRight
 } from 'lucide-react';
 
 export default function AdminBilling() {
-   const [billingData, setBillingData] = useState(null);
-   const [loading, setLoading] = useState(true);
+   const [loading, setLoading] = useState(false);
+   const [billingData, setBillingData] = useState(() => {
+      const cached = localStorage.getItem('admin_billing_data');
+      return cached ? JSON.parse(cached) : {
+         mrr: 0,
+         activeSubscriptions: 0,
+         metaCostTotal: 0,
+         profit: 0,
+         plans: [],
+         subscriptions: []
+      };
+   });
    const [searchQuery, setSearchQuery] = useState('');
    const [planFilter, setPlanFilter] = useState('monthly');
    const [showPlanModal, setShowPlanModal] = useState(false);
@@ -37,6 +47,7 @@ export default function AdminBilling() {
          const data = await response.json();
          if (response.ok) {
             setBillingData(data);
+            localStorage.setItem('admin_billing_data', JSON.stringify(data));
          }
       } catch (err) {
          console.error("Fetch Billing Error:", err);
@@ -55,10 +66,10 @@ export default function AdminBilling() {
       try {
          const token = localStorage.getItem('token');
          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-         const url = isEditing 
-            ? `${API_BASE_URL}/admin/plans/${selectedPlan._id}` 
+         const url = isEditing
+            ? `${API_BASE_URL}/admin/plans/${selectedPlan._id}`
             : `${API_BASE_URL}/admin/plans`;
-         
+
          const response = await fetch(url, {
             method: isEditing ? 'PUT' : 'POST',
             headers: {
@@ -134,26 +145,15 @@ export default function AdminBilling() {
       setShowPlanModal(true);
    };
 
-   if (loading) {
-      return (
-         <div className="flex-1 flex items-center justify-center bg-slate-50/30 h-full">
-           <div className="flex flex-col items-center gap-4">
-             <Loader2 className="animate-spin text-primary" size={40} />
-             <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em]">Calculating platform revenue...</p>
-           </div>
-         </div>
-      );
-   }
-
-   const filteredSubscriptions = billingData?.subscriptions?.filter(sub => 
-      sub.client.toLowerCase().includes(searchQuery.toLowerCase()) || 
+   const filteredSubscriptions = billingData?.subscriptions?.filter(sub =>
+      sub.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sub.businessName.toLowerCase().includes(searchQuery.toLowerCase())
    ) || [];
 
    return (
       <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-10 custom-scrollbar bg-slate-50/30 h-full">
          <div className="max-w-[1600px] mx-auto space-y-12 pb-24">
-            
+
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                <div className="space-y-1">
@@ -169,7 +169,7 @@ export default function AdminBilling() {
                      <div className="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
                      Live Revenue Stream
                   </div>
-                  <button 
+                  <button
                      onClick={openCreateModal}
                      className="flex items-center gap-2 px-8 py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
                   >
@@ -179,24 +179,24 @@ export default function AdminBilling() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-               <StatCard 
-                  label="Gross Revenue" 
-                  value={`₹${billingData?.stats?.grossRevenue?.toLocaleString() || '0'}`} 
-                  color="primary" 
-                  icon={TrendingUp} 
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+               <StatCard
+                  label="Gross Revenue"
+                  value={`₹${billingData?.stats?.grossRevenue?.toLocaleString() || '0'}`}
+                  color="primary"
+                  icon={TrendingUp}
                />
-               <StatCard 
-                  label="Meta API Costs" 
-                  value={`₹${billingData?.stats?.metaCosts?.toLocaleString() || '0'}`} 
-                  color="rose" 
-                  icon={ArrowDownLeft} 
+               <StatCard
+                  label="Meta API Costs"
+                  value={`₹${billingData?.stats?.metaCosts?.toLocaleString() || '0'}`}
+                  color="rose"
+                  icon={ArrowDownLeft}
                />
-               <StatCard 
-                  label="Active Clients" 
-                  value={billingData?.subscriptions?.filter(s => s.status === 'active').length || 0} 
-                  color="amber" 
-                  icon={Users} 
+               <StatCard
+                  label="Active Clients"
+                  value={billingData?.subscriptions?.filter(s => s.status === 'active').length || 0}
+                  color="amber"
+                  icon={Users}
                />
             </div>
 
@@ -212,44 +212,42 @@ export default function AdminBilling() {
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Configure global pricing tiers</p>
                      </div>
                   </div>
-                  
+
                   {/* Interval Toggle - Premium Design */}
                   <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
-                     <button 
+                     <button
                         onClick={() => setPlanFilter('monthly')}
-                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
-                           planFilter === 'monthly' 
-                              ? 'bg-white text-primary shadow-lg ring-1 ring-slate-200' 
+                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${planFilter === 'monthly'
+                              ? 'bg-white text-primary shadow-lg ring-1 ring-slate-200'
                               : 'text-slate-400 hover:text-slate-600'
-                        }`}
+                           }`}
                      >
                         Monthly
                      </button>
-                     <button 
+                     <button
                         onClick={() => setPlanFilter('yearly')}
-                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
-                           planFilter === 'yearly' 
-                              ? 'bg-white text-primary shadow-lg ring-1 ring-slate-200' 
+                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${planFilter === 'yearly'
+                              ? 'bg-white text-primary shadow-lg ring-1 ring-slate-200'
                               : 'text-slate-400 hover:text-slate-600'
-                        }`}
+                           }`}
                      >
                         Yearly
                      </button>
                   </div>
                </div>
-               
-               {/* Horizontal Row Layout for Plans */}
-               <div className="flex flex-nowrap overflow-x-auto pb-6 gap-6 custom-scrollbar no-scrollbar snap-x">
+
+               {/* Grid Layout for Plans */}
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
                   {billingData?.plans?.filter(p => p.interval === planFilter).length === 0 ? (
                      <div className="w-full h-48 bg-white/40 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-3">
                         <Info className="text-slate-300" size={32} />
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No {planFilter} plans configured yet</p>
                      </div>
                   ) : (
-                     billingData?.plans?.filter(p => p.interval === planFilter).map(plan => (
-                        <div 
-                           key={plan._id} 
-                           className="flex-shrink-0 w-full sm:w-[380px] snap-center bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-8 flex flex-col relative overflow-hidden group hover:shadow-2xl hover:scale-[1.01] transition-all duration-500"
+                     billingData?.plans?.filter(p => p.interval === planFilter).sort((a, b) => a.price - b.price).map(plan => (
+                        <div
+                           key={plan._id}
+                           className="w-full bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-8 flex flex-col relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
                         >
                            {/* Plan Header */}
                            <div className="flex items-start justify-between mb-8">
@@ -322,11 +320,11 @@ export default function AdminBilling() {
                <div className="relative flex-1 w-full group">
                   <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
                   <input
-                    type="text"
-                    placeholder="Search by client or business name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 shadow-sm"
+                     type="text"
+                     placeholder="Search by client or business name..."
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 shadow-sm"
                   />
                </div>
             </div>
@@ -412,30 +410,30 @@ export default function AdminBilling() {
             <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
                <form onSubmit={handleSavePlan} className="bg-white w-full max-w-[650px] rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
                   <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 relative">
-                    <div className="flex items-center gap-5">
-                       <div className="w-14 h-14 bg-primary text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40">
-                          {isEditing ? <Edit2 size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={4} />}
-                       </div>
-                       <div>
-                          <h3 className="text-2xl font-black text-slate-900 tracking-tight">{isEditing ? 'Edit Strategy' : 'Define New Strategy'}</h3>
-                          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Subscription node architecture</p>
-                       </div>
-                    </div>
-                    <button type="button" onClick={() => setShowPlanModal(false)} className="w-12 h-12 rounded-2xl hover:bg-slate-200 flex items-center justify-center text-slate-400 transition-all hover:rotate-90">
-                      <X size={24} />
-                    </button>
+                     <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 bg-primary text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40">
+                           {isEditing ? <Edit2 size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={4} />}
+                        </div>
+                        <div>
+                           <h3 className="text-2xl font-black text-slate-900 tracking-tight">{isEditing ? 'Edit Strategy' : 'Define New Strategy'}</h3>
+                           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Subscription node architecture</p>
+                        </div>
+                     </div>
+                     <button type="button" onClick={() => setShowPlanModal(false)} className="w-12 h-12 rounded-2xl hover:bg-slate-200 flex items-center justify-center text-slate-400 transition-all hover:rotate-90">
+                        <X size={24} />
+                     </button>
                   </div>
 
                   <div className="p-10 space-y-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
                      <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2.5 col-span-2">
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Strategy Name</label>
-                           <input 
+                           <input
                               required
-                              type="text" 
+                              type="text"
                               placeholder="e.g. Enterprise Power"
                               value={planForm.name}
-                              onChange={e => setPlanForm({...planForm, name: e.target.value})}
+                              onChange={e => setPlanForm({ ...planForm, name: e.target.value })}
                               className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-sm font-black text-primary focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-300"
                            />
                         </div>
@@ -443,20 +441,20 @@ export default function AdminBilling() {
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Price (INR)</label>
                            <div className="relative">
                               <span className="absolute left-6 top-1/2 -translate-y-1/2 text-primary font-black">₹</span>
-                              <input 
+                              <input
                                  required
-                                 type="number" 
+                                 type="number"
                                  value={planForm.price}
-                                 onChange={e => setPlanForm({...planForm, price: parseInt(e.target.value)})}
+                                 onChange={e => setPlanForm({ ...planForm, price: parseInt(e.target.value) })}
                                  className="w-full pl-10 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-sm font-black text-primary focus:outline-none"
                               />
                            </div>
                         </div>
                         <div className="space-y-2.5">
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Billing Cycle</label>
-                           <select 
+                           <select
                               value={planFilter}
-                              onChange={e => setPlanForm({...planForm, interval: e.target.value})}
+                              onChange={e => setPlanForm({ ...planForm, interval: e.target.value })}
                               className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-sm font-black text-primary focus:outline-none cursor-pointer appearance-none"
                            >
                               <option value="monthly">Monthly Cycle</option>
@@ -467,11 +465,11 @@ export default function AdminBilling() {
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Message Capacity</label>
                            <div className="relative">
                               <Zap size={14} className="absolute left-6 top-1/2 -translate-y-1/2 text-secondary" />
-                              <input 
+                              <input
                                  required
-                                 type="number" 
+                                 type="number"
                                  value={planForm.message_limit}
-                                 onChange={e => setPlanForm({...planForm, message_limit: parseInt(e.target.value)})}
+                                 onChange={e => setPlanForm({ ...planForm, message_limit: parseInt(e.target.value) })}
                                  className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-sm font-black text-primary focus:outline-none"
                               />
                            </div>
@@ -480,11 +478,11 @@ export default function AdminBilling() {
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Contact Database</label>
                            <div className="relative">
                               <Users size={14} className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500" />
-                              <input 
+                              <input
                                  required
-                                 type="number" 
+                                 type="number"
                                  value={planForm.contact_limit}
-                                 onChange={e => setPlanForm({...planForm, contact_limit: parseInt(e.target.value)})}
+                                 onChange={e => setPlanForm({ ...planForm, contact_limit: parseInt(e.target.value) })}
                                  className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] text-sm font-black text-primary focus:outline-none"
                               />
                            </div>
@@ -494,9 +492,9 @@ export default function AdminBilling() {
                      <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tier Features</label>
-                           <button 
-                              type="button" 
-                              onClick={() => setPlanForm({...planForm, features: [...planForm.features, '']})}
+                           <button
+                              type="button"
+                              onClick={() => setPlanForm({ ...planForm, features: [...planForm.features, ''] })}
                               className="px-4 py-1.5 bg-secondary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-secondary/20 hover:scale-105 transition-all"
                            >
                               Add Perk
@@ -505,23 +503,23 @@ export default function AdminBilling() {
                         <div className="grid grid-cols-1 gap-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                            {planForm.features.map((feature, i) => (
                               <div key={i} className="flex gap-3 group/featitem animate-in slide-in-from-left-4 duration-300">
-                                 <input 
-                                    type="text" 
+                                 <input
+                                    type="text"
                                     placeholder="Feature detail..."
                                     value={feature}
                                     onChange={e => {
                                        const newFeatures = [...planForm.features];
                                        newFeatures[i] = e.target.value;
-                                       setPlanForm({...planForm, features: newFeatures});
+                                       setPlanForm({ ...planForm, features: newFeatures });
                                     }}
                                     className="flex-1 px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:border-secondary transition-all"
                                  />
                                  {planForm.features.length > 1 && (
-                                    <button 
-                                       type="button" 
+                                    <button
+                                       type="button"
                                        onClick={() => {
                                           const newFeatures = planForm.features.filter((_, idx) => idx !== i);
-                                          setPlanForm({...planForm, features: newFeatures});
+                                          setPlanForm({ ...planForm, features: newFeatures });
                                        }}
                                        className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-300 hover:text-rose-500 hover:bg-rose-100 transition-all flex items-center justify-center flex-shrink-0"
                                     >
@@ -544,11 +542,11 @@ export default function AdminBilling() {
                            </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                           <input 
-                              type="checkbox" 
+                           <input
+                              type="checkbox"
                               className="sr-only peer"
                               checked={planForm.is_active}
-                              onChange={e => setPlanForm({...planForm, is_active: e.target.checked})}
+                              onChange={e => setPlanForm({ ...planForm, is_active: e.target.checked })}
                            />
                            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-secondary shadow-inner"></div>
                         </label>
@@ -572,45 +570,51 @@ export default function AdminBilling() {
 }
 
 function StatCard({ label, value, color, icon: Icon }) {
-  const colors = {
-    primary: 'from-primary/10 to-primary/20 text-primary border-primary/10',
-    secondary: 'from-secondary/10 to-secondary/20 text-secondary border-secondary/10',
-    rose: 'from-rose-500/10 to-rose-600/10 text-rose-600 border-rose-100',
-    amber: 'from-amber-500/10 to-amber-600/10 text-amber-600 border-amber-100',
-  };
+   const bgColors = {
+      primary: 'bg-primary/10 text-primary',
+      secondary: 'bg-secondary text-white shadow-lg shadow-secondary/20',
+      rose: 'bg-rose-500/10 text-rose-600',
+      amber: 'bg-amber-500/10 text-amber-600',
+   };
+   const lineColors = {
+      primary: 'bg-primary',
+      secondary: 'bg-secondary',
+      rose: 'bg-rose-500',
+      amber: 'bg-amber-500',
+   };
 
-  return (
-    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
-      <div className={`absolute -right-6 -bottom-6 w-32 h-32 bg-gradient-to-br ${colors[color]} opacity-20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700`}></div>
-      <div className="flex items-center gap-6 relative z-10">
-        <div className={`w-16 h-16 bg-gradient-to-br ${colors[color]} rounded-3xl flex items-center justify-center shadow-lg shadow-slate-200/50 group-hover:scale-110 transition-transform duration-500`}>
-          <Icon size={32} strokeWidth={2.5} />
-        </div>
-        <div>
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-3 opacity-60">{label}</p>
-          <p className="text-3xl font-black text-primary tracking-tighter leading-none">{value}</p>
-        </div>
+   return (
+      <div className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group">
+         <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 flex-shrink-0 ${bgColors[color]} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+               <Icon size={24} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-0.5 min-w-0">
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
+               <h3 className="text-xl font-black text-primary truncate">{value}</h3>
+            </div>
+         </div>
+         <div className={`absolute bottom-0 left-0 h-1 w-0 ${lineColors[color]} opacity-20 group-hover:w-full transition-all duration-500`}></div>
       </div>
-    </div>
-  );
+   );
 }
 
 function CheckCircle2(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
+   return (
+      <svg
+         {...props}
+         xmlns="http://www.w3.org/2000/svg"
+         width="24"
+         height="24"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         strokeWidth="2"
+         strokeLinecap="round"
+         strokeLinejoin="round"
+      >
+         <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+         <path d="m9 12 2 2 4-4" />
+      </svg>
+   );
 }

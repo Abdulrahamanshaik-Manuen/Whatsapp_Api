@@ -6,6 +6,8 @@ import Template from '../models/Template.js';
 import Notification from '../models/Notification.js';
 import { processAutomation } from '../services/automationService.js';
 import logger from '../utils/logger.js';
+import crypto from 'crypto';
+import SystemLog from '../models/SystemLog.js';
 
 export const verifyWebhook = (req, res) => {
     const mode = req.query['hub.mode'];
@@ -24,7 +26,24 @@ export const verifyWebhook = (req, res) => {
 };
 
 export const handleWebhookEvent = async (req, res) => {
-    // console.log('[Webhook] Received Request Body:', JSON.stringify(req.body, null, 2));
+    // 1. Verify X-Hub-Signature-256
+    const signature = req.headers['x-hub-signature-256'];
+    if (signature && process.env.APP_SECRET) {
+        const expectedSignature = 'sha256=' + crypto.createHmac('sha256', process.env.APP_SECRET).update(req.rawBody).digest('hex');
+        if (signature !== expectedSignature) {
+            logger.error('Invalid Webhook Signature');
+            
+            // Log security event
+            await SystemLog.create({
+                level: 'warn',
+                message: 'Invalid Webhook Signature detected',
+                source: 'webhook_security'
+            });
+            
+            return res.sendStatus(403);
+        }
+    }
+
     const body = req.body;
 
     if (body.object === 'whatsapp_business_account') {

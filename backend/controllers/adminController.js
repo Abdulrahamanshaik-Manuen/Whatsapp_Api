@@ -5,11 +5,12 @@ import BusinessProfile from '../models/BusinessProfile.js';
 import Automation from '../models/Automation.js';
 import Plan from '../models/Plan.js';
 import SystemConfig from '../models/SystemConfig.js';
+import SystemLog from '../models/SystemLog.js';
 import moment from 'moment';
 
 export const getPlatformStats = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments({ role: 'client' });
+        const totalUsers = await User.countDocuments({});
 
         const totalMessages = await Message.countDocuments();
         const outgoingMessages = await Message.countDocuments({ direction: 'outgoing' });
@@ -25,7 +26,7 @@ export const getPlatformStats = async (req, res) => {
         const pendingTemplates = await Template.countDocuments({ status: 'pending_admin_approval' });
         const approvedTemplates = await Template.countDocuments({ status: 'approved' });
 
-        const activeUsers = await User.find({ role: 'client', subscription_status: 'active' }).populate('planId');
+        const activeUsers = await User.find({ subscription_status: 'active' }).populate('planId');
         const mrr = activeUsers.reduce((sum, user) => {
             return sum + (user.planId?.price || 0);
         }, 0);
@@ -71,7 +72,6 @@ export const getPlatformStats = async (req, res) => {
             const weekStart = moment().subtract(i, 'weeks').startOf('isoWeek');
             const weekEnd = moment().subtract(i, 'weeks').endOf('isoWeek');
             const count = await User.countDocuments({
-                role: 'client',
                 created_at: { $gte: weekStart.toDate(), $lte: weekEnd.toDate() }
             });
             userGrowth.push({
@@ -99,7 +99,7 @@ export const getPlatformStats = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: 'client' }).select('-password').populate('planId');
+        const users = await User.find({}).select('-password').populate('planId');
         const plans = await Plan.find({}, 'name _id message_limit');
 
         const stats = {
@@ -154,10 +154,6 @@ export const updateUserDetails = async (req, res) => {
         // Update plan if provided
         if (planId) {
             updateData.planId = planId;
-            // Also update the plan's message limit on the user record if we had a dedicated field, 
-            // but usually it's pulled from the Plan model. 
-            // If the user wants to OVERRIDE the plan limit, we'd need a field on User model.
-            // Let's assume we update the plan link.
         }
 
         const user = await User.findByIdAndUpdate(id, updateData, { new: true });
@@ -273,7 +269,7 @@ export const getAllAutomations = async (req, res) => {
 
 export const getBillingOverview = async (req, res) => {
     try {
-        const users = await User.find({ role: 'client' }).populate('planId');
+        const users = await User.find({}).populate('planId');
         const subscriptions = await Promise.all(users.map(async (user) => {
             const profile = await BusinessProfile.findOne({ user_id: user._id });
             const messageCount = await Message.countDocuments({ user_id: user._id, status: { $ne: 'failed' } });
@@ -441,5 +437,17 @@ export const updateSettings = async (req, res) => {
         res.json({ message: "Settings updated successfully" });
     } catch (err) {
         res.status(500).json({ error: "Failed to update settings" });
+    }
+};
+
+export const getSystemLogs = async (req, res) => {
+    try {
+        const logs = await SystemLog.find()
+            .sort({ created_at: -1 })
+            .limit(50);
+        res.json(logs);
+    } catch (error) {
+        console.error("Error fetching system logs:", error);
+        res.status(500).json({ error: "Failed to fetch system logs" });
     }
 };

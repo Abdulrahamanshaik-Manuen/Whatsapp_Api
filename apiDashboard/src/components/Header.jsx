@@ -74,8 +74,14 @@ export default function Header({ toggleSidebar, onNavigate, userData, businessDa
         {/* Clickable Profile - Direct to Settings */}
         <div
           onClick={() => {
-            setActiveTab('Settings');
-            onNavigate('/settings');
+            const isAdmin = window.location.pathname.startsWith('/admin');
+            if (isAdmin) {
+              if (setActiveTab) setActiveTab('System Settings');
+              onNavigate('/admin/settings');
+            } else {
+              if (setActiveTab) setActiveTab('Settings');
+              onNavigate('/settings');
+            }
           }}
           className="flex items-center gap-3 cursor-pointer group"
         >

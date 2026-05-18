@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 import Otp from '../models/Otp.js';
 import BusinessProfile from '../models/BusinessProfile.js';
 import Contact from '../models/Contact.js';
@@ -10,7 +11,7 @@ import jwt from 'jsonwebtoken';
 const validatePhone = (phone) => {
     // Remove all non-digit characters
     let cleaned = phone.replace(/\D/g, '');
-    
+
     // If it starts with 91 and is 12 digits, take the last 10
     if (cleaned.length === 12 && cleaned.startsWith('91')) {
         cleaned = cleaned.slice(2);
@@ -18,10 +19,10 @@ const validatePhone = (phone) => {
 
     // Check if exactly 10 digits
     if (cleaned.length !== 10) return { valid: false, error: "Phone number must be exactly 10 digits" };
-    
+
     // Check if starts with 6, 7, 8, or 9
     if (!/^[6-9]/.test(cleaned)) return { valid: false, error: "Phone number must start with 6, 7, 8, or 9" };
-    
+
     return { valid: true, cleaned };
 };
 
@@ -32,10 +33,10 @@ export const sendOTP = async (req, res) => {
 
         const validation = validatePhone(phone);
         if (!validation.valid) return res.status(400).json({ error: validation.error });
-        
+
         const fullPhone = `+91${validation.cleaned}`;
         const otpData = otpService.generateOTP(fullPhone);
-        
+
         // Save to DB
         await Otp.create(otpData);
 
@@ -103,15 +104,15 @@ export const register = async (req, res) => {
 
         // Generate JWT for seamless onboarding
         const token = jwt.sign(
-            { user_id: user._id, phone: user.phone, role: user.role },
+            { user_id: user._id, phone: user.phone, role: 'client' },
             process.env.JWT_SECRET || 'secret_key',
             { expiresIn: '7d' }
         );
 
-        res.status(201).json({ 
-            message: "User registered successfully", 
+        res.status(201).json({
+            message: "User registered successfully",
             token,
-            user: { id: user._id, name: user.name, phone: user.phone } 
+            user: { id: user._id, name: user.name, phone: user.phone }
         });
     } catch (err) {
         res.status(500).json({ error: "Registration failed", message: err.message, stack: err.stack });
@@ -126,17 +127,45 @@ export const login = async (req, res) => {
         // Normalize and Validate Phone
         const validation = validatePhone(phone);
         if (!validation.valid) return res.status(400).json({ error: validation.error });
-        phone = `+91${validation.cleaned}`;
+        const fullPhone = `+91${validation.cleaned}`;
 
-        const user = await User.findOne({ phone });
+        // 1. Try checking the Admin collection first
+        const admin = await Admin.findOne({ phone: fullPhone });
+        if (admin) {
+            const isMatch = await admin.comparePassword(password);
+            if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+
+            // Generate Admin JWT
+            const token = jwt.sign(
+                { user_id: admin._id, phone: admin.phone, role: 'admin' },
+                process.env.JWT_SECRET || 'secret_key',
+                { expiresIn: '7d' }
+            );
+
+            return res.status(200).json({
+                message: "Login successful",
+                token,
+                user: {
+                    id: admin._id,
+                    name: admin.name,
+                    phone: admin.phone,
+                    role: 'admin',
+                    email: admin.email
+                },
+                hasProfile: true
+            });
+        }
+
+        // 2. Try checking the User (client) collection
+        const user = await User.findOne({ phone: fullPhone });
         if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
         const isMatch = await user.comparePassword(password);
         if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-        // Generate JWT
+        // Generate Client JWT
         const token = jwt.sign(
-            { user_id: user._id, phone: user.phone, role: user.role },
+            { user_id: user._id, phone: user.phone, role: 'client' },
             process.env.JWT_SECRET || 'secret_key',
             { expiresIn: '7d' }
         );
@@ -150,14 +179,14 @@ export const login = async (req, res) => {
         } catch (profileErr) {
         }
 
-        res.status(200).json({ 
-            message: "Login successful", 
-            token, 
-            user: { 
-                id: user._id, 
-                name: user.name, 
+        res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
                 phone: user.phone,
-                role: user.role,
+                role: 'client',
                 email: profile?.email || ''
             },
             hasProfile
@@ -216,18 +245,31 @@ export const resetPassword = async (req, res) => {
 
 export const getMe = async (req, res) => {
     try {
+        // If it's an admin token, fetch from Admin model
+        if (req.user && req.user.role === 'admin') {
+            const admin = await Admin.findById(req.user.user_id).select('-password');
+            if (!admin) {
+                return res.status(404).json({ error: "Admin not found" });
+            }
+            const adminObj = admin.toObject();
+            adminObj.role = 'admin';
+            return res.json({ user: adminObj });
+        }
+
+        // Otherwise, it's a client user
         const user = await User.findById(req.user.user_id).select('-password').populate('planId');
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
         const business = await BusinessProfile.findOne({ user_id: user._id });
-        
+
         // Count contacts for Audience Reach
         const contactCount = await Contact.countDocuments({ userId: user._id.toString() });
 
         // Add calculated stats to user object
         const userObj = user.toObject();
+        userObj.role = 'client';
         userObj.contacts_count = contactCount;
         userObj.platform_status = user.whatsapp_connected ? 'Optimal' : 'Disconnected';
         userObj.platform_uptime = '99.9%';

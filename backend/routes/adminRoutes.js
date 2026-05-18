@@ -32,4 +32,7 @@ router.delete('/plans/:id', adminController.deletePlan);
 router.get('/settings', adminController.getSettings);
 router.put('/settings', adminController.updateSettings);
 
+// System Logs
+router.get('/system-logs', adminController.getSystemLogs);
+
 export default router;

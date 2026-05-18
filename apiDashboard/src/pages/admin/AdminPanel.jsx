@@ -105,7 +105,7 @@ export default function AdminPanel({ onNavigate, initialPath }) {
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        {activeTab !== 'Automation Builder' && <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} />}
+        {activeTab !== 'Automation Builder' && <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} setActiveTab={handleTabChange} />}
 
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (

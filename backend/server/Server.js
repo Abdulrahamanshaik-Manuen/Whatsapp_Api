@@ -17,6 +17,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import routes from '../routes/Routes.js';
 import '../workers/campaignQueue.js';
+import { apiLimiter } from '../middlewares/rateLimiter.js';
+import SystemLog from '../models/SystemLog.js';
 
 // Connect to database
 connectDB();
@@ -37,14 +39,17 @@ app.use(express.json({
   }
 }));
 app.use(cors());
-app.use('/api', routes);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Pass io to request object so controllers can use it
+// Pass io to request object BEFORE routes so controllers can use it
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
+
+// Apply rate limiter to all API routes
+app.use('/api', apiLimiter);
+app.use('/api', routes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 import { oauthCallback } from '../controllers/whatsappController.js';
 
@@ -54,6 +59,29 @@ app.get('/api/whatsapp/callback', oauthCallback);
 // Basic route
 app.get('/', (req, res) => {
   res.send('WhatsApp API Backend is running...');
+});
+
+// Global Error Handler for System Logs
+app.use(async (err, req, res, next) => {
+  console.error('Unhandled Error:', err);
+  
+  try {
+    const log = await SystemLog.create({
+      level: 'error',
+      message: err.message || 'Unknown Server Error',
+      stack: err.stack,
+      source: 'internal'
+    });
+    
+    // Emit to admin if possible
+    if (req.io) {
+      req.io.to('admin_room').emit('new_system_log', log);
+    }
+  } catch (logErr) {
+    console.error('Failed to save system log:', logErr);
+  }
+
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 io.on('connection', (socket) => {
