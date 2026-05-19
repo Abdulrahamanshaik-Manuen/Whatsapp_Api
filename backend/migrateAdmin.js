@@ -18,8 +18,13 @@ const migrateAdmin = async () => {
         if (existingAdmin) {
             console.log(`Found existing admin user: ${existingAdmin.name} (${existingAdmin.phone})`);
 
-            // Check if this admin already exists in the Admin collection
-            const adminInNewModel = await Admin.findOne({ phone: existingAdmin.phone });
+            // Check if this admin already exists in the Admin collection by phone or email
+            const adminInNewModel = await Admin.findOne({ 
+                $or: [
+                    { phone: existingAdmin.phone },
+                    { email: 'connect@manuen.com' }
+                ].filter(condition => condition.phone !== undefined)
+            }) || await Admin.findOne({ email: 'connect@manuen.com' });
             
             if (!adminInNewModel) {
                 // Copy to Admin collection
@@ -28,7 +33,7 @@ const migrateAdmin = async () => {
                 const adminData = {
                     name: existingAdmin.name,
                     email: 'connect@manuen.com',
-                    phone: existingAdmin.phone,
+                    phone: existingAdmin.phone || '9999999999',
                     password: existingAdmin.password, // Keep the exact hashed password!
                     role: 'admin',
                     permissions: ['all'],
@@ -39,7 +44,7 @@ const migrateAdmin = async () => {
                 await mongoose.connection.db.collection('admins').insertOne(adminData);
                 console.log("Successfully migrated admin credentials to 'admins' collection with email 'connect@manuen.com'.");
             } else {
-                console.log("Admin with this phone number already exists in the 'admins' collection.");
+                console.log("Admin already exists in the new 'admins' collection.");
             }
 
             // 2. Delete from 'users' collection so they aren't duplicate

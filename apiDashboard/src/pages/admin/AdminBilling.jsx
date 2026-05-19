@@ -252,7 +252,7 @@ export default function AdminBilling() {
                            {/* Plan Header */}
                            <div className="flex items-start justify-between mb-8">
                               <div className="space-y-1">
-                                 <h3 className="text-2xl font-black text-primary tracking-tighter leading-none">{plan.name}</h3>
+                                 <h3 className="text-lg font-black text-primary tracking-tight leading-none">{plan.name}</h3>
                                  <div className="flex items-center gap-2">
                                     <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${plan.is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                                        {plan.is_active ? 'Live' : 'Hidden'}
@@ -273,7 +273,7 @@ export default function AdminBilling() {
                            {/* Pricing & Limits Section - Compact & Highlighted */}
                            <div className="bg-slate-50/50 rounded-3xl p-6 mb-8 border border-slate-100/50">
                               <div className="flex items-baseline gap-1 mb-6">
-                                 <span className="text-4xl font-black text-primary tracking-tighter leading-none">₹{plan.price.toLocaleString()}</span>
+                                 <span className="text-2xl font-black text-primary tracking-tight leading-none">₹{plan.price.toLocaleString()}</span>
                                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">/{plan.interval === 'monthly' ? 'mo' : 'yr'}</span>
                               </div>
 

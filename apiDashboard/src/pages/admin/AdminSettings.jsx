@@ -3,7 +3,7 @@ import {
   Shield, Globe, Database, Save, AlertCircle, Lock, Eye, EyeOff,
   Terminal, RefreshCw, Trash2, Activity, Loader2, Palette,
   Layout, Smartphone, BellRing, UserPlus, Sliders, CheckCircle2,
-  Image as ImageIcon, Type, Link as LinkIcon, ShieldCheck, X,
+  Type, Link as LinkIcon, ShieldCheck, X,
   ChevronRight, Settings2, Cpu, Key, Server, Webhook, User,
   Mail, FileText, MapPin
 } from 'lucide-react';
@@ -233,29 +233,6 @@ export default function AdminSettings() {
                       </div>
                     </div>
 
-                    <div className="pt-8 border-t border-slate-50">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-4 block">Visual Identity Assets</label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col items-center gap-3 text-center group/logo cursor-pointer hover:bg-white transition-all">
-                          <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover/logo:text-primary transition-colors">
-                            <ImageIcon size={24} />
-                          </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Admin Logo</p>
-                        </div>
-                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col items-center gap-3 text-center group/logo cursor-pointer hover:bg-white transition-all">
-                          <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover/logo:text-primary transition-colors">
-                            <ImageIcon size={24} />
-                          </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Favicon</p>
-                        </div>
-                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col items-center gap-3 text-center group/logo cursor-pointer hover:bg-white transition-all">
-                          <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover/logo:text-primary transition-colors">
-                            <Palette size={24} />
-                          </div>
-                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Primary Theme</p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 )}
 
