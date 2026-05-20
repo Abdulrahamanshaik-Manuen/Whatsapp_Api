@@ -395,7 +395,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                           />
                         </div>
                         <div className="space-y-3">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Node</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Email</label>
                           <input
                             value={formData.email}
                             onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -480,14 +480,14 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                         <Landmark size={28} />
                       </div>
                       <div>
-                        <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Settlement Details</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Configure your corporate payout account</p>
+                        <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Bank Details</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Configure your business bank account details</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Settlement Institution</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bank Name</label>
                         <input
                           value={formData.bank_name}
                           onChange={e => setFormData({ ...formData, bank_name: e.target.value })}
@@ -496,7 +496,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Authorized Signatory</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Holder Name</label>
                         <input
                           value={formData.account_holder_name}
                           onChange={e => setFormData({ ...formData, account_holder_name: e.target.value })}
@@ -505,7 +505,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Identifier</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Number</label>
                         <input
                           value={formData.account_number}
                           onChange={e => setFormData({ ...formData, account_number: e.target.value })}
@@ -514,7 +514,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                         />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Protocol Code (IFSC)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">IFSC Code</label>
                         <input
                           value={formData.ifsc_code}
                           onChange={e => setFormData({ ...formData, ifsc_code: e.target.value })}
@@ -526,7 +526,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
 
                     <div className="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
                       <ShieldCheck size={20} className="text-emerald-500 shrink-0" />
-                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed">Payout infrastructure is encrypted. Ensure all identifiers match your legal documentation to avoid distribution delays.</p>
+                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed">Bank details are encrypted. Ensure all information matches your legal bank documents to avoid payout delays.</p>
                     </div>
                   </div>
                 )}
@@ -534,32 +534,22 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                 {activeTab === 'Security' && (
                   <div className="p-10 space-y-10 animate-in fade-in duration-500">
                     <div className="space-y-1">
-                      <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Access Control</h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Manage authentication protocols and credentials</p>
+                      <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Change Password</h3>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Update your security credentials</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Cipher</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
                         <input type="password" placeholder="••••••••" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white transition-all outline-none" />
                       </div>
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Protocol</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
                         <input type="password" placeholder="••••••••" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:bg-white transition-all outline-none" />
                       </div>
                     </div>
 
-                    <div className="pt-10 border-t border-slate-50">
-                      <div className="p-8 bg-rose-50/50 rounded-2xl border border-rose-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-black text-rose-900 uppercase tracking-tight">Critical Action: Purge Node</h4>
-                          <p className="text-[10px] text-rose-700/60 font-bold uppercase tracking-widest leading-relaxed">Permanently decommission and erase all enterprise assets.</p>
-                        </div>
-                        <button className="px-8 py-3 bg-white text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-200 shadow-sm active:scale-95">
-                          Execute Purge
-                        </button>
-                      </div>
-                    </div>
+                    {/* Account Purge Decommissioned for clients */}
                   </div>
                 )}
 
