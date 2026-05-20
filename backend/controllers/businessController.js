@@ -1,4 +1,5 @@
 import BusinessProfile from '../models/BusinessProfile.js';
+import User from '../models/User.js';
 
 const validateEmail = (email) => {
     if (!email) return true; // Optional field
@@ -44,7 +45,8 @@ export const createProfile = async (req, res) => {
         await profile.save();
         res.status(201).json({ message: "Business profile created successfully", profile });
     } catch (err) {
-        res.status(500).json({ error: "Failed to create business profile" });
+        console.error("Create Profile Error:", err);
+        res.status(500).json({ error: "Failed to create business profile", message: err.message });
     }
 };
 
@@ -64,14 +66,29 @@ export const updateProfile = async (req, res) => {
             return res.status(400).json({ error: "Invalid email format" });
         }
 
-        const updated = await BusinessProfile.findOneAndUpdate(
+        if (!req.body.business_name) {
+            const user = await User.findById(req.user.user_id);
+            req.body.business_name = user?.name || 'My Business';
+        }
+        if (!req.body.business_category) {
+            req.body.business_category = 'Other';
+        }
+
+        let updated = await BusinessProfile.findOneAndUpdate(
             { user_id: req.user.user_id },
             req.body,
-            { returnDocument: 'after' }
+            { new: true }
         );
-        if (!updated) return res.status(404).json({ error: "Business profile not found" });
+        if (!updated) {
+            updated = new BusinessProfile({
+                user_id: req.user.user_id,
+                ...req.body
+            });
+            await updated.save();
+        }
         res.status(200).json({ message: "Profile updated successfully", profile: updated });
     } catch (err) {
-        res.status(500).json({ error: "Failed to update business profile" });
+        console.error("Update Profile Error:", err);
+        res.status(500).json({ error: "Failed to update business profile", message: err.message });
     }
 };

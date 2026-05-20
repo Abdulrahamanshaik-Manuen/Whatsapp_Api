@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  User, Shield, Save, Trash2, Key, 
-  CheckCircle2, AlertCircle, Eye, EyeOff,
-  ArrowRight, Copy, ShieldCheck, Plus,
-  Landmark, Activity, Zap, Database, Info, Link2, Globe,
-  Box, Tag, DollarSign, Package, ShoppingBag, PlusCircle, MinusCircle, Edit3, Loader2, Search,
-  Upload, FileSpreadsheet, Download, ChevronRight, ChevronDown, Filter, MoreHorizontal
+import {
+  User, Shield, Save, Trash2, ShieldCheck, Plus,
+  Landmark, Package, ShoppingBag, PlusCircle, Edit3, Loader2, Search,
+  Upload, Download, ChevronRight, ChevronDown
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
@@ -22,7 +19,8 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const fileInputRef = useRef(null);
-  
+  const logoInputRef = useRef(null);
+
   const [productForm, setProductForm] = useState({
     name: '',
     category: '',
@@ -40,10 +38,16 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
     business_name: businessData?.business_name || '',
     email: businessData?.email || '',
     business_category: businessData?.business_category || 'Other',
+    business_description: businessData?.business_description || '',
+    address: businessData?.address || '',
+    city: businessData?.city || '',
+    state: businessData?.state || '',
+    country: businessData?.country || '',
     bank_name: businessData?.bank_name || '',
     account_number: businessData?.account_number || '',
     ifsc_code: businessData?.ifsc_code || '',
-    account_holder_name: businessData?.account_holder_name || ''
+    account_holder_name: businessData?.account_holder_name || '',
+    logo_url: businessData?.logo_url || ''
   });
 
   useEffect(() => {
@@ -52,10 +56,16 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
         business_name: businessData.business_name || '',
         email: businessData.email || '',
         business_category: businessData.business_category || 'Other',
+        business_description: businessData.business_description || '',
+        address: businessData.address || '',
+        city: businessData.city || '',
+        state: businessData.state || '',
+        country: businessData.country || '',
         bank_name: businessData.bank_name || '',
         account_number: businessData.account_number || '',
         ifsc_code: businessData.ifsc_code || '',
-        account_holder_name: businessData.account_holder_name || ''
+        account_holder_name: businessData.account_holder_name || '',
+        logo_url: businessData.logo_url || ''
       });
     }
   }, [businessData]);
@@ -80,6 +90,20 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
     } finally {
       setFetchingProducts(false);
     }
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({ ...prev, logo_url: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleUpdateProfile = async () => {
@@ -115,7 +139,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
       const token = localStorage.getItem('token');
       const method = isEditingProduct ? 'PUT' : 'POST';
       const url = isEditingProduct ? `${API_BASE_URL}/products/${productForm._id}` : `${API_BASE_URL}/products`;
-      
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -205,7 +229,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
         });
 
         const productsToImport = Object.values(grouped);
-        
+
         setLoading(true);
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE_URL}/products/bulk`, {
@@ -253,11 +277,11 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
   };
 
   // Pagination Logic
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -265,7 +289,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] overflow-hidden">
-      
+
       {/* Header Section */}
       <div className="px-8 pt-8 pb-2 shrink-0">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -273,10 +297,10 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
             <h1 className="text-3xl font-black text-primary tracking-tight">Settings</h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Configure your account protocols and financial nodes</p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {activeTab === 'Catalogue' && (
-              <button 
+              <button
                 onClick={downloadSampleTemplate}
                 className="px-4 py-3 bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
               >
@@ -284,7 +308,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                 Template
               </button>
             )}
-            <button 
+            <button
               onClick={activeTab === 'Catalogue' ? handleSaveProduct : handleUpdateProfile}
               disabled={loading}
               className="px-8 py-3 bg-[#003B6D] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#003B6D]/20 active:scale-95 flex items-center gap-2"
@@ -298,9 +322,9 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
 
       <main className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
         <div className="max-w-7xl mx-auto space-y-8">
-          
+
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            
+
             {/* Sidebar Navigation */}
             <div className="xl:col-span-3">
               <div className="bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-sm sticky top-0">
@@ -308,8 +332,8 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 ${activeTab === tab.id 
-                      ? 'bg-primary text-white shadow-xl shadow-primary/20' 
+                    className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 ${activeTab === tab.id
+                      ? 'bg-primary text-white shadow-xl shadow-primary/20'
                       : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
                   >
                     <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
@@ -322,13 +346,34 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
             {/* Content Area */}
             <div className="xl:col-span-9">
               <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
-                
+
                 {activeTab === 'Profile' && (
                   <div className="p-10 space-y-12 animate-in fade-in duration-500">
                     <div className="flex items-center gap-8 pb-10 border-b border-slate-50">
-                      <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 relative group">
-                        <User size={32} />
-                        <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-lg text-white shadow-lg flex items-center justify-center border-2 border-white hover:scale-110 transition-transform">
+                      <input
+                        type="file"
+                        ref={logoInputRef}
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                        accept="image/*"
+                      />
+                      <div
+                        onClick={() => logoInputRef.current?.click()}
+                        className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 relative group cursor-pointer hover:border-primary/50 transition-colors shrink-0 overflow-hidden"
+                      >
+                        {formData.logo_url ? (
+                          <img
+                            src={formData.logo_url}
+                            alt="Business Logo"
+                            className="w-full h-full object-cover rounded-2xl"
+                          />
+                        ) : (
+                          <User size={32} />
+                        )}
+                        <button
+                          type="button"
+                          className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-lg text-white shadow-lg flex items-center justify-center border-2 border-white hover:scale-110 transition-transform"
+                        >
                           <Plus size={14} strokeWidth={3} />
                         </button>
                       </div>
@@ -338,24 +383,91 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Identity</label>
+                          <input
+                            value={formData.business_name}
+                            onChange={e => setFormData({ ...formData, business_name: e.target.value })}
+                            placeholder="Enter business name"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Node</label>
+                          <input
+                            value={formData.email}
+                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            placeholder="admin@enterprise.com"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Category</label>
+                          <select
+                            value={formData.business_category}
+                            onChange={e => setFormData({ ...formData, business_category: e.target.value })}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          >
+                            <option value="">Select Category</option>
+                            {['Retail', 'E-commerce', 'Healthcare', 'Education', 'Finance', 'Real Estate', 'Technology', 'Logistics', 'Other'].map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Description</label>
+                          <input
+                            value={formData.business_description}
+                            onChange={e => setFormData({ ...formData, business_description: e.target.value })}
+                            placeholder="Brief description of your services"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
+                      </div>
+
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Identity</label>
-                        <input 
-                          value={formData.business_name} 
-                          onChange={e => setFormData({...formData, business_name: e.target.value})}
-                          placeholder="Enter business name"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none" 
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Address</label>
+                        <input
+                          value={formData.address}
+                          onChange={e => setFormData({ ...formData, address: e.target.value })}
+                          placeholder="Street Address, Suite, Unit"
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
                         />
                       </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Node</label>
-                        <input 
-                          value={formData.email} 
-                          onChange={e => setFormData({...formData, email: e.target.value})}
-                          placeholder="admin@enterprise.com"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none" 
-                        />
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City</label>
+                          <input
+                            value={formData.city}
+                            onChange={e => setFormData({ ...formData, city: e.target.value })}
+                            placeholder="City"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">State / Province</label>
+                          <input
+                            value={formData.state}
+                            onChange={e => setFormData({ ...formData, state: e.target.value })}
+                            placeholder="State"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Country</label>
+                          <input
+                            value={formData.country}
+                            onChange={e => setFormData({ ...formData, country: e.target.value })}
+                            placeholder="Country"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -376,38 +488,38 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Settlement Institution</label>
-                        <input 
-                          value={formData.bank_name} 
-                          onChange={e => setFormData({...formData, bank_name: e.target.value})}
+                        <input
+                          value={formData.bank_name}
+                          onChange={e => setFormData({ ...formData, bank_name: e.target.value })}
                           placeholder="e.g. HDFC International"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none" 
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
                         />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Authorized Signatory</label>
-                        <input 
-                          value={formData.account_holder_name} 
-                          onChange={e => setFormData({...formData, account_holder_name: e.target.value})}
+                        <input
+                          value={formData.account_holder_name}
+                          onChange={e => setFormData({ ...formData, account_holder_name: e.target.value })}
                           placeholder="Name on records"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none" 
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
                         />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Identifier</label>
-                        <input 
-                          value={formData.account_number} 
-                          onChange={e => setFormData({...formData, account_number: e.target.value})}
+                        <input
+                          value={formData.account_number}
+                          onChange={e => setFormData({ ...formData, account_number: e.target.value })}
                           placeholder="0000 0000 0000"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none" 
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
                         />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Protocol Code (IFSC)</label>
-                        <input 
-                          value={formData.ifsc_code} 
-                          onChange={e => setFormData({...formData, ifsc_code: e.target.value})}
+                        <input
+                          value={formData.ifsc_code}
+                          onChange={e => setFormData({ ...formData, ifsc_code: e.target.value })}
                           placeholder="IFSC / SWIFT"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none" 
+                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
                         />
                       </div>
                     </div>
@@ -453,7 +565,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
 
                 {activeTab === 'Catalogue' && (
                   <div className="p-8 space-y-8 animate-in fade-in duration-500">
-                    
+
                     {/* Top Bar */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                       <div className="space-y-1">
@@ -463,15 +575,15 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="relative flex-1 min-w-[240px]">
                           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                          <input 
-                            type="text" 
-                            placeholder="Search catalogue..." 
+                          <input
+                            type="text"
+                            placeholder="Search catalogue..."
                             value={searchQuery}
-                            onChange={(e) => {setSearchQuery(e.target.value); setCurrentPage(1);}}
+                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                             className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold focus:bg-white transition-all outline-none"
                           />
                         </div>
-                        <button 
+                        <button
                           onClick={handleImportClick}
                           className="px-6 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-100 transition-all flex items-center gap-2 shadow-sm"
                         >
@@ -487,20 +599,20 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Identity</label>
-                          <input 
-                            value={productForm.name} 
-                            onChange={e => setProductForm({...productForm, name: e.target.value})}
+                          <input
+                            value={productForm.name}
+                            onChange={e => setProductForm({ ...productForm, name: e.target.value })}
                             placeholder="e.g. Papad"
-                            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 transition-all" 
+                            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                           />
                         </div>
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Market Category</label>
-                          <input 
-                            value={productForm.category} 
-                            onChange={e => setProductForm({...productForm, category: e.target.value})}
+                          <input
+                            value={productForm.category}
+                            onChange={e => setProductForm({ ...productForm, category: e.target.value })}
                             placeholder="e.g. Daily Essentials"
-                            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 transition-all" 
+                            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                           />
                         </div>
                       </div>
@@ -512,27 +624,27 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                             <PlusCircle size={14} /> Add Scale
                           </button>
                         </div>
-                        
+
                         <div className="space-y-3">
                           {productForm.variants.map((v, idx) => (
                             <div key={idx} className="flex flex-col md:flex-row items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-in slide-in-from-top-2">
-                              <input 
-                                value={v.quantity} 
+                              <input
+                                value={v.quantity}
                                 onChange={e => handleVariantChange(idx, 'quantity', e.target.value)}
                                 placeholder="1 Piece / 1kg"
                                 className="flex-1 px-4 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold"
                               />
                               <div className="relative w-full md:w-32">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[10px]">₹</span>
-                                <input 
+                                <input
                                   type="number"
-                                  value={v.price} 
+                                  value={v.price}
                                   onChange={e => handleVariantChange(idx, 'price', e.target.value)}
                                   className="w-full pl-6 pr-3 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold"
                                 />
                               </div>
-                              <select 
-                                value={v.stock_status} 
+                              <select
+                                value={v.stock_status}
                                 onChange={e => handleVariantChange(idx, 'stock_status', e.target.value)}
                                 className="w-full md:w-32 px-3 py-2 bg-slate-50 border-none rounded-lg text-[10px] font-black uppercase tracking-widest"
                               >
@@ -583,13 +695,13 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                             currentItems.map((product) => {
                               const hasMultiple = product.variants?.length > 1;
                               const firstVariant = product.variants?.[0] || {};
-                              
+
                               return (
                                 <React.Fragment key={product._id}>
                                   <tr className={`hover:bg-slate-50/80 transition-colors group ${expandedRows.has(product._id) ? 'bg-slate-50/30' : ''}`}>
                                     <td className="px-6 py-4 text-center">
                                       {hasMultiple && (
-                                        <button 
+                                        <button
                                           onClick={() => toggleRow(product._id)}
                                           className="p-1.5 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all"
                                         >
@@ -628,7 +740,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                                     </td>
                                     <td className="px-6 py-4">
                                       <div className="flex items-center justify-end gap-2">
-                                        <button 
+                                        <button
                                           onClick={() => {
                                             setProductForm(product);
                                             setIsEditingProduct(true);
@@ -638,7 +750,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                                         >
                                           <Edit3 size={16} />
                                         </button>
-                                        <button 
+                                        <button
                                           onClick={() => handleDeleteProduct(product._id)}
                                           className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                                         >
@@ -676,7 +788,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                           )}
                         </tbody>
                       </table>
-                      
+
                       {/* Pagination Footer */}
                       {!fetchingProducts && filteredProducts.length > 0 && (
                         <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
@@ -687,9 +799,9 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                             <div className="h-3 w-px bg-slate-200" />
                             <div className="flex items-center gap-2">
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rows:</span>
-                              <select 
+                              <select
                                 value={itemsPerPage}
-                                onChange={(e) => {setItemsPerPage(Number(e.target.value)); setCurrentPage(1);}}
+                                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
                                 className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-black text-primary outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                               >
                                 {[10, 20, 50, 100].map(n => (
@@ -699,7 +811,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button 
+                            <button
                               disabled={currentPage === 1}
                               onClick={() => setCurrentPage(prev => prev - 1)}
                               className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
@@ -707,7 +819,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                               <ChevronRight size={16} className="rotate-180" />
                             </button>
                             <span className="text-[11px] font-black text-[#003B6D] px-2">Page {currentPage} / {totalPages}</span>
-                            <button 
+                            <button
                               disabled={currentPage === totalPages}
                               onClick={() => setCurrentPage(prev => prev + 1)}
                               className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"

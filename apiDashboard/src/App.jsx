@@ -33,6 +33,7 @@ export default function App() {
 function AppContent() {
 
     const [activePath, setActivePath] = useState(getCurrentPath);
+    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdmin = user.role === 'admin';
 
@@ -49,18 +50,41 @@ function AppContent() {
         window.scrollTo(0, 0);
     };
 
+    // Route Guards: Logged in users shouldn't access Login/Register
+    if (token && (activePath === '/login' || activePath === '/register')) {
+        if (isAdmin) {
+            return <AdminPanel onNavigate={navigateTo} initialPath="/admin" />;
+        }
+        return <DashboardPage onNavigate={navigateTo} initialPath="/dashboard" />;
+    }
+
+    // Protected Routes: Require token
+    const isProtectedRoute = activePath.startsWith('/admin') || 
+        ['/dashboard', '/campaigns', '/campaigns/create', '/contacts', '/messages', '/history', '/templates', '/templates/create', '/templates/view', '/automations', '/automations/builder', '/setup', '/billing', '/settings', '/groups'].includes(activePath);
+
+    if (isProtectedRoute && !token) {
+        return <LoginPage onNavigate={navigateTo} />;
+    }
+
+    // Role-based Guards: Non-admins trying to access AdminPanel
+    if (activePath.startsWith('/admin') && !isAdmin) {
+        return <DashboardPage onNavigate={navigateTo} initialPath="/dashboard" />;
+    }
+
     if (activePath === '/register') return <RegisterPage onNavigate={navigateTo} />;
     if (activePath === '/login') return <LoginPage onNavigate={navigateTo} />;
     if (activePath === '/forgot-password') return <ForgotPasswordPage onNavigate={navigateTo} />;
     if (activePath.startsWith('/lead')) return <LeadCapturePage />;
+    
     if (activePath.startsWith('/admin') || (activePath === '/automations/builder' && isAdmin)) {
         return <AdminPanel onNavigate={navigateTo} initialPath={activePath} />;
     }
-    if (activePath === '/dashboard' || activePath === '/campaigns' || activePath === '/campaigns/create' || activePath === '/contacts' || activePath === '/messages' || activePath === '/history' || activePath === '/templates' || activePath === '/templates/create' || activePath === '/templates/view' || activePath === '/automations' || activePath === '/automations/builder' || activePath === '/setup' || activePath === '/billing' || activePath === '/settings' || activePath === '/groups') {
+    
+    if (['/dashboard', '/campaigns', '/campaigns/create', '/contacts', '/messages', '/history', '/templates', '/templates/create', '/templates/view', '/automations', '/automations/builder', '/setup', '/billing', '/settings', '/groups'].includes(activePath)) {
         return <DashboardPage onNavigate={navigateTo} initialPath={activePath} />;
     }
 
-    // Default to Login for now if not landing or register
+    // Default to Landing Page for '/'
     if (activePath === '/') return <LandingPage activePath={activePath} onNavigate={navigateTo} />;
 
     return <LoginPage onNavigate={navigateTo} />;

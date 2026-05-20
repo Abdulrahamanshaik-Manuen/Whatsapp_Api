@@ -131,7 +131,14 @@ export const getAllUsers = async (req, res) => {
                 status: user.subscription_status || 'none',
                 joinedDate: user.created_at,
                 lastActive: lastMessage?.created_at || user.created_at,
-                whatsappConnected: user.whatsapp_connected
+                whatsappConnected: user.whatsapp_connected,
+                businessCategory: profile?.business_category || 'N/A',
+                businessDescription: profile?.business_description || 'N/A',
+                address: profile?.address || 'N/A',
+                city: profile?.city || 'N/A',
+                state: profile?.state || 'N/A',
+                country: profile?.country || 'N/A',
+                logoUrl: profile?.logo_url || ''
             };
         }));
 
