@@ -29,10 +29,6 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                 <p className="text-secondary font-display font-black text-[11px] uppercase tracking-[0.2em] mb-4">Vertical Excellence</p>
                                 <h2 className="h2-display text-primary">Tailored Solutions for <span className="text-secondary">Every Industry</span></h2>
                             </div>
-                            <button className="flex items-center gap-2 text-primary font-display font-black text-xs uppercase tracking-widest group">
-                                View Case Studies
-                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
                         </div>
                         
                         <div className="grid md:grid-cols-3 gap-8">

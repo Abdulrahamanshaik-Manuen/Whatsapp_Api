@@ -27,12 +27,15 @@ const Hero = ({ onNavigate }) => {
                     
                     <div className="flex flex-col sm:flex-row gap-4 pt-4">
                         <button 
-                            onClick={() => onNavigate('/login')}
                             className="btn-secondary px-10 py-4 text-sm"
                         >
-                            Get Started Free
+                            Live Demo
                         </button>
                         <button 
+                            onClick={() => {
+                                const el = document.getElementById('solutions');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
                             className="px-10 py-4 rounded-xl border-2 border-primary text-primary font-display font-bold text-sm hover:bg-primary/5 transition-all shadow-sm"
                         >
                             Explore Solutions
@@ -53,7 +56,7 @@ const Hero = ({ onNavigate }) => {
 
                 <div className="relative lg:ml-4">
                     {/* Floating UI Elements */}
-                    <div className="absolute -top-10 -left-10 z-30 glass-panel p-5 rounded-2xl animate-bounce-slow">
+                    <div className="absolute top-4 -left-10 z-30 glass-panel p-5 rounded-2xl animate-bounce-slow">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-white shadow-glow">
                                 <MessageSquare size={20} fill="currentColor" />

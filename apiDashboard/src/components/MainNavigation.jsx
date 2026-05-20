@@ -20,9 +20,7 @@ const MainNavigation = ({ activePath, onNavigate }) => {
     ];
 
     return (
-        <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-            isScrolled ? 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm' : 'bg-transparent'
-        }`}>
+        <header className="fixed top-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
             <nav className="flex justify-between items-center h-20 px-8 max-w-7xl mx-auto relative">
                 {/* Logo Section */}
                 <div className="flex items-center gap-4 relative z-10">
