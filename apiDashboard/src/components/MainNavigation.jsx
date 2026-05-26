@@ -21,7 +21,7 @@ const MainNavigation = ({ activePath, onNavigate }) => {
 
     return (
         <header className="fixed top-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
-            <nav className="flex justify-between items-center h-20 px-8 max-w-7xl mx-auto relative">
+            <nav className="flex justify-between items-center h-16 sm:h-20 px-4 sm:px-8 max-w-7xl mx-auto relative">
                 {/* Logo Section */}
                 <div className="flex items-center gap-4 relative z-10">
                     <div 
@@ -63,7 +63,7 @@ const MainNavigation = ({ activePath, onNavigate }) => {
                     </button>
                     <button 
                         onClick={() => onNavigate('/register')}
-                        className="bg-secondary text-white text-[10px] font-black uppercase tracking-[0.2em] px-7 py-3 rounded-xl shadow-lg shadow-secondary/20 hover:-translate-y-0.5 hover:brightness-110 transition-all active:scale-95"
+                        className="hidden sm:block bg-secondary text-white text-[10px] font-black uppercase tracking-[0.2em] px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-secondary/20 hover:-translate-y-0.5 hover:brightness-110 transition-all active:scale-95"
                     >
                         Get Started
                     </button>
@@ -104,6 +104,12 @@ const MainNavigation = ({ activePath, onNavigate }) => {
                             className="text-left text-sm font-bold text-primary"
                         >
                             Login
+                        </button>
+                        <button 
+                            onClick={() => { setIsMobileMenuOpen(false); onNavigate('/register'); }}
+                            className="w-full bg-secondary text-white text-[11px] font-black uppercase tracking-[0.15em] px-6 py-3 rounded-xl shadow-lg shadow-secondary/20 transition-all active:scale-95 text-center"
+                        >
+                            Get Started
                         </button>
                     </div>
                 </div>

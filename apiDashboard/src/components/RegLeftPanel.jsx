@@ -4,16 +4,9 @@ import { ShieldCheck, Zap, BarChart2, MessageCircle, Tag, CheckCheck, User } fro
 export default function RegLeftPanel() {
   return (
     <div
+      className="hidden lg:flex lg:w-[45%] lg:min-w-[460px] h-screen flex-col relative overflow-hidden p-[36px_40px]"
       style={{
-        width: '45%',
-        minWidth: '460px',
         background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)',
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '36px 40px',
-        minHeight: '100vh',
       }}
     >
       {/* BG orbs */}

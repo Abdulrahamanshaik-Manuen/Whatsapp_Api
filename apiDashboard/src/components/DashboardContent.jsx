@@ -83,7 +83,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <main className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar pb-20">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-10 custom-scrollbar pb-20">
 
         {/* Dashboard Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -196,12 +196,10 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }}
                     dy={15}
-                    interval={
-                      selectedFilter === 'Last 30 Days' ? 3 :
-                        selectedFilter === 'Last 24 Hours' ? 2 : 0
-                    }
+                    interval="preserveStartEnd"
+                    minTickGap={25}
                     padding={{ left: 20, right: 25 }}
                   />
                   <YAxis
@@ -490,7 +488,7 @@ function TemplateItem({ name, type, usage, isActive, onClick }) {
       onClick={onClick}
       className={`flex items-center justify-between group cursor-pointer p-4 rounded-2xl transition-all duration-300 ${isActive ? 'bg-primary/5 border border-primary/10' : 'hover:bg-slate-50/80 border border-transparent'}`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 min-w-0">
         <div className={`w-12 h-12 md:w-14 md:h-14 ${isActive ? 'bg-primary text-white' : 'bg-primary/5 text-primary'} rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm transition-colors`}>
           <LayoutTemplate size={24} />
         </div>

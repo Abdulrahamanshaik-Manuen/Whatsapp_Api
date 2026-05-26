@@ -291,7 +291,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
     <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] overflow-hidden">
 
       {/* Header Section */}
-      <div className="px-8 pt-8 pb-2 shrink-0">
+      <div className="px-4 md:px-8 pt-8 pb-2 shrink-0">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-black text-primary tracking-tight">Settings</h1>
@@ -320,23 +320,23 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
+      <main className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 py-6">
         <div className="max-w-7xl mx-auto space-y-8">
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
             {/* Sidebar Navigation */}
             <div className="xl:col-span-3">
-              <div className="bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-sm sticky top-0">
+              <div className="bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-sm sticky top-0 flex xl:flex-col gap-2 overflow-x-auto no-scrollbar whitespace-nowrap">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl transition-all duration-300 ${activeTab === tab.id
+                    className={`flex items-center gap-3 px-4 xl:px-6 py-3 xl:py-4 rounded-xl transition-all duration-300 shrink-0 ${activeTab === tab.id
                       ? 'bg-primary text-white shadow-xl shadow-primary/20'
                       : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
                   >
-                    <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+                    <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 2} className="shrink-0" />
                     <span className={`text-[11px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>{tab.label}</span>
                   </button>
                 ))}
@@ -348,7 +348,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
               <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
 
                 {activeTab === 'Profile' && (
-                  <div className="p-10 space-y-12 animate-in fade-in duration-500">
+                  <div className="p-4 sm:p-6 md:p-10 space-y-8 md:space-y-12 animate-in fade-in duration-500">
                     <div className="flex items-center gap-8 pb-10 border-b border-slate-50">
                       <input
                         type="file"
@@ -474,7 +474,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                 )}
 
                 {activeTab === 'Bank' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-4 sm:p-6 md:p-10 space-y-8 md:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6">
                       <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm shadow-emerald-100/50">
                         <Landmark size={28} />
@@ -532,7 +532,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                 )}
 
                 {activeTab === 'Security' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-4 sm:p-6 md:p-10 space-y-8 md:space-y-10 animate-in fade-in duration-500">
                     <div className="space-y-1">
                       <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Change Password</h3>
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Update your security credentials</p>
@@ -554,17 +554,17 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                 )}
 
                 {activeTab === 'Catalogue' && (
-                  <div className="p-8 space-y-8 animate-in fade-in duration-500">
+                  <div className="p-4 sm:p-6 md:p-8 space-y-6 animate-in fade-in duration-500">
 
                     {/* Top Bar */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Enterprise Inventory</h3>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">High-performance management of {products.length} assets</p>
                       </div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative flex-1 min-w-[240px]">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="relative min-w-[200px] sm:min-w-[260px] flex-1">
+                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
                           <input
                             type="text"
                             placeholder="Search catalogue..."
@@ -575,9 +575,9 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                         </div>
                         <button
                           onClick={handleImportClick}
-                          className="px-6 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-100 transition-all flex items-center gap-2 shadow-sm"
+                          className="px-5 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 shadow-sm shrink-0 active:scale-95"
                         >
-                          <Upload size={16} />
+                          <Upload size={15} />
                           Import
                         </button>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv, .xlsx, .xls" className="hidden" />
@@ -585,7 +585,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                     </div>
 
                     {/* Quick Entry Form (Collapsible or Inline) */}
-                    <div className="bg-slate-50/50 rounded-[1.5rem] border border-slate-100 p-6 space-y-6">
+                    <div className="bg-slate-50/50 rounded-[1.5rem] border border-slate-100 p-4 sm:p-6 space-y-4 sm:space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Identity</label>
@@ -617,176 +617,182 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
 
                         <div className="space-y-3">
                           {productForm.variants.map((v, idx) => (
-                            <div key={idx} className="flex flex-col md:flex-row items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-in slide-in-from-top-2">
+                            <div key={idx} className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-in slide-in-from-top-2">
                               <input
                                 value={v.quantity}
                                 onChange={e => handleVariantChange(idx, 'quantity', e.target.value)}
                                 placeholder="1 Piece / 1kg"
-                                className="flex-1 px-4 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold"
+                                className="w-full md:flex-1 px-4 py-2.5 bg-slate-50 border-none rounded-lg text-xs font-bold outline-none focus:ring-1 focus:ring-primary/20 transition-all"
                               />
-                              <div className="relative w-full md:w-32">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[10px]">₹</span>
-                                <input
-                                  type="number"
-                                  value={v.price}
-                                  onChange={e => handleVariantChange(idx, 'price', e.target.value)}
-                                  className="w-full pl-6 pr-3 py-2 bg-slate-50 border-none rounded-lg text-xs font-bold"
-                                />
+                              <div className="flex items-center gap-3 w-full md:w-auto">
+                                <div className="relative flex-1 md:w-32">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-[10px]">₹</span>
+                                  <input
+                                    type="number"
+                                    value={v.price}
+                                    onChange={e => handleVariantChange(idx, 'price', e.target.value)}
+                                    className="w-full pl-6 pr-3 py-2.5 bg-slate-50 border-none rounded-lg text-xs font-bold outline-none focus:ring-1 focus:ring-primary/20 transition-all"
+                                  />
+                                </div>
+                                <select
+                                  value={v.stock_status}
+                                  onChange={e => handleVariantChange(idx, 'stock_status', e.target.value)}
+                                  className="flex-1 md:w-32 px-3 py-2.5 bg-slate-50 border-none rounded-lg text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-primary/20 transition-all cursor-pointer"
+                                >
+                                  <option>In Stock</option>
+                                  <option>Out of Stock</option>
+                                </select>
+                                {productForm.variants.length > 1 && (
+                                  <button onClick={() => handleRemoveVariant(idx)} className="p-2 text-rose-400 hover:bg-rose-50 rounded-lg transition-colors shrink-0">
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
                               </div>
-                              <select
-                                value={v.stock_status}
-                                onChange={e => handleVariantChange(idx, 'stock_status', e.target.value)}
-                                className="w-full md:w-32 px-3 py-2 bg-slate-50 border-none rounded-lg text-[10px] font-black uppercase tracking-widest"
-                              >
-                                <option>In Stock</option>
-                                <option>Out of Stock</option>
-                              </select>
-                              {productForm.variants.length > 1 && (
-                                <button onClick={() => handleRemoveVariant(idx)} className="p-2 text-rose-400 hover:bg-rose-50 rounded-lg transition-colors">
-                                  <Trash2 size={16} />
-                                </button>
-                              )}
                             </div>
                           ))}
                         </div>
                       </div>
                     </div>
 
-                    {/* Data Grid / Table */}
-                    <div className="border border-slate-100 rounded-[1.5rem] overflow-hidden bg-white shadow-sm">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center"></th>
-                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Name</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pricing</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {fetchingProducts ? (
-                            <tr>
-                              <td colSpan="5" className="px-6 py-20">
-                                <div className="flex flex-col items-center gap-3 opacity-50">
-                                  <Loader2 size={24} className="animate-spin text-primary" />
-                                  <span className="text-[10px] font-black uppercase tracking-widest">Accessing Node Database...</span>
-                                </div>
-                              </td>
+                    {/* Data Grid / Table Card - Stretched to edges to eliminate double card nested borders */}
+                    <div className="border-t border-slate-100 bg-white -mx-4 sm:-mx-6 md:-mx-8 overflow-hidden">
+                      <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full min-w-[600px] text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center"></th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Name</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pricing</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
-                          ) : currentItems.length === 0 ? (
-                            <tr>
-                              <td colSpan="5" className="px-6 py-20 text-center">
-                                <ShoppingBag size={32} className="mx-auto text-slate-200 mb-3" />
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No matching assets found</p>
-                              </td>
-                            </tr>
-                          ) : (
-                            currentItems.map((product) => {
-                              const hasMultiple = product.variants?.length > 1;
-                              const firstVariant = product.variants?.[0] || {};
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {fetchingProducts ? (
+                              <tr>
+                                <td colSpan="5" className="px-6 py-20">
+                                  <div className="flex flex-col items-center gap-3 opacity-50">
+                                    <Loader2 size={24} className="animate-spin text-primary" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Accessing Node Database...</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ) : currentItems.length === 0 ? (
+                              <tr>
+                                <td colSpan="5" className="px-6 py-20 text-center">
+                                  <ShoppingBag size={32} className="mx-auto text-slate-200 mb-3" />
+                                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No matching assets found</p>
+                                </td>
+                              </tr>
+                            ) : (
+                              currentItems.map((product) => {
+                                const hasMultiple = product.variants?.length > 1;
+                                const firstVariant = product.variants?.[0] || {};
 
-                              return (
-                                <React.Fragment key={product._id}>
-                                  <tr className={`hover:bg-slate-50/80 transition-colors group ${expandedRows.has(product._id) ? 'bg-slate-50/30' : ''}`}>
-                                    <td className="px-6 py-4 text-center">
-                                      {hasMultiple && (
-                                        <button
-                                          onClick={() => toggleRow(product._id)}
-                                          className="p-1.5 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all"
-                                        >
-                                          {expandedRows.has(product._id) ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-slate-300" />}
-                                        </button>
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-                                          <Package size={16} />
-                                        </div>
-                                        <span className="text-xs font-black text-[#003B6D] tracking-tight">{product.name}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <span className="px-3 py-1 bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-full border border-slate-100">
-                                        {product.category}
-                                      </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      {hasMultiple ? (
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-1 rounded-md">
-                                            {product.variants.length} Options
-                                          </span>
-                                          <span className="text-[10px] font-bold text-slate-400">Starting ₹{Math.min(...product.variants.map(v => v.price))}</span>
-                                        </div>
-                                      ) : (
+                                return (
+                                  <React.Fragment key={product._id}>
+                                    <tr className={`hover:bg-slate-50/80 transition-colors group ${expandedRows.has(product._id) ? 'bg-slate-50/30' : ''}`}>
+                                      <td className="px-6 py-4 text-center">
+                                        {hasMultiple && (
+                                          <button
+                                            onClick={() => toggleRow(product._id)}
+                                            className="p-1.5 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all"
+                                          >
+                                            {expandedRows.has(product._id) ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-slate-300" />}
+                                          </button>
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                          <span className="text-xs font-black text-primary">₹{firstVariant.price}</span>
-                                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{firstVariant.quantity}</span>
-                                          <div className={`w-1.5 h-1.5 rounded-full ${firstVariant.stock_status === 'In Stock' ? 'bg-emerald-500' : 'bg-rose-500'}`} title={firstVariant.stock_status} />
+                                          <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+                                            <Package size={16} />
+                                          </div>
+                                          <span className="text-xs font-black text-[#003B6D] tracking-tight">{product.name}</span>
                                         </div>
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <div className="flex items-center justify-end gap-2">
-                                        <button
-                                          onClick={() => {
-                                            setProductForm(product);
-                                            setIsEditingProduct(true);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                          }}
-                                          className="p-2 text-slate-300 hover:text-primary hover:bg-white rounded-lg transition-all"
-                                        >
-                                          <Edit3 size={16} />
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteProduct(product._id)}
-                                          className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                        >
-                                          <Trash2 size={16} />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  {hasMultiple && expandedRows.has(product._id) && (
-                                    <tr>
-                                      <td colSpan="5" className="px-6 py-4 bg-slate-50/20 border-b border-slate-50">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-in slide-in-from-left-2">
-                                          {product.variants?.map((v, i) => (
-                                            <div key={i} className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col gap-2">
-                                              <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{v.quantity}</span>
-                                                <div className={`w-1.5 h-1.5 rounded-full ${v.stock_status === 'In Stock' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                              </div>
-                                              <div className="flex items-baseline gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400">Price:</span>
-                                                <span className="text-sm font-black text-primary">₹{v.price}</span>
-                                              </div>
-                                              <span className={`text-[8px] font-black uppercase tracking-widest ${v.stock_status === 'In Stock' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                {v.stock_status}
-                                              </span>
-                                            </div>
-                                          ))}
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <span className="px-3 py-1 bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-full border border-slate-100">
+                                          {product.category}
+                                        </span>
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        {hasMultiple ? (
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-1 rounded-md">
+                                              {product.variants.length} Options
+                                            </span>
+                                            <span className="text-[10px] font-bold text-slate-400">Starting ₹{Math.min(...product.variants.map(v => v.price))}</span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-3">
+                                            <span className="text-xs font-black text-primary">₹{firstVariant.price}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{firstVariant.quantity}</span>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${firstVariant.stock_status === 'In Stock' ? 'bg-emerald-500' : 'bg-rose-500'}`} title={firstVariant.stock_status} />
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                          <button
+                                            onClick={() => {
+                                              setProductForm(product);
+                                              setIsEditingProduct(true);
+                                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            className="p-2 text-slate-300 hover:text-primary hover:bg-white rounded-lg transition-all"
+                                          >
+                                            <Edit3 size={16} />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteProduct(product._id)}
+                                            className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                          >
+                                            <Trash2 size={16} />
+                                          </button>
                                         </div>
                                       </td>
                                     </tr>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })
-                          )}
-                        </tbody>
-                      </table>
+                                    {hasMultiple && expandedRows.has(product._id) && (
+                                      <tr>
+                                        <td colSpan="5" className="px-6 py-4 bg-slate-50/20 border-b border-slate-50">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-in slide-in-from-left-2">
+                                            {product.variants?.map((v, i) => (
+                                              <div key={i} className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col gap-2">
+                                                <div className="flex items-center justify-between">
+                                                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{v.quantity}</span>
+                                                  <div className={`w-1.5 h-1.5 rounded-full ${v.stock_status === 'In Stock' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                                </div>
+                                                <div className="flex items-baseline gap-1">
+                                                  <span className="text-[10px] font-bold text-slate-400">Price:</span>
+                                                  <span className="text-sm font-black text-primary">₹{v.price}</span>
+                                                </div>
+                                                <span className={`text-[8px] font-black uppercase tracking-widest ${v.stock_status === 'In Stock' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                  {v.stock_status}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </React.Fragment>
+                                );
+                              })
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
 
-                      {/* Pagination Footer */}
+                      {/* Pagination Footer - Optimized layout to avoid congestion on mobile */}
                       {!fetchingProducts && filteredProducts.length > 0 && (
-                        <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
-                          <div className="flex items-center gap-4">
+                        <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                          <div className="text-center sm:text-left">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                               Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredProducts.length)} of {filteredProducts.length}
                             </span>
-                            <div className="h-3 w-px bg-slate-200" />
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
                             <div className="flex items-center gap-2">
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rows:</span>
                               <select
@@ -799,23 +805,24 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                                 ))}
                               </select>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              disabled={currentPage === 1}
-                              onClick={() => setCurrentPage(prev => prev - 1)}
-                              className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                            >
-                              <ChevronRight size={16} className="rotate-180" />
-                            </button>
-                            <span className="text-[11px] font-black text-[#003B6D] px-2">Page {currentPage} / {totalPages}</span>
-                            <button
-                              disabled={currentPage === totalPages}
-                              onClick={() => setCurrentPage(prev => prev + 1)}
-                              className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                            >
-                              <ChevronRight size={16} />
-                            </button>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => prev - 1)}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+                              >
+                                <ChevronRight size={14} className="rotate-180" />
+                              </button>
+                              <span className="text-[10px] font-black text-[#003B6D] px-2 whitespace-nowrap">Page {currentPage} of {totalPages}</span>
+                              <button
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+                              >
+                                <ChevronRight size={14} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}

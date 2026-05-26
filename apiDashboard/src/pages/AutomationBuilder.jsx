@@ -177,6 +177,7 @@ function BuilderCanvas({ onClose, automation }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(automation?.nodes || initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(automation?.edges || initialEdges);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [showNodeSidebar, setShowNodeSidebar] = useState(false);
   const [workflowInfo, setWorkflowInfo] = useState({
     name: automation?.name || 'My New Workflow',
     description: automation?.description || 'Automated WhatsApp conversation'
@@ -363,9 +364,17 @@ function BuilderCanvas({ onClose, automation }) {
 
   return (
     <div className="flex h-full bg-[#f1f5f9] overflow-hidden font-sans relative">
+      {/* Mobile Node Sidebar Backdrop Overlay */}
+      {showNodeSidebar && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setShowNodeSidebar(false)}
+        />
+      )}
+
       {/* Node Sidebar - Only for Admins */}
       {isAdmin && (
-        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col z-10 shadow-2xl">
+        <aside className={`fixed lg:static top-0 left-0 h-full w-[280px] sm:w-80 bg-white border-r border-slate-200 flex flex-col z-50 shadow-2xl transition-transform duration-300 ${showNodeSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
@@ -373,7 +382,16 @@ function BuilderCanvas({ onClose, automation }) {
               </div>
               <h2 className="text-xl font-black text-slate-800 tracking-tighter">Flow Builder</h2>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
+            <button 
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setShowNodeSidebar(false);
+                } else {
+                  onClose();
+                }
+              }} 
+              className="p-2 hover:bg-slate-50 rounded-xl transition-all"
+            >
               <ChevronLeft size={20} className="text-slate-400" />
             </button>
           </div>
@@ -408,16 +426,7 @@ function BuilderCanvas({ onClose, automation }) {
         </aside>
       )}
 
-      {!isAdmin && (
-         <div className="absolute top-6 left-6 z-20 pointer-events-none">
-            <button 
-              onClick={onClose} 
-              className="flex items-center gap-2 px-5 py-3 bg-slate-900 text-white border border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95 pointer-events-auto"
-            >
-                <ChevronLeft size={14} /> Exit Viewer
-            </button>
-         </div>
-      )}
+
 
       {/* Canvas Area */}
       <div className="flex-1 relative h-full w-full" ref={reactFlowWrapper}>
@@ -446,25 +455,53 @@ function BuilderCanvas({ onClose, automation }) {
           <MiniMap
             position="bottom-right"
             nodeColor={(n) => n.type === 'triggerNode' ? '#E74C3C' : '#06D6A0'}
-            className="bg-white rounded-2xl shadow-2xl border border-slate-100 m-8"
+            className="hidden md:block bg-white rounded-2xl shadow-2xl border border-slate-100 m-4 md:m-8"
+            style={{ width: 120, height: 90 }}
           />
 
-          <Panel position="top-right" className="flex items-center gap-3">
-            <div className="flex bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-100 shadow-xl gap-2">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2 border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all"
-              >
-                <Settings size={12} />
-                Settings
-              </button>
-              <button
-                onClick={handleTestFlow}
-                className="px-4 py-2 bg-emerald-500 text-white text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition-all"
-              >
-                <Play size={12} fill="currentColor" />
-                Test Flow
-              </button>
+          <Panel 
+            position="top-left" 
+            className="z-20 pointer-events-none" 
+            style={{ width: 'calc(100% - 2rem)', left: '1rem', right: '1rem', top: '1rem' }}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+              {/* Left Actions */}
+              <div className="pointer-events-auto flex items-center gap-2">
+                {!isAdmin ? (
+                  <button 
+                    onClick={onClose} 
+                    className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-slate-900 text-white border border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95"
+                  >
+                    <ChevronLeft size={14} /> Exit Viewer
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowNodeSidebar(true)}
+                    className="lg:hidden px-4 py-2.5 bg-slate-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-black transition-all active:scale-95 border border-slate-800"
+                  >
+                    <Zap size={12} fill="currentColor" className="text-secondary" />
+                    Add Nodes
+                  </button>
+                )}
+              </div>
+
+              {/* Right Actions */}
+              <div className="pointer-events-auto flex bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-100 shadow-xl gap-2">
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2 border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all"
+                >
+                  <Settings size={12} />
+                  Settings
+                </button>
+                <button
+                  onClick={handleTestFlow}
+                  className="px-4 py-2 bg-emerald-500 text-white text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition-all"
+                >
+                  <Play size={12} fill="currentColor" />
+                  Test Flow
+                </button>
+              </div>
             </div>
           </Panel>
         </ReactFlow>
@@ -472,7 +509,7 @@ function BuilderCanvas({ onClose, automation }) {
 
       {/* Settings Sidebar */}
       <aside
-        className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-slate-200 flex flex-col z-[100] shadow-[-20px_0_40px_rgba(0,0,0,0.05)] transition-all duration-500 ease-in-out ${showSettings || selectedNode ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white border-l border-slate-200 flex flex-col z-[100] shadow-[-20px_0_40px_rgba(0,0,0,0.05)] transition-all duration-500 ease-in-out ${showSettings || selectedNode ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="p-8 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-4">

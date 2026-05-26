@@ -101,35 +101,34 @@ export default function AutomationPage({ onNavigate }) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
-      {/* Header */}
-      <header className="px-8 pt-8 pb-4 bg-transparent flex flex-col">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Automations</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-               {isAdmin ? 'Design and manage global conversational flows' : 'Manage your conversational flows'}
-            </p>
-          </div>
-          <button
-            onClick={handleAction}
-            className={`flex items-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-2xl hover:brightness-110 transition-all shadow-xl active:scale-95 ${isAdmin ? 'bg-primary shadow-primary/20' : 'bg-[#0F172A] shadow-slate-200'}`}
-          >
-            {isAdmin ? <Plus size={18} /> : <Bot size={18} />}
-            {isAdmin ? 'Create Workflow' : 'Request Workflow'}
-          </button>
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-          <StatCard label="Total Executions" value={stats.totalExecutions.toLocaleString()} icon={Activity} color="primary" />
-          <StatCard label="Active Flows" value={stats.activeFlows} icon={Zap} color="secondary" />
-          <StatCard label="Avg Success Rate" value={`${stats.successRate}%`} icon={TrendingUp} color="blue" />
-          <StatCard label="Total Workflows" value={stats.totalFlows} icon={Users} color="purple" />
-        </div>
-      </header>
-
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8 pt-2 custom-scrollbar">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-8 custom-scrollbar">
+        {/* Header */}
+        <header className="pb-4 bg-transparent flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-black text-primary tracking-tight">Automations</h1>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                 {isAdmin ? 'Design and manage global conversational flows' : 'Manage your conversational flows'}
+              </p>
+            </div>
+            <button
+              onClick={handleAction}
+              className={`flex items-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-2xl hover:brightness-110 transition-all shadow-xl active:scale-95 ${isAdmin ? 'bg-primary shadow-primary/20' : 'bg-[#0F172A] shadow-slate-200'} w-full sm:w-auto justify-center`}
+            >
+              {isAdmin ? <Plus size={18} /> : <Bot size={18} />}
+              {isAdmin ? 'Create Workflow' : 'Request Workflow'}
+            </button>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-6">
+            <StatCard label="Total Executions" value={stats.totalExecutions.toLocaleString()} icon={Activity} color="primary" />
+            <StatCard label="Active Flows" value={stats.activeFlows} icon={Zap} color="secondary" />
+            <StatCard label="Avg Success Rate" value={`${stats.successRate}%`} icon={TrendingUp} color="blue" />
+            <StatCard label="Total Workflows" value={stats.totalFlows} icon={Users} color="purple" />
+          </div>
+        </header>
 
         {/* List Header */}
         <div className="flex items-center justify-between mb-6">
@@ -255,13 +254,13 @@ function StatCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-5 group hover:scale-[1.02] transition-all cursor-pointer">
-      <div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-        <Icon size={24} />
+    <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-3 sm:gap-5 group hover:scale-[1.02] transition-all cursor-pointer min-w-0">
+      <div className={`w-10 sm:w-14 h-10 sm:h-14 shrink-0 ${colors[color]} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-        <h3 className="text-2xl font-black text-slate-800 mt-0.5">{value}</h3>
+      <div className="min-w-0">
+        <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{label}</p>
+        <h3 className="text-lg sm:text-2xl font-black text-slate-800 mt-0.5 truncate">{value}</h3>
       </div>
     </div>
   );

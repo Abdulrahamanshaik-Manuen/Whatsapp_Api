@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Search, MessageSquare,
   CheckCircle2, AlertCircle, RefreshCcw,
-  ChevronLeft, ChevronRight, MoreVertical,
+  ChevronLeft, ChevronRight,
   Users, Send, CheckCheck
 } from 'lucide-react';
 
@@ -157,21 +157,20 @@ export default function MessagesPage() {
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Cost</th>
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Timestamp</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {loading ? (
                   Array(5).fill(0).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      <td colSpan="6" className="px-6 py-5">
+                      <td colSpan="5" className="px-6 py-5">
                         <div className="h-4 bg-slate-50 rounded-lg w-full"></div>
                       </td>
                     </tr>
                   ))
                 ) : messages.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-20 text-center">
+                    <td colSpan="5" className="px-6 py-20 text-center">
                       <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-200">
                         <MessageSquare size={32} />
                       </div>
@@ -209,11 +208,6 @@ export default function MessagesPage() {
                           <span className="text-[10px] font-black text-slate-700">{new Date(msg.created_at || msg.createdAt).toLocaleDateString()}</span>
                           <span className="text-[9px] font-bold text-slate-400">{new Date(msg.created_at || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-xl transition-all opacity-0 group-hover:opacity-100">
-                          <MoreVertical size={16} />
-                        </button>
                       </td>
                     </tr>
                   ))

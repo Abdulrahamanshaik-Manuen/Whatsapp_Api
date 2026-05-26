@@ -104,20 +104,22 @@ export default function TemplateDetailsPage({ template, onBack }) {
   );
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10">
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 custom-scrollbar pb-20">
       
       {/* Title Row */}
-      <div className="max-w-7xl mx-auto flex items-center justify-between mb-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 mb-1">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-2">
+        <div className="space-y-2 min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-3">
              <button
                 onClick={onBack}
-                className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm"
+                className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm shrink-0"
              >
                 <ArrowLeft size={18} />
              </button>
-             <h1 className="text-3xl font-black text-primary tracking-tight">{template.name}</h1>
-             <span className={`ml-4 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+             <h1 className="text-xl md:text-3xl font-black text-primary tracking-tight truncate max-w-full" title={template.name}>
+               {template.name}
+             </h1>
+             <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 ${
               template.status?.toUpperCase() === 'APPROVED' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
               template.status?.toUpperCase() === 'REJECTED' ? 'bg-rose-50 text-rose-500 border border-rose-100' :
               'bg-orange-50 text-orange-500 border border-orange-100'
@@ -125,18 +127,18 @@ export default function TemplateDetailsPage({ template, onBack }) {
               {template.status}
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Template Insights & Real-time Visualization</p>
+          <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-wider pl-0 sm:pl-11">Template Insights & Real-time Visualization</p>
         </div>
       </div>
 
       {/* Detail Content */}
-      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           
           {/* Left Column: Details */}
           <div className="lg:col-span-7 space-y-6">
             {/* Core Meta Card */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-8">
+            <div className="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6 md:space-y-8">
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</p>

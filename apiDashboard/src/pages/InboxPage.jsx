@@ -348,7 +348,7 @@ const InboxPage = () => {
     <div className="flex-1 overflow-y-auto bg-[#F8FAFC] custom-scrollbar">
 
       {/* Standardized Page Header */}
-      <div className="px-8 lg:px-12 pt-10 pb-4">
+      <div className="px-4 md:px-8 lg:px-12 pt-6 md:pt-10 pb-4">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-1">
             <h1 className="text-3xl font-black text-primary tracking-tight">Messages</h1>
@@ -359,12 +359,15 @@ const InboxPage = () => {
         </div>
       </div>
 
-      <div className="flex min-h-[600px] h-[calc(100vh-180px)] px-8 lg:px-12 pb-8 gap-5 font-['Inter',_sans-serif]">
+      <div className="flex min-h-[500px] lg:min-h-[600px] h-[calc(100vh-220px)] lg:h-[calc(100vh-180px)] px-4 md:px-8 lg:px-12 pb-8 gap-5 font-['Inter',_sans-serif]">
 
         {/* Column 1: iPhone Mockup (Mobile View) */}
-        <div className="flex w-[310px] shrink-0 items-center justify-start min-h-0">
-          <div className="relative w-[290px] h-[580px] bg-[#1a1a1a] rounded-[2.8rem] p-2 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] border-[3px] border-[#333] shrink-0">
-            <div className="w-full h-full bg-white rounded-[2.3rem] overflow-hidden flex flex-col relative pt-4">
+        <div className={`
+          ${activeChat ? 'hidden lg:flex' : 'flex w-full lg:w-[310px]'}
+          shrink-0 items-center justify-center lg:justify-start min-h-0 h-full lg:h-auto
+        `}>
+          <div className="relative w-full lg:w-[290px] h-full lg:h-[580px] bg-white lg:bg-[#1a1a1a] rounded-[2rem] lg:rounded-[2.8rem] p-0 lg:p-2 shadow-sm lg:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] border border-slate-100 lg:border-[3px] lg:border-[#333] shrink-0 overflow-hidden">
+            <div className="w-full h-full bg-white rounded-none lg:rounded-[2.3rem] overflow-hidden flex flex-col relative pt-4">
 
               {/* WhatsApp Header */}
               <div className="pt-2 pb-1 px-5 bg-white shrink-0">
@@ -545,7 +548,10 @@ const InboxPage = () => {
         </div>
 
         {/* Column 2: Center Workspace (Main Chat Area) */}
-        <div className="flex-1 flex flex-col bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative">
+        <div className={`
+          ${activeChat ? 'flex w-full lg:flex-1' : 'hidden lg:flex flex-1'}
+          flex-col bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative min-h-[500px] lg:min-h-0
+        `}>
           {!activeChat ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
               <div className="flex flex-col items-center justify-center relative z-10">
@@ -590,7 +596,13 @@ const InboxPage = () => {
               {/* Chat Header */}
               <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#E7F6EE] text-[#128C7E] flex items-center justify-center font-bold text-sm">
+                  <button
+                    onClick={() => setActiveChat(null)}
+                    className="lg:hidden p-1.5 -ml-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div className="w-10 h-10 rounded-full bg-[#E7F6EE] text-[#128C7E] flex items-center justify-center font-bold text-sm shrink-0">
                     {activeChat.name?.charAt(0)}
                   </div>
                   <div>

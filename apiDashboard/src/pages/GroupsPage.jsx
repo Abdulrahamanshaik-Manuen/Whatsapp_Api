@@ -345,10 +345,13 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      <div className="px-8 pb-8">
-        <div className="max-w-7xl mx-auto flex gap-0">
+      <div className="px-4 md:px-8 pb-8">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-0 bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100/80 overflow-hidden">
           {/* Left Sidebar - Group List */}
-          <div className="w-[380px] flex flex-col border-r border-slate-200">
+          <div className={`
+            ${selectedGroup ? 'hidden lg:flex' : 'w-full lg:w-[380px] flex'}
+            flex-col border-r border-slate-200 shrink-0
+          `}>
             <div className="p-5 space-y-4 shrink-0">
               <div className="relative group">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary/80 transition-colors" />
@@ -425,13 +428,25 @@ export default function GroupsPage() {
           </div>
 
           {/* Right Content - Group Detail */}
-          <div className="flex-1 flex flex-col">
+          <div className={`
+            ${selectedGroup ? 'flex w-full lg:flex-1' : 'hidden lg:flex flex-1'}
+            flex-col min-w-0
+          `}>
             {selectedGroup ? (
               <div className="flex-1 flex flex-col">
                 {/* Group Hero Info */}
                 <div className="p-8 border-b border-slate-200 shrink-0 bg-[#F9FAFB]">
                   <div className="flex items-center gap-6">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-lg ${selectedGroup.name.charAt(0).toLowerCase() < 'm' ? 'bg-gradient-to-br from-[#003B6D] to-[#004f94]' : 'bg-gradient-to-br from-primary to-primary-light'}`}>
+                    <button
+                      onClick={() => {
+                        setSelectedGroup(null);
+                        localStorage.removeItem('cached_selected_group');
+                      }}
+                      className="lg:hidden p-1.5 -ml-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                    >
+                      <X size={20} />
+                    </button>
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-lg shrink-0 ${selectedGroup.name.charAt(0).toLowerCase() < 'm' ? 'bg-gradient-to-br from-[#003B6D] to-[#004f94]' : 'bg-gradient-to-br from-primary to-primary-light'}`}>
                       {selectedGroup.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
@@ -456,9 +471,9 @@ export default function GroupsPage() {
                   {/* Horizontal line separator */}
                   <div className="h-px bg-slate-200 w-full my-6 opacity-50" />
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-4">
-                      <div className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-xl border border-slate-200/60 shadow-sm">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+                    <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-xl border border-slate-200/60 shadow-sm flex-1 sm:flex-initial">
                         <div className="w-8 h-8 bg-primary/5 text-primary rounded-lg flex items-center justify-center">
                           <Users size={16} />
                         </div>
@@ -467,7 +482,7 @@ export default function GroupsPage() {
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Members</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-xl border border-slate-200/60 shadow-sm">
+                      <div className="flex items-center gap-3 px-4 py-2.5 bg-white rounded-xl border border-slate-200/60 shadow-sm flex-1 sm:flex-initial">
                         <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
                           <Calendar size={16} />
                         </div>
@@ -480,7 +495,7 @@ export default function GroupsPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-start w-full sm:w-auto">
                       <button
                         onClick={() => {
                           setGroupForm({
@@ -490,14 +505,14 @@ export default function GroupsPage() {
                           });
                           setShowEditModal(true);
                         }}
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-primary bg-white border border-primary/20 rounded-xl hover:bg-primary/5 transition-all shadow-sm"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs font-bold text-primary bg-white border border-primary/20 rounded-xl hover:bg-primary/5 transition-all shadow-sm"
                       >
                         <Edit2 size={14} />
                         Edit Details
                       </button>
                       <button
                         onClick={() => handleDeleteGroup(selectedGroup._id)}
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-all shadow-sm"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs font-bold text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-all shadow-sm"
                       >
                         <Trash2 size={14} />
                         Delete Group
@@ -527,8 +542,8 @@ export default function GroupsPage() {
                   <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
                     {activeTab === 'contacts' ? (
                       <div className="space-y-6">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="relative flex-1 max-w-md group">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                          <div className="relative flex-1 max-w-md group w-full">
                             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary/80 transition-colors" />
                             <input
                               type="text"
@@ -536,27 +551,28 @@ export default function GroupsPage() {
                               className="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-0 focus:border-primary transition-all hover:border-slate-300"
                             />
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                             <button
                               onClick={() => setShowAddMembersModal(true)}
-                              className="flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all"
+                              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-white border-2 border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all"
                             >
-                              <Plus size={18} className="text-primary" />
+                              <Plus size={16} className="text-primary" />
                               Add Contacts
                             </button>
                             <button
                               onClick={handleGrantConsent}
                               disabled={submitting || groupContacts.length === 0}
-                              className="flex items-center gap-2 px-5 py-3 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-light transition-all shadow-lg shadow-primary/30 disabled:opacity-50 disabled:shadow-none"
+                              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-primary text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-primary-light transition-all shadow-lg shadow-primary/30 disabled:opacity-50 disabled:shadow-none"
                             >
-                              <ShieldCheck size={18} />
+                              <ShieldCheck size={16} />
                               Grant Consent
                             </button>
                           </div>
                         </div>
 
                         <div className="border-2 border-slate-200 rounded-2xl overflow-hidden shadow-lg">
-                          <table className="w-full text-left border-collapse bg-[#F9FAFB]">
+                          <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse bg-[#F9FAFB]">
                             <thead>
                               <tr className="bg-gradient-to-r from-slate-50 to-slate-50/50 border-b-2 border-slate-200">
                                 <th className="w-12 px-6 py-4"><input type="checkbox" className="rounded-lg border-slate-300 text-primary focus:ring-emerald-500" /></th>
@@ -632,6 +648,7 @@ export default function GroupsPage() {
                             </tbody>
                           </table>
                         </div>
+                      </div>
 
                         {/* Add Contacts Section */}
                         <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/5 rounded-2xl border-2 border-primary/20">
@@ -716,7 +733,7 @@ export default function GroupsPage() {
       {/* Modals */}
       {(showCreateModal || showEditModal) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[500px] rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+          <div className="bg-white w-full max-w-[500px] rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
             <div className="p-8 border-b-2 border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-white">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
@@ -735,7 +752,7 @@ export default function GroupsPage() {
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
               <div className="space-y-2.5">
                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Group Name *</label>
                 <input

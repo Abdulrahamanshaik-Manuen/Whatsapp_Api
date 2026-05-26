@@ -100,32 +100,32 @@ export default function CreateCampaignPage({ onNavigate }) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
-      <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-20">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8 custom-scrollbar pb-20">
 
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-1 min-w-0 flex-1">
             <button
               onClick={() => onNavigate('/campaigns')}
               className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors text-[10px] font-black uppercase tracking-wider mb-2"
             >
               <ArrowLeft size={14} /> Back to Campaigns
             </button>
-            <h1 className="text-3xl font-black text-primary tracking-tight">Create Campaign</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and schedule your message broadcast</p>
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Create Campaign</h1>
+            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and schedule your message broadcast</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
             <button
               onClick={() => onNavigate('/campaigns')}
-              className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all"
+              className="px-5 py-3 bg-white border border-slate-200 text-slate-600 text-xs md:text-sm font-bold rounded-xl hover:bg-slate-50 transition-all text-center"
             >
               Discard
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading || !formData.campaign_name || !formData.template_id}
-              className={`flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 ${loading || !formData.campaign_name || !formData.template_id
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs md:text-sm font-bold transition-all shadow-lg active:scale-95 text-center ${loading || !formData.campaign_name || !formData.template_id
                   ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                   : 'bg-primary text-white shadow-primary/20 hover:brightness-110'
                 }`}
@@ -140,7 +140,7 @@ export default function CreateCampaignPage({ onNavigate }) {
 
           {/* Left Column: Config */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-8 space-y-10">
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-5 md:p-8 space-y-8 md:space-y-10">
 
               {/* Step 1: Identity */}
               <section className="space-y-6">
@@ -176,24 +176,24 @@ export default function CreateCampaignPage({ onNavigate }) {
 
               {/* Step 2: Audience */}
               <section className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black tracking-widest">02</div>
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Target Audience</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black tracking-widest shrink-0">02</div>
+                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Target Audience</h3>
+                    </div>
+                    <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto shrink-0 overflow-x-auto justify-between sm:justify-start">
+                      {['groups', 'contacts', 'excel'].map(mode => (
+                        <button
+                          key={mode}
+                          onClick={() => setFormData({ ...formData, audienceMode: mode })}
+                          className={`shrink-0 flex-1 sm:flex-none text-center px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.audienceMode === mode ? 'bg-white text-primary shadow-sm' : 'text-slate-400'
+                            }`}
+                        >
+                          {mode}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
-                    {['groups', 'contacts', 'excel'].map(mode => (
-                      <button
-                        key={mode}
-                        onClick={() => setFormData({ ...formData, audienceMode: mode })}
-                        className={`px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.audienceMode === mode ? 'bg-white text-primary shadow-sm' : 'text-slate-400'
-                          }`}
-                      >
-                        {mode}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <div className="min-h-[200px]">
                   {formData.audienceMode === 'groups' ? (

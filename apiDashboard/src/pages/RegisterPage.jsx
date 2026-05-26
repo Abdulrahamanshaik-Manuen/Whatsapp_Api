@@ -234,7 +234,7 @@ export default function RegisterPage({ onNavigate }) {
       <RegLeftPanel />
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6 py-10 lg:px-16 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-10 lg:px-16 overflow-y-auto">
         <div className="w-full max-w-md">
           <p className="text-xs font-bold mb-3" style={{ color: 'var(--color-primary)' }}>Step {step} of 5</p>
           <StepDots current={step} />

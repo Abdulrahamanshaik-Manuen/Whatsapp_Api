@@ -31,13 +31,13 @@ const LandingPage = ({ activePath, onNavigate }) => {
                             </div>
                         </div>
                         
-                        <div className="grid md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                             {[
                                 { title: 'Dynamic Retail', desc: 'Streamline customer orders and inventory updates directly through intuitive chat interfaces.', icon: ShoppingBag },
                                 { title: 'Professional Services', desc: 'Manage appointments, bookings, and customer inquiries with automated enterprise tools.', icon: Calendar },
                                 { title: 'SaaS & Tech', desc: 'Automated marketing funnels and high-conversion drip campaigns to keep users engaged.', icon: Rocket }
                             ].map((item, i) => (
-                                <div key={i} className="p-10 rounded-3xl bg-background border border-slate-100 hover:shadow-premium hover:-translate-y-2 transition-all group relative overflow-hidden">
+                                <div key={i} className="p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-background border border-slate-100 hover:shadow-premium hover:-translate-y-2 transition-all group relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-secondary/10 transition-colors"></div>
                                     <div className="w-14 h-14 bg-white shadow-sm rounded-2xl flex items-center justify-center mb-8 text-primary group-hover:bg-secondary group-hover:text-white transition-all">
                                         <item.icon size={24} />
@@ -75,7 +75,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-8 items-start">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 items-start">
                             {[
                                 { 
                                     name: 'Starter', 
@@ -102,7 +102,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                     btnClass: 'bg-slate-900 text-white hover:bg-black'
                                 }
                             ].map((plan, i) => (
-                                <div key={i} className={`p-10 rounded-[3rem] relative transition-all duration-500 flex flex-col h-full bg-white border border-slate-100 hover:shadow-premium hover:-translate-y-2 group ${plan.recommended ? 'z-10 border-primary/20 shadow-premium' : ''}`}>
+                                <div key={i} className={`p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] relative transition-all duration-500 flex flex-col h-full bg-white border border-slate-100 hover:shadow-premium hover:-translate-y-2 group ${plan.recommended ? 'z-10 border-primary/20 shadow-premium' : ''}`}>
                                     {plan.recommended && (
                                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 py-2 bg-secondary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">
                                             Most Popular

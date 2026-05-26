@@ -190,7 +190,7 @@ export default function TemplatesPage({ onNavigate }) {
 
   const filteredTemplates = templates.filter(t => {
     const matchesSearch = (t.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     let matchesStatus = statusFilter === 'ALL';
     if (!matchesStatus) {
       const s = (t.status || '').toLowerCase();
@@ -198,43 +198,42 @@ export default function TemplatesPage({ onNavigate }) {
       else if (statusFilter === 'META PENDING') matchesStatus = s === 'pending_meta_approval';
       else matchesStatus = s.toUpperCase() === statusFilter;
     }
-    
+
     return matchesSearch && matchesStatus;
   }).sort((a, b) => (b._id || '').localeCompare(a._id || ''));
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
-      {/* 🎨 1. Clean Header Section */}
-      <div className="px-8 pt-8 pb-2">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black text-primary tracking-tight">
+      <div className="px-4 md:px-8 pt-8 pb-2">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-primary tracking-tight">
               Templates
             </h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Manage your WhatsApp message templates easily</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
             <button
               onClick={handleSync}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
             >
-              <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-              Sync Meta
+              <RefreshCcw size={14} className={loading ? 'animate-spin' : ''} />
+              <span>Sync Meta</span>
             </button>
             <button
               onClick={() => onNavigate('/templates/create')}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#25D366] text-white text-sm font-bold rounded-xl hover:brightness-105 transition-all shadow-lg shadow-[#25D366]/20 active:scale-95"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:brightness-105 transition-all shadow-lg shadow-[#25D366]/20 active:scale-95"
             >
-              <Plus size={18} strokeWidth={3} />
-              Create Template
+              <Plus size={16} strokeWidth={3} />
+              <span>Create Template</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="px-8 pt-2 pb-8">
+      <div className="px-4 md:px-8 pt-2 pb-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* Stats Row */}
@@ -245,9 +244,9 @@ export default function TemplatesPage({ onNavigate }) {
             <StatCard label="Rejected" value={templates.filter(t => t.status === 'rejected').length} color="rose" icon={AlertCircle} />
           </div>
 
-          {/* 🔍 5. Search + Filters Bar */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="relative flex-1 group">
+          {/* Search + Filters Bar */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="relative flex-1 group w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#25D366] transition-colors" size={18} />
               <input
                 type="text"
@@ -258,12 +257,12 @@ export default function TemplatesPage({ onNavigate }) {
               />
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-slate-50 border border-slate-100 rounded-xl overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-50 border border-slate-100 rounded-xl overflow-x-auto w-full sm:w-auto pb-2 sm:pb-1 scrollbar-thin">
               {['ALL', 'ADMIN PENDING', 'META PENDING', 'APPROVED', 'REJECTED'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.1em] rounded-lg transition-all whitespace-nowrap ${statusFilter === status
+                  className={`shrink-0 px-4 py-2 text-[10px] font-black uppercase tracking-[0.1em] rounded-lg transition-all whitespace-nowrap ${statusFilter === status
                     ? status === 'APPROVED' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                       : status === 'REJECTED' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                         : status === 'META PENDING' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
@@ -278,7 +277,7 @@ export default function TemplatesPage({ onNavigate }) {
             </div>
           </div>
 
-          {/* 📦 2. Card Grid Layout */}
+          {/* Card Grid Layout */}
           {loading && templates.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (

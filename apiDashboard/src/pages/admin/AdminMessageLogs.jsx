@@ -89,7 +89,7 @@ export default function AdminMessageLogs() {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-primary tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight flex items-center gap-3">
               Message Logs
             </h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">
@@ -246,10 +246,10 @@ export default function AdminMessageLogs() {
 
            {/* Pagination */}
            {true && (
-             <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+             <div className="p-4 sm:p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center sm:text-left">
                    Showing Page <span className="text-primary">{pagination.page}</span> of <span className="text-primary">{pagination.pages}</span>
-                   <span className="ml-4 opacity-40">({pagination.total.toLocaleString()} total messages)</span>
+                   <span className="ml-4 opacity-40">({pagination.total.toLocaleString()} total)</span>
                 </p>
                 <div className="flex items-center gap-2">
                    <button 

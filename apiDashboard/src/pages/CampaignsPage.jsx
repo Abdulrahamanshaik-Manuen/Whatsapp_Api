@@ -102,17 +102,17 @@ export default function CampaignsPage({ onNavigate }) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
-      <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-20">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8 custom-scrollbar pb-20">
 
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Campaigns</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Create and monitor your message broadcasts</p>
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Campaigns</h1>
+            <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-wider">Create and monitor your message broadcasts</p>
           </div>
           <button
             onClick={() => onNavigate('/campaigns/create')}
-            className="flex items-center gap-2 px-6 py-3 bg-secondary text-white text-sm font-bold rounded-xl hover:brightness-105 transition-all shadow-lg shadow-secondary/20 active:scale-95"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-secondary text-white text-xs md:text-sm font-bold rounded-xl hover:brightness-105 transition-all shadow-lg shadow-secondary/20 active:scale-95 w-full sm:w-auto"
           >
             <Plus size={18} />
             New Campaign
@@ -120,17 +120,19 @@ export default function CampaignsPage({ onNavigate }) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
           <StatCard label="Total Campaigns" value={stats.total} icon={Target} color="primary" />
           <StatCard label="Active Now" value={stats.active} icon={TrendingUp} color="secondary" />
           <StatCard label="Completed" value={stats.completed} icon={CheckCircle2} color="primary" />
           <StatCard label="Scheduled" value={stats.scheduled} icon={Calendar} color="secondary" />
-          <StatCard label="Failed" value={stats.failed} icon={AlertCircle} color="primary" />
+          <div className="col-span-2 md:col-span-1">
+            <StatCard label="Failed" value={stats.failed} icon={AlertCircle} color="primary" />
+          </div>
         </div>
 
         {/* Filters & List */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-          <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:w-80">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -142,12 +144,12 @@ export default function CampaignsPage({ onNavigate }) {
               />
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-thin">
               {['All', 'Running', 'Completed', 'Scheduled', 'Failed'].map(status => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${statusFilter === status ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                  className={`shrink-0 px-3.5 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all ${statusFilter === status ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                     }`}
                 >
                   {status}
@@ -156,7 +158,7 @@ export default function CampaignsPage({ onNavigate }) {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3">
                 <Loader2 className="animate-spin text-primary" size={32} />
@@ -187,13 +189,13 @@ export default function CampaignsPage({ onNavigate }) {
 function StatCard({ label, value, icon: Icon, color }) {
   const isSecondary = color === 'secondary';
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-4">
-      <div className={`w-12 h-12 ${isSecondary ? 'bg-secondary text-white' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center`}>
-        <Icon size={24} />
+    <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-3 md:gap-4 h-full">
+      <div className={`w-10 h-10 md:w-12 md:h-12 shrink-0 ${isSecondary ? 'bg-secondary text-white shadow-lg shadow-secondary/15' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center`}>
+        <Icon className="w-5 h-5 md:w-6 md:h-6" />
       </div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <h3 className="text-xl font-black text-primary">{value}</h3>
+      <div className="min-w-0">
+        <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
+        <h3 className="text-lg md:text-xl font-black text-primary tracking-tight">{value}</h3>
       </div>
     </div>
   );
@@ -208,40 +210,40 @@ function CampaignItem({ campaign, onStatusUpdate }) {
   };
 
   return (
-    <div className="group p-5 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all flex flex-col md:flex-row md:items-center gap-6">
+    <div className="group p-4 md:p-5 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-1">
-          <h4 className="text-base font-bold text-slate-800 truncate">{campaign.name}</h4>
-          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusColors[campaign.status] || 'bg-slate-100 text-slate-500'}`}>
+        <div className="flex items-center gap-2 md:gap-3 mb-1">
+          <h4 className="text-sm md:text-base font-bold text-slate-800 truncate">{campaign.name}</h4>
+          <span className={`px-2 py-0.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest ${statusColors[campaign.status] || 'bg-slate-100 text-slate-500'}`}>
             {campaign.status}
           </span>
         </div>
-        <div className="flex items-center gap-4 text-[11px] text-slate-500 font-medium">
-          <span className="flex items-center gap-1.5"><MessageSquare size={14} /> {campaign.template_name}</span>
-          <span className="flex items-center gap-1.5"><Calendar size={14} /> {new Date(campaign.created_at).toLocaleDateString()}</span>
+        <div className="flex flex-wrap items-center gap-3 md:gap-4 text-[10px] md:text-[11px] text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5"><MessageSquare size={13} /> {campaign.template_name}</span>
+          <span className="flex items-center gap-1.5"><Calendar size={13} /> {new Date(campaign.created_at).toLocaleDateString()}</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-6 px-6 md:border-l md:border-slate-100">
-        <div className="text-center min-w-[50px]">
-          <p className="text-sm font-black text-slate-800">{campaign.sent_count || 0}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Sent</p>
+      <div className="flex items-center justify-between md:justify-start gap-4 md:gap-6 py-3 md:py-0 border-t border-b md:border-t-0 md:border-b-0 border-slate-100 md:border-l md:border-slate-100 w-full md:w-auto px-0 md:px-6">
+        <div className="text-center min-w-[45px] md:min-w-[50px]">
+          <p className="text-xs md:text-sm font-black text-slate-800">{campaign.sent_count || 0}</p>
+          <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-tight">Sent</p>
         </div>
-        <div className="text-center min-w-[50px]">
-          <p className="text-sm font-black text-slate-800">{campaign.delivered_count || 0}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Deliv</p>
+        <div className="text-center min-w-[45px] md:min-w-[50px]">
+          <p className="text-xs md:text-sm font-black text-slate-800">{campaign.delivered_count || 0}</p>
+          <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-tight">Deliv</p>
         </div>
-        <div className="text-center min-w-[50px]">
-          <p className="text-sm font-black text-slate-800">{campaign.read_count || 0}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Read</p>
+        <div className="text-center min-w-[45px] md:min-w-[50px]">
+          <p className="text-xs md:text-sm font-black text-slate-800">{campaign.read_count || 0}</p>
+          <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-tight">Read</p>
         </div>
-        <div className="text-center min-w-[50px]">
-          <p className="text-sm font-black text-red-500">{campaign.failed_count || 0}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Failed</p>
+        <div className="text-center min-w-[45px] md:min-w-[50px]">
+          <p className="text-xs md:text-sm font-black text-red-500">{campaign.failed_count || 0}</p>
+          <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-tight">Failed</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2 ml-auto md:ml-0">
         {(campaign.status === 'pending' || campaign.status === 'scheduled') && (
           <button
             onClick={() => onStatusUpdate(campaign._id, 'running')}

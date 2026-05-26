@@ -56,14 +56,14 @@ const Hero = ({ onNavigate }) => {
 
                 <div className="relative lg:ml-4">
                     {/* Floating UI Elements */}
-                    <div className="absolute top-4 -left-10 z-30 glass-panel p-5 rounded-2xl animate-bounce-slow">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-white shadow-glow">
-                                <MessageSquare size={20} fill="currentColor" />
+                    <div className="absolute top-4 left-4 sm:-left-10 z-30 glass-panel p-3 sm:p-5 rounded-xl sm:rounded-2xl animate-bounce-slow">
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-glow">
+                                <MessageSquare size={16} sm:size={20} fill="currentColor" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Live Chat</p>
-                                <p className="text-xs font-black text-primary">Active Customer Session</p>
+                                <p className="text-[8px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest">Live Chat</p>
+                                <p className="text-[10px] sm:text-xs font-black text-primary">Active Customer Session</p>
                             </div>
                         </div>
                     </div>
@@ -81,8 +81,8 @@ const Hero = ({ onNavigate }) => {
                     </div>
                     
                     <div className="relative group">
-                        <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="relative bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden ring-1 ring-black/5">
+                        <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[1.5rem] sm:rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="relative bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden ring-1 ring-black/5">
                             <img 
                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnoa4b6WrJ89lK0gsGfnKE0AN5jbIGQpDLht9U1mMssyGvUVlXX-Eh0_EuPZv7p_zFyRfWsOU6aLvc2eGNyupWy4sgp0ff0sbSHvbdPzk8sYHpXqBXpxxAQRX0IY99FTgRI3Q_--0aWeGZxyMFBa9t5pKDjxglRN58JOkdT5TsszB1ETvg8KfOerseZgt0OeULXVLWgeg0IW9lGNyF1ThUbfdL2oNn-6dGo15n6Rm73ybwdclpKe59_N3Kvb5EwxPt5XThE9i85kTh" 
                                 alt="Dashboard Visualization" 
@@ -91,13 +91,13 @@ const Hero = ({ onNavigate }) => {
                         </div>
                     </div>
 
-                    <div className="absolute -bottom-8 left-10 glass-panel p-6 rounded-2xl flex items-center gap-4 group">
-                        <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
-                            <ShieldCheck size={28} />
+                    <div className="absolute -bottom-6 sm:-bottom-8 left-4 sm:left-10 glass-panel p-3 sm:p-6 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-4 group">
+                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-secondary rounded-lg sm:rounded-xl flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+                            <ShieldCheck size={20} sm:size={28} />
                         </div>
                         <div>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Compliance</p>
-                            <p className="text-sm font-black text-primary">End-to-End Encrypted</p>
+                            <p className="text-[8px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest">Compliance</p>
+                            <p className="text-xs sm:text-sm font-black text-primary">End-to-End Encrypted</p>
                         </div>
                     </div>
                 </div>

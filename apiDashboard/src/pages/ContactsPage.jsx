@@ -377,24 +377,24 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
               className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400"
             />
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-between sm:justify-start">
+            <div className="flex flex-1 sm:flex-initial items-center gap-1 sm:gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl min-w-0">
               <select
                 value={filters.consent_status}
                 onChange={(e) => setFilters({ ...filters, consent_status: e.target.value })}
-                className="pl-3 pr-8 py-1.5 bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '12px' }}
+                className="pl-2 pr-7 py-1.5 bg-transparent text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none truncate flex-1 sm:flex-initial"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '10px' }}
               >
                 <option value="">All Status</option>
                 <option value="verified">Verified</option>
                 <option value="unverified">Unverified</option>
               </select>
-              <div className="w-px h-4 bg-slate-200" />
+              <div className="w-px h-4 bg-slate-200 shrink-0" />
               <select
                 value={filters.consent_source}
                 onChange={(e) => setFilters({ ...filters, consent_source: e.target.value })}
-                className="pl-3 pr-8 py-1.5 bg-transparent text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '12px' }}
+                className="pl-2 pr-7 py-1.5 bg-transparent text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none truncate flex-1 sm:flex-initial"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '10px' }}
               >
                 <option value="">All Sources</option>
                 <option value="web">Web</option>
@@ -405,7 +405,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             </div>
             <button
               onClick={() => { setFilters({ consent_status: '', consent_source: '' }); setSearchQuery(''); fetchContacts(); }}
-              className="p-3 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all active:scale-95 shadow-sm"
+              className="p-3 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all active:scale-95 shadow-sm shrink-0"
               title="Reset Filters"
             >
               <FilterX size={20} />
@@ -659,10 +659,10 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
 
       {/* Add Contact Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-[500px] rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="flex flex-col max-h-[90vh]">
-              <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0">
+              <div className="p-5 sm:p-8 border-b border-slate-50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                     <UserPlus size={24} />
@@ -680,7 +680,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
                 </button>
               </div>
 
-              <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+              <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
@@ -712,7 +712,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
                       <input
@@ -735,7 +735,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Consent Source</label>
                       <select
@@ -800,10 +800,10 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
 
       {/* Upload CSV Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[600px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-[600px] rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
             {/* Sticky Header */}
-            <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0 bg-white">
+            <div className="p-5 sm:p-8 border-b border-slate-50 flex items-center justify-between shrink-0 bg-white">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                   <FileUp size={24} />
@@ -822,8 +822,8 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             </div>
 
             {/* Scrollable Content */}
-            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
-              <div className="p-12 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer relative group bg-slate-50/50">
+            <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto custom-scrollbar flex-1">
+              <div className="p-6 sm:p-12 border-2 border-dashed border-slate-200 rounded-[1.5rem] sm:rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer relative group bg-slate-50/50">
                 <input
                   type="file"
                   accept=".csv,.xlsx"
@@ -849,7 +849,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
                 )}
               </div>
 
-              <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 space-y-6">
+              <div className="bg-slate-50 rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 border border-slate-100 space-y-4 sm:space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
                     <Info size={16} />
@@ -858,7 +858,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
                     Required CSV Format
                   </h4>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {[
                     { label: 'COLUMN 1', value: 'mobilenumber*', desc: 'Required' },
                     { label: 'COLUMN 2', value: 'name*', desc: 'Required' },
@@ -878,7 +878,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             </div>
 
             {/* Sticky Footer */}
-            <div className="p-8 border-t border-slate-50 flex items-center justify-end bg-slate-50/30 shrink-0">
+            <div className="p-5 sm:p-8 border-t border-slate-50 flex items-center justify-end bg-slate-50/30 shrink-0">
               <button
                 onClick={() => setShowUploadModal(false)}
                 className="px-8 py-3 bg-white text-slate-500 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
@@ -893,15 +893,15 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
       {/* Lead QR Modal */}
       {showQRModal && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
           onClick={() => setShowQRModal(false)}
         >
           <div 
-            className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200"
+            className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200 flex flex-col max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Clean Header */}
-            <div className="px-6 py-5 flex items-center justify-between border-b border-slate-50">
+            <div className="px-6 py-5 flex items-center justify-between border-b border-slate-50 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-primary/5 text-primary rounded-lg flex items-center justify-center">
                   <QrCode size={18} />
@@ -916,7 +916,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
               {/* Refined QR Section */}
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="p-3 bg-white rounded-xl border border-slate-100 shadow-sm relative">
@@ -963,7 +963,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             </div>
 
             {/* Simple Footer */}
-            <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-50">
+            <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-50 shrink-0">
               <button
                 onClick={() => setShowQRModal(false)}
                 className="w-full py-3 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"

@@ -52,7 +52,7 @@ export default function Header({ toggleSidebar, onNavigate, userData, businessDa
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="relative">
+        <div className="static sm:relative">
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${

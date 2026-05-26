@@ -97,7 +97,12 @@ export default function ForgotPasswordPage({ onNavigate }) {
     <div className="h-screen w-full flex bg-white font-['Inter',_sans-serif] overflow-hidden select-none">
       
       {/* ── LEFT PANEL (Branded UI) ── */}
-      <div style={{ width: '45%', minWidth: '460px', background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '36px 40px', height: '100vh' }}>
+      <div
+        className="hidden lg:flex lg:w-[45%] lg:min-w-[460px] h-screen flex-col relative overflow-hidden p-[36px_40px]"
+        style={{
+          background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)',
+        }}
+      >
         <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '260px', height: '260px', background: 'rgba(99,193,50,0.09)', borderRadius: '50%', filter: 'blur(50px)' }} />
         <div style={{ position: 'absolute', bottom: '-80px', left: '-40px', width: '240px', height: '240px', background: 'rgba(255,255,255,0.04)', borderRadius: '50%', filter: 'blur(50px)' }} />
 
@@ -145,8 +150,8 @@ export default function ForgotPasswordPage({ onNavigate }) {
       </div>
 
       {/* ── RIGHT PANEL (Forms) ── */}
-      <div className="flex-1 flex flex-col p-8 lg:p-12 xl:p-24 relative justify-center bg-[#FAFAFB] h-full overflow-y-auto no-scrollbar">
-         <div className="absolute top-10 left-12">
+      <div className="flex-1 flex flex-col p-4 sm:p-8 md:p-12 xl:p-24 relative justify-center bg-[#FAFAFB] h-full overflow-y-auto no-scrollbar">
+         <div className="absolute top-6 sm:top-10 left-6 sm:left-12">
           <button onClick={() => onNavigate('/login')} className="flex items-center gap-2 text-sm text-slate-500 hover:text-primary font-bold transition-colors">
             <ArrowLeft size={16} /> Back to Login
           </button>
@@ -187,11 +192,11 @@ export default function ForgotPasswordPage({ onNavigate }) {
                 <h3 className="text-[32px] font-black text-primary mb-2 font-['Plus_Jakarta_Sans',_sans-serif] tracking-tight">Verify Identity</h3>
                 <p className="text-slate-500 font-medium text-base">Enter the 6-digit code sent to <span className="text-primary font-bold">{phone}</span></p>
               </div>
-               <div className="flex gap-2 justify-center">
+               <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
                 {otp.map((d, i) => (
                   <input key={i} ref={otpRefs[i]} value={d} maxLength={1} inputMode="numeric"
                     onChange={e => onOtpChange(i, e.target.value)} onKeyDown={e => onOtpKeyDown(i, e)}
-                    className="w-12 h-14 text-center text-xl font-black border-2 border-slate-200 rounded-xl text-primary bg-white focus:outline-none focus:border-secondary transition-all" />
+                    className="w-10 sm:w-12 h-12 sm:h-14 text-center text-lg sm:text-xl font-black border-2 border-slate-200 rounded-xl text-primary bg-white focus:outline-none focus:border-secondary transition-all" />
                 ))}
               </div>
                <p className="text-center text-xs text-slate-400">

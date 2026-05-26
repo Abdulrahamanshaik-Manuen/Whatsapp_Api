@@ -120,36 +120,36 @@ export default function CreateTemplatePage({ onNavigate }) {
    };
 
    return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10 relative z-10">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8 custom-scrollbar pb-20 relative z-10">
 
          <div className="max-w-[1300px] mx-auto relative z-10">
             {/* Title Row */}
-            <div className="flex items-center justify-between mb-8">
-               <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+               <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex items-center gap-3 mb-1">
                      <button
                         onClick={() => onNavigate('/templates')}
-                        className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm"
+                        className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm shrink-0"
                      >
                         <ChevronRight size={18} className="rotate-180" />
                      </button>
-                     <h1 className="text-3xl font-black text-primary tracking-tight">Create Template</h1>
+                     <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Create Template</h1>
                   </div>
-                  <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and request approval for new Meta WhatsApp templates</p>
+                  <p className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase tracking-wider pl-0 sm:pl-11">Design and request approval for new Meta WhatsApp templates</p>
                </div>
 
-               <div className="flex items-center gap-3">
+               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
                   <button
                      onClick={() => handleCreateSubmit(false)}
                      disabled={loading || !newTemplate.name || !newTemplate.content}
-                     className="px-6 py-3.5 bg-white border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 disabled:opacity-40"
+                     className="px-5 py-3 bg-white border border-slate-200 text-slate-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 disabled:opacity-40 text-center"
                   >
                      Submit to Admin
                   </button>
                   <button
                      onClick={() => handleCreateSubmit(true)}
                      disabled={loading || !newTemplate.name || !newTemplate.content}
-                     className="group flex items-center gap-3 px-8 py-3.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                     className="group flex items-center justify-center gap-3 px-6 py-3 bg-primary text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-center"
                   >
                      {loading ? <RefreshCcw size={16} className="animate-spin text-[#25D366]" /> : <Zap size={16} className="text-[#25D366] group-hover:animate-pulse" />}
                      Submit to Meta
@@ -159,7 +159,7 @@ export default function CreateTemplatePage({ onNavigate }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                <div className="lg:col-span-8 space-y-6">
-                  <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-8 space-y-8">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-5 md:p-8 space-y-6 md:space-y-8">
                      <div className="space-y-6">
                         <div className="flex items-center gap-3">
                            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">01</div>
@@ -315,16 +315,16 @@ export default function CreateTemplatePage({ onNavigate }) {
                         </div>
 
                         <div className="space-y-5">
-                           <div className="flex items-center justify-between px-1">
+                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
                               <div className="flex flex-col gap-1">
                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Action Buttons (Optional)</label>
-                                 <div className="flex items-center gap-3">
-                                    <button onClick={() => setNewTemplate({ ...newTemplate, buttons: [{ type: 'QUICK_REPLY', text: 'Yes, I am interested' }, { type: 'QUICK_REPLY', text: 'Maybe later' }, { type: 'QUICK_REPLY', text: 'Not interested' }] })} className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors">+ Interest Sample</button>
-                                    <span className="text-slate-200 text-[8px]">|</span>
-                                    <button onClick={() => setNewTemplate({ ...newTemplate, buttons: [{ type: 'QUICK_REPLY', text: 'Book Now' }, { type: 'URL', text: 'View Schedule', url: 'https://' }, { type: 'PHONE_NUMBER', text: 'Call Support', phone_number: '+' }] })} className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors">+ Booking Sample</button>
+                                 <div className="flex flex-wrap items-center gap-3">
+                                    <button onClick={() => setNewTemplate({ ...newTemplate, buttons: [{ type: 'QUICK_REPLY', text: 'Yes, I am interested' }, { type: 'QUICK_REPLY', text: 'Maybe later' }, { type: 'QUICK_REPLY', text: 'Not interested' }] })} className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors text-left">+ Interest Sample</button>
+                                    <span className="text-slate-200 text-[8px] hidden sm:inline">|</span>
+                                    <button onClick={() => setNewTemplate({ ...newTemplate, buttons: [{ type: 'QUICK_REPLY', text: 'Book Now' }, { type: 'URL', text: 'View Schedule', url: 'https://' }, { type: 'PHONE_NUMBER', text: 'Call Support', phone_number: '+' }] })} className="text-[8px] font-bold text-slate-400 hover:text-[#25D366] transition-colors text-left">+ Booking Sample</button>
                                  </div>
                               </div>
-                              <button onClick={() => { if (newTemplate.buttons.length < 10) setNewTemplate({ ...newTemplate, buttons: [...newTemplate.buttons, { type: 'QUICK_REPLY', text: 'New Button' }] }) }} className="text-[8px] font-black text-[#25D366] hover:underline uppercase tracking-widest">+ Custom Button</button>
+                              <button onClick={() => { if (newTemplate.buttons.length < 10) setNewTemplate({ ...newTemplate, buttons: [...newTemplate.buttons, { type: 'QUICK_REPLY', text: 'New Button' }] }) }} className="text-[8px] font-black text-[#25D366] hover:underline uppercase tracking-widest text-left sm:text-right mt-1 sm:mt-0">+ Custom Button</button>
                            </div>
 
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -348,10 +348,10 @@ export default function CreateTemplatePage({ onNavigate }) {
                         </div>
                      </div>
                   </div>
-                  <div className="bg-[#0F172A] rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center gap-6 text-white relative overflow-hidden">
+                  <div className="bg-[#0F172A] rounded-[2.5rem] p-5 md:p-8 flex flex-col md:flex-row items-center gap-4 md:gap-6 text-white relative overflow-hidden">
                      <div className="absolute top-[-50%] right-[-10%] w-48 h-48 bg-blue-500/10 rounded-full blur-[80px]"></div>
                      <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"><Globe size={20} className="text-[#25D366]" /></div>
-                     <div><h4 className="text-base font-black tracking-tight mb-0.5">Optimization Insight</h4><p className="text-slate-400 text-[10px] font-medium leading-relaxed">Templates with personalized variables have a 45% higher conversion rate.</p></div>
+                     <div className="text-center md:text-left"><h4 className="text-base font-black tracking-tight mb-0.5">Optimization Insight</h4><p className="text-slate-400 text-[10px] font-medium leading-relaxed">Templates with personalized variables have a 45% higher conversion rate.</p></div>
                   </div>
                </div>
                <div className="lg:col-span-4 sticky top-8 flex flex-col items-center">

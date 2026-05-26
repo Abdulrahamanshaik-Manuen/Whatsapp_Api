@@ -91,10 +91,10 @@ export default function AdminSettings() {
     <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] overflow-hidden">
       
       {/* Header Section */}
-      <div className="px-8 pt-8 pb-2 shrink-0">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="px-4 sm:px-6 md:px-8 pt-6 sm:pt-8 pb-2 shrink-0">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Admin Settings</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Admin Settings</h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Global platform configuration & infrastructure nodes</p>
           </div>
           
@@ -111,24 +111,24 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <main className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 md:px-8 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
             
             {/* Sidebar Navigation - Matching Client Settings */}
             <div className="lg:col-span-3">
-              <div className="bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left duration-300">
+              <div className="bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left duration-300 flex lg:flex-col overflow-x-auto no-scrollbar gap-1">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-300 ${activeTab === tab.id 
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 whitespace-nowrap shrink-0 lg:w-full ${activeTab === tab.id 
                       ? 'bg-primary text-white shadow-xl shadow-primary/20' 
                       : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
                   >
                     <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2.5 : 2} className="shrink-0" />
-                    <span className={`whitespace-nowrap text-[8.5px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>{tab.label}</span>
+                    <span className={`text-[8.5px] font-black uppercase tracking-widest ${activeTab === tab.id ? 'opacity-100' : 'opacity-70'}`}>{tab.label}</span>
                   </button>
                 ))}
               </div>
@@ -140,7 +140,7 @@ export default function AdminSettings() {
                 
                 {/* Branding Tab */}
                 {activeTab === 'Branding' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
                       <div className="w-16 h-16 bg-pink-50 text-pink-600 rounded-2xl flex items-center justify-center border border-pink-100">
                         <Palette size={28} />
@@ -151,7 +151,7 @@ export default function AdminSettings() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Company Name</label>
                         <div className="relative group/input">
@@ -238,7 +238,7 @@ export default function AdminSettings() {
 
                 {/* Limits & Maintenance Tab */}
                 {activeTab === 'Limits' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
                       <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-100">
                         <Sliders size={28} />
@@ -292,10 +292,10 @@ export default function AdminSettings() {
 
                 {/* Meta API Configuration */}
                 {activeTab === 'Meta' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
-                    <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
-                      <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center border border-blue-100">
-                        <Globe size={28} />
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
+                    <div className="flex items-center gap-4 sm:gap-6 pb-6 sm:pb-8 border-b border-slate-50">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center border border-blue-100 shrink-0">
+                        <Globe size={24} />
                       </div>
                       <div>
                         <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Meta Infrastructure</h3>
@@ -303,7 +303,7 @@ export default function AdminSettings() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Meta App ID</label>
                         <div className="relative">
@@ -399,7 +399,7 @@ export default function AdminSettings() {
 
                 {/* Webhooks Configuration */}
                 {activeTab === 'Webhooks' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
                       <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-100">
                         <Webhook size={28} />
@@ -438,7 +438,7 @@ export default function AdminSettings() {
 
                 {/* Security Configuration */}
                 {activeTab === 'Security' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
                       <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100">
                         <Shield size={28} />
@@ -472,7 +472,7 @@ export default function AdminSettings() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                         {[
                           { label: 'Token TTL', key: 'JWT_EXPIRY', icon: Key },
                           { label: 'OTP TTL', key: 'OTP_EXPIRY', icon: RefreshCw },
@@ -515,7 +515,7 @@ export default function AdminSettings() {
 
                 {/* Infrastructure Configuration */}
                 {activeTab === 'Infrastructure' && (
-                  <div className="p-10 space-y-10 animate-in fade-in duration-500">
+                  <div className="p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-10 animate-in fade-in duration-500">
                     <div className="flex items-center gap-6 pb-8 border-b border-slate-50">
                       <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center border border-orange-100">
                         <Server size={28} />
@@ -571,7 +571,7 @@ export default function AdminSettings() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-8">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                         <div className="space-y-3">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cloudinary Key</label>
                           <div className="relative">
@@ -641,8 +641,8 @@ export default function AdminSettings() {
       {/* Admin Modal */}
       {showAdminModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[500px] rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 border border-slate-100">
-            <div className="p-10 bg-primary text-white relative">
+          <div className="bg-white w-full max-w-[500px] rounded-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 border border-slate-100">
+            <div className="p-6 sm:p-10 bg-primary text-white relative">
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-6">
@@ -660,8 +660,8 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            <div className="p-10 space-y-8">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="p-6 sm:p-10 space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Identity</label>
                   <input type="text" placeholder="Name" className="w-full bg-slate-50 border border-slate-100 rounded-xl px-5 py-3.5 text-xs font-bold text-slate-900 focus:bg-white transition-all outline-none" />

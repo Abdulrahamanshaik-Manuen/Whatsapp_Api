@@ -157,21 +157,21 @@ export default function AdminBilling() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                <div className="space-y-1">
-                  <h1 className="text-4xl font-black text-primary tracking-tight flex items-center gap-3">
+                  <h1 className="text-2xl md:text-4xl font-black text-primary tracking-tight flex items-center gap-3">
                      Billing & Revenue
                   </h1>
                   <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-70">
                      Global financial command center & subscription management
                   </p>
                </div>
-               <div className="flex items-center gap-4">
+               <div className="flex items-center gap-3">
                   <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest">
                      <div className="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
                      Live Revenue Stream
                   </div>
                   <button
                      onClick={openCreateModal}
-                     className="flex items-center gap-2 px-8 py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                     className="flex items-center gap-2 px-5 sm:px-8 py-3 sm:py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
                   >
                      <Plus size={16} strokeWidth={4} /> Create Plan
                   </button>
@@ -214,7 +214,7 @@ export default function AdminBilling() {
                   </div>
 
                   {/* Interval Toggle - Premium Design */}
-                  <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                  <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit">
                      <button
                         onClick={() => setPlanFilter('monthly')}
                         className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${planFilter === 'monthly'

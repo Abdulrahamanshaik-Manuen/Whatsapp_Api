@@ -58,8 +58,8 @@ export default function LeadCapturePage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-['Inter',_sans-serif]">
-        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-emerald-500/10 border border-emerald-100 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 sm:p-6 font-['Inter',_sans-serif]">
+        <div className="w-full max-w-md bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl shadow-emerald-500/10 border border-emerald-100 text-center space-y-6 animate-in fade-in zoom-in duration-500">
           <div className="w-20 h-20 bg-emerald-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/30">
             <CheckCircle2 size={40} />
           </div>
@@ -84,7 +84,7 @@ export default function LeadCapturePage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Inter',_sans-serif]">
       {/* Official Branding Header */}
-      <div className="bg-[#075E54] px-6 py-4 flex items-center gap-4 shadow-lg shrink-0">
+      <div className="bg-[#075E54] px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 shadow-lg shrink-0">
         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/10">
           <Smartphone size={20} />
         </div>
@@ -94,8 +94,8 @@ export default function LeadCapturePage() {
         </div>
       </div>
       
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 space-y-8">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 space-y-6 sm:space-y-8">
           
           {/* Header */}
           <div className="text-center space-y-2">

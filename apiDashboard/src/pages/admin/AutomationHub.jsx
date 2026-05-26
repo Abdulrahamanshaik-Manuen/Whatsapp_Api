@@ -59,10 +59,10 @@ export default function AutomationHub({ onNavigate }) {
   return (
     <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
       {/* Header Section */}
-      <div className="px-8 pt-8 pb-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="px-4 sm:px-6 md:px-8 pt-6 sm:pt-8 pb-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Automation Hub</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Automation Hub</h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Deploy and manage custom conversational nodes for clients</p>
           </div>
 
@@ -75,7 +75,7 @@ export default function AutomationHub({ onNavigate }) {
         </div>
       </div>
 
-      <div className="px-8 pb-10">
+      <div className="px-4 sm:px-6 md:px-8 pb-10">
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* Stats Bar */}

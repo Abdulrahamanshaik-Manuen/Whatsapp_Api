@@ -175,7 +175,7 @@ export default function UserManagement() {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-primary tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight flex items-center gap-3">
               User Management
             </h1>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">
@@ -348,8 +348,8 @@ export default function UserManagement() {
       {/* View User Modal */}
       {showViewModal && selectedUser && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 bg-primary text-white flex items-center justify-between">
+          <div className="bg-white w-full max-w-[500px] rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-5 sm:p-8 bg-primary text-white flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {selectedUser.logoUrl ? (
                   <img
@@ -372,8 +372,8 @@ export default function UserManagement() {
               </button>
             </div>
 
-            <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-5 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InfoTile label="Email" value={selectedUser.email} icon={Mail} />
                 <InfoTile label="Phone" value={selectedUser.phone} icon={Smartphone} />
                 <InfoTile label="Business" value={selectedUser.businessName} icon={Shield} />
@@ -406,7 +406,7 @@ export default function UserManagement() {
               {/* Corporate Profile Details */}
               <div className="border-t border-slate-100 pt-6 space-y-5">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Corporate Profile Details</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InfoTile label="Category" value={selectedUser.businessCategory} icon={Tag} />
                   <InfoTile label="Location" value={selectedUser.city && selectedUser.country ? `${selectedUser.city}, ${selectedUser.country}` : selectedUser.city || selectedUser.country || 'N/A'} icon={Layout} />
                 </div>
@@ -442,8 +442,8 @@ export default function UserManagement() {
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <form onSubmit={handleUpdateUser} className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+          <form onSubmit={handleUpdateUser} className="bg-white w-full max-w-[500px] rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-5 sm:p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                   <Edit2 size={24} />
@@ -458,7 +458,7 @@ export default function UserManagement() {
               </button>
             </div>
 
-            <div className="p-8 space-y-6 overflow-y-auto max-h-[60vh] custom-scrollbar">
+            <div className="p-5 sm:p-8 space-y-6 overflow-y-auto max-h-[60vh] custom-scrollbar">
               <div className="grid grid-cols-1 gap-5">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Name</label>
@@ -525,7 +525,7 @@ export default function UserManagement() {
               </div>
             </div>
 
-            <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex items-center gap-3">
+            <div className="p-5 sm:p-8 bg-slate-50/50 border-t border-slate-50 flex items-center gap-3">
               <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-4 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-slate-200 hover:bg-slate-100 transition-all">
                 Cancel
               </button>

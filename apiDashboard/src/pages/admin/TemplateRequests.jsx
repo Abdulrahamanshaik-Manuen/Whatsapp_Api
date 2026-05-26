@@ -159,25 +159,25 @@ export default function TemplateRequests({ onNavigateCreate }) {
       <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar pb-10">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Template Requests</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Review and manage WhatsApp template requests from all clients</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-black text-primary tracking-tight">Template Requests</h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Review and manage WhatsApp template requests from all clients</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
             <button
               onClick={fetchTemplates}
-              className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
             >
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Sync Meta
+              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+              <span>Sync Meta</span>
             </button>
             <button
               onClick={onNavigateCreate}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-light transition-all active:scale-95 shadow-lg shadow-primary/20"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-primary-light transition-all active:scale-95 shadow-lg shadow-primary/20"
             >
-              <Plus size={18} strokeWidth={3} />
-              Create Template
+              <Plus size={16} strokeWidth={3} />
+              <span>Create Template</span>
             </button>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function TemplateRequests({ onNavigateCreate }) {
 
           <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="p-5 sm:p-8 border-b border-slate-100 flex items-start sm:items-center justify-between bg-slate-50/50 gap-4">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">{selectedTemplate.name}</h2>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">

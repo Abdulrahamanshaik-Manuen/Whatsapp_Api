@@ -155,7 +155,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
 
   // Success View Component
   const SuccessView = () => (
-    <div className="max-w-7xl mx-auto px-8 lg:px-12 pt-12 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 pt-12 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <div className="mb-10 space-y-1">
         <h1 className="text-3xl font-black text-primary tracking-tight">WhatsApp Setup</h1>
         <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
@@ -164,21 +164,21 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-12 space-y-6">
-          <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-2xl shadow-slate-200/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8">
+          <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-200/60 shadow-2xl shadow-slate-200/20 relative overflow-hidden">
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8">
                <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-2 border border-emerald-100">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-widest">System Active</span>
                </div>
             </div>
 
-            <div className="flex items-center gap-8 mb-12">
-              <div className="w-24 h-24 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30">
-                <CheckCircle2 size={48} strokeWidth={2.5} />
+            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 mb-12 mt-12 sm:mt-0 text-center sm:text-left">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-emerald-500 rounded-[1.75rem] sm:rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30 shrink-0">
+                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" strokeWidth={2.5} />
               </div>
               <div className="space-y-1">
-                <h2 className="text-4xl font-black text-slate-800 tracking-tight">Setup Success!</h2>
-                <p className="text-sm text-slate-400 font-black uppercase tracking-widest leading-relaxed">Your Business API integration is live and running</p>
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">Setup Success!</h2>
+                <p className="text-xs sm:text-sm text-slate-400 font-black uppercase tracking-widest leading-relaxed">Your Business API integration is live and running</p>
               </div>
             </div>
 
@@ -220,7 +220,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
         {view === 'setup' ? (
           <>
             {/* Header Area - Only visible in Setup Mode */}
-            <div className="px-8 lg:px-12 pt-12 pb-6 shrink-0 animate-in fade-in duration-500">
+            <div className="px-4 md:px-8 lg:px-12 pt-12 pb-6 shrink-0 animate-in fade-in duration-500">
               <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div className="space-y-1">
                   <h1 className="text-3xl font-black text-primary tracking-tight">WhatsApp Setup</h1>
@@ -229,12 +229,12 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                   </p>
                 </div>
 
-                <div className="flex items-center bg-white p-1.5 rounded-2xl border border-slate-200/60 shadow-sm self-start lg:self-center">
+                <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl border border-slate-200/60 shadow-sm self-start lg:self-center gap-y-2">
                   {steps.map((step, i) => (
                     <React.Fragment key={step.id}>
                       <button
                         onClick={() => setActiveStep(step.id)}
-                        className={`flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all duration-300 ${
+                        className={`flex items-center gap-1.5 sm:gap-3 px-3 sm:px-5 py-2 rounded-xl transition-all duration-300 ${
                           activeStep === step.id 
                           ? 'bg-primary text-white shadow-lg shadow-primary/20' 
                           : 'text-slate-400 hover:text-slate-600'
@@ -248,7 +248,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
                         <span className="text-[10px] font-black uppercase tracking-widest">{step.title}</span>
                       </button>
                       {i < steps.length - 1 && (
-                        <ArrowRight size={14} className="mx-2 text-slate-300" />
+                        <ArrowRight size={14} className="mx-1 sm:mx-2 text-slate-300 shrink-0" />
                       )}
                     </React.Fragment>
                   ))}
@@ -256,7 +256,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
               </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-8 lg:px-12 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
               <div className="xl:col-span-8">
                 {activeStep === 1 && (
                     <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-xl shadow-slate-200/20 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -107,12 +107,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <main className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar pb-20">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-10 custom-scrollbar pb-20">
 
         {/* Dashboard Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h2 className="text-3xl font-black text-primary tracking-tight">Platform Overview</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Platform Overview</h2>
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Monitor and manage all managed nodes and global traffic</p>
           </div>
         </div>
@@ -202,8 +202,10 @@ export default function AdminDashboard() {
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }}
+                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
                       dy={15}
+                      interval="preserveStartEnd"
+                      minTickGap={25}
                       padding={{ left: 10, right: 10 }}
                     />
                     <YAxis
@@ -274,8 +276,10 @@ export default function AdminDashboard() {
                       dataKey="week"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
+                      tick={{ fontSize: 8, fill: '#94a3b8', fontWeight: 800 }}
                       dy={8}
+                      interval="preserveStartEnd"
+                      minTickGap={20}
                     />
                     <Tooltip
                       cursor={{ fill: '#f1f5f9' }}

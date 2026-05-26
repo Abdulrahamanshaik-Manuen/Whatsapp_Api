@@ -129,16 +129,9 @@ export default function LoginPage({ onNavigate }) {
 
       {/* ── LEFT PANEL ── */}
       <div
+        className="hidden lg:flex lg:w-[45%] lg:min-w-[460px] h-screen flex-col relative overflow-hidden p-[36px_40px]"
         style={{
-          width: '45%',
-          minWidth: '460px',
           background: 'linear-gradient(145deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%)',
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '36px 40px',
-          height: '100vh',
         }}
       >
         <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '260px', height: '260px', background: 'rgba(99,193,50,0.09)', borderRadius: '50%', filter: 'blur(50px)', pointerEvents: 'none' }} />
@@ -223,8 +216,8 @@ export default function LoginPage({ onNavigate }) {
       </div>
 
       {/* ── RIGHT PANEL (Auth Form with Phone Number) ── */}
-      <div className="flex-1 flex flex-col p-8 lg:p-12 xl:p-24 relative justify-center bg-[#FAFAFB] h-full overflow-y-auto no-scrollbar">
-        <div className="absolute top-10 right-12 text-sm font-medium">
+      <div className="flex-1 flex flex-col p-4 sm:p-8 md:p-12 xl:p-24 relative justify-center bg-[#FAFAFB] h-full overflow-y-auto no-scrollbar">
+        <div className="absolute top-6 sm:top-10 right-6 sm:right-12 text-sm font-medium">
           <span className="text-slate-400">Don't have an account? </span>
           <button onClick={() => onNavigate('/register')} className="text-primary font-bold hover:underline ml-1">Sign up</button>
         </div>

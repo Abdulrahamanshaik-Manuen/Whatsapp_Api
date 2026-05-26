@@ -121,7 +121,7 @@ export default function BillingPage({ userData }) {
   return (
     <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
       {/* 🎨 Header Section (Matching Templates Page) */}
-      <div className="px-8 pt-8 pb-2">
+      <div className="px-4 md:px-8 pt-8 pb-2">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-black text-primary tracking-tight">
@@ -130,7 +130,7 @@ export default function BillingPage({ userData }) {
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Manage your subscription and monitor resource usage</p>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-sm w-fit">
             <button
               onClick={() => setIsAnnual(false)}
               className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!isAnnual ? 'bg-[#003B6D] text-white shadow-lg shadow-[#003B6D]/20' : 'text-slate-400 hover:text-slate-600'}`}
@@ -148,7 +148,7 @@ export default function BillingPage({ userData }) {
         </div>
       </div>
 
-      <div className="px-8 pt-4 pb-12">
+      <div className="px-4 md:px-8 pt-4 pb-12">
         <div className="max-w-7xl mx-auto space-y-8">
 
           {/* Stats Row */}

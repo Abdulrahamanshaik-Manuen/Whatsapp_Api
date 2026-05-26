@@ -23,21 +23,21 @@ export default function AdminSidebar({ activeTab, setActiveTab, onNavigate, isOp
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
       {/* Branding */}
-      <div className="p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-xl shadow-white/5 overflow-hidden">
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl flex items-center justify-center p-2 sm:p-2.5 shadow-xl shadow-white/5 overflow-hidden shrink-0">
              <img src="/manuen_square.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2">
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-white font-black text-xs tracking-widest uppercase flex items-center gap-2 truncate">
                Admin Dashboard
             </h1>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="lg:hidden ml-auto text-white/40 hover:text-white transition-colors"
+            className="lg:hidden ml-auto w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-colors shrink-0"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, onNavigate, isOp
       </nav>
 
       {/* Logout Section */}
-      <div className="p-4 mx-4 mb-8">
+      <div className="p-4 mx-4 mb-6 sm:mb-8">
         <button 
           onClick={() => {
             localStorage.clear();

@@ -183,38 +183,35 @@ export default function AdminCreateTemplate({ onBack }) {
       <div className="flex-1 h-full overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar pb-10 relative z-10 bg-slate-50/30">
          <div className="max-w-[1300px] mx-auto relative z-10">
 
-            {/* Title Row - Replicated from Client UI */}
-            <div className="flex items-center justify-between mb-8">
-               <div className="space-y-2">
-                  <div className="flex items-center gap-3 mb-1">
-                     <button
-                        onClick={onBack}
-                        className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm"
-                     >
-                        <ArrowLeft size={18} />
-                     </button>
-                     <div className="flex items-baseline gap-3">
-                        <h1 className="text-3xl font-black text-primary tracking-tight">Create Template</h1>
-                     </div>
-                  </div>
-                  <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Design and push professional Meta templates for clients</p>
-               </div>
-
+            {/* Title Row - Two Row Layout */}
+            <div className="mb-6 space-y-3">
+               {/* Row 1: Back + Title */}
                <div className="flex items-center gap-3">
+                  <button
+                     onClick={onBack}
+                     className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary hover:border-primary/30 transition-all active:scale-95 shadow-sm shrink-0"
+                  >
+                     <ArrowLeft size={18} />
+                  </button>
+                  <h1 className="text-xl md:text-2xl font-black text-primary tracking-tight">Create Template</h1>
+               </div>
+               {/* Row 2: Subtitle + Action */}
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Design and push professional Meta templates for clients</p>
                   <button
                      onClick={handleSubmit}
                      disabled={loading || !formData.name || !formData.body}
-                     className="group flex items-center gap-3 px-8 py-3.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                     className="group flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 w-full sm:w-auto shrink-0"
                   >
-                     {loading ? <Loader2 size={16} className="animate-spin text-[#25D366]" /> : <Zap size={16} className="text-[#25D366] group-hover:animate-pulse" />}
-                     Submit to Meta
+                     {loading ? <Loader2 size={14} className="animate-spin text-[#25D366]" /> : <Zap size={14} className="text-[#25D366] group-hover:animate-pulse" />}
+                     <span>Submit to Meta</span>
                   </button>
                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-               <div className="lg:col-span-8 space-y-8">
-                  <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-10 space-y-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start">
+               <div className="lg:col-span-8 space-y-6 md:space-y-8">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] md:rounded-[2.5rem] border border-white shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] p-5 sm:p-8 md:p-10 space-y-6 md:space-y-10">
 
                      {/* 01: Client Assignment (Admin Exclusive) */}
                      <div className="space-y-6">
@@ -506,8 +503,8 @@ export default function AdminCreateTemplate({ onBack }) {
                   </div>
                </div>
 
-               {/* Preview Side - Sticky from Client UI */}
-               <div className="lg:col-span-4 flex flex-col items-center">
+               {/* Preview Side - Hidden on mobile, shown on lg+ */}
+               <div className="hidden lg:flex lg:col-span-4 flex-col items-center">
                   <div className="sticky top-10 scale-[1.1] origin-top pt-4">
                      <MessagePreview template={formData} />
                   </div>
