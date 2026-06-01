@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertProvider } from './context/AlertContext';
+import { SubscriptionGateProvider } from './context/SubscriptionGateContext';
 
 import LandingPage from './pages/LandingPage';
 import RegisterPage from './pages/RegisterPage';
@@ -55,9 +56,17 @@ function AppContent() {
     // Route Guards: Logged in users shouldn't access Login/Register
     if (token && (activePath === '/login' || activePath === '/register')) {
         if (isAdmin) {
-            return <AdminPanel onNavigate={navigateTo} initialPath="/admin" />;
+            return (
+                <SubscriptionGateProvider onNavigateToBilling={navigateTo}>
+                    <AdminPanel onNavigate={navigateTo} initialPath="/admin" />
+                </SubscriptionGateProvider>
+            );
         }
-        return <DashboardPage onNavigate={navigateTo} initialPath="/dashboard" />;
+        return (
+            <SubscriptionGateProvider onNavigateToBilling={navigateTo}>
+                <DashboardPage onNavigate={navigateTo} initialPath="/dashboard" />
+            </SubscriptionGateProvider>
+        );
     }
 
     // Protected Routes: Require token
@@ -80,11 +89,19 @@ function AppContent() {
 
     
     if (activePath.startsWith('/admin') || (activePath === '/automations/builder' && isAdmin)) {
-        return <AdminPanel onNavigate={navigateTo} initialPath={activePath} />;
+        return (
+            <SubscriptionGateProvider onNavigateToBilling={navigateTo}>
+                <AdminPanel onNavigate={navigateTo} initialPath={activePath} />
+            </SubscriptionGateProvider>
+        );
     }
-    
+
     if (['/dashboard', '/campaigns', '/campaigns/create', '/contacts', '/messages', '/history', '/templates', '/templates/create', '/templates/view', '/automations', '/automations/builder', '/setup', '/billing', '/settings', '/groups'].includes(activePath)) {
-        return <DashboardPage onNavigate={navigateTo} initialPath={activePath} />;
+        return (
+            <SubscriptionGateProvider onNavigateToBilling={navigateTo}>
+                <DashboardPage onNavigate={navigateTo} initialPath={activePath} />
+            </SubscriptionGateProvider>
+        );
     }
 
     // Default to Landing Page for '/'

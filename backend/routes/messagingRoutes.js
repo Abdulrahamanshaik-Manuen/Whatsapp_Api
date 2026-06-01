@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { verifyToken } from '../middlewares/authMiddleware.js';
+import { requireActiveSubscription } from '../middlewares/subscriptionMiddleware.js';
 import { 
     sendMessage, 
     sendBulkMessages, 
@@ -28,9 +29,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post('/send', verifyToken, sendMessage);
-router.post('/send-bulk', verifyToken, sendBulkMessages);
-router.post('/reply', verifyToken, sendReply);
+router.post('/send', verifyToken, requireActiveSubscription, sendMessage);
+router.post('/send-bulk', verifyToken, requireActiveSubscription, sendBulkMessages);
+router.post('/reply', verifyToken, requireActiveSubscription, sendReply);
 router.get('/', verifyToken, getMessages);
 router.get('/conversations', verifyToken, getConversations);
 router.get('/conversations/:phone', verifyToken, getMessagesByContact);

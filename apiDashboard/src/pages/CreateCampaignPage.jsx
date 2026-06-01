@@ -4,10 +4,12 @@ import {
   CheckCircle2, Upload, FileText, MessageCircle, User, Info
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useSubscriptionGate } from '../context/SubscriptionGateContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export default function CreateCampaignPage({ onNavigate }) {
+  const { requireSub } = useSubscriptionGate();
   const [formData, setFormData] = useState({
     campaign_name: '',
     template_id: '',
@@ -68,16 +70,20 @@ export default function CreateCampaignPage({ onNavigate }) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/campaigns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
+      const result = await requireSub(() =>
+        fetch(`${API_BASE_URL}/campaigns`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(formData)
+        }).then(r => r.json().then(d => ({ ...d, _ok: r.ok })))
+      );
+
+      if (!result) return;
+
+      if (result._ok) {
         onNavigate('/campaigns');
       } else {
-        const err = await response.json();
-        alert(err.error || "Failed to create campaign");
+        alert(result.error || "Failed to create campaign");
       }
     } catch (err) {
       console.error(err);
@@ -126,8 +132,8 @@ export default function CreateCampaignPage({ onNavigate }) {
               onClick={handleSubmit}
               disabled={loading || !formData.campaign_name || !formData.template_id}
               className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs md:text-sm font-bold transition-all shadow-lg active:scale-95 text-center ${loading || !formData.campaign_name || !formData.template_id
-                  ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                  : 'bg-primary text-white shadow-primary/20 hover:brightness-110'
+                ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                : 'bg-primary text-white shadow-primary/20 hover:brightness-110'
                 }`}
             >
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
@@ -176,24 +182,24 @@ export default function CreateCampaignPage({ onNavigate }) {
 
               {/* Step 2: Audience */}
               <section className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black tracking-widest shrink-0">02</div>
-                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Target Audience</h3>
-                    </div>
-                    <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto shrink-0 overflow-x-auto justify-between sm:justify-start">
-                      {['groups', 'contacts', 'excel'].map(mode => (
-                        <button
-                          key={mode}
-                          onClick={() => setFormData({ ...formData, audienceMode: mode })}
-                          className={`shrink-0 flex-1 sm:flex-none text-center px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.audienceMode === mode ? 'bg-white text-primary shadow-sm' : 'text-slate-400'
-                            }`}
-                        >
-                          {mode}
-                        </button>
-                      ))}
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-black tracking-widest shrink-0">02</div>
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Target Audience</h3>
                   </div>
+                  <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto shrink-0 overflow-x-auto justify-between sm:justify-start">
+                    {['groups', 'contacts', 'excel'].map(mode => (
+                      <button
+                        key={mode}
+                        onClick={() => setFormData({ ...formData, audienceMode: mode })}
+                        className={`shrink-0 flex-1 sm:flex-none text-center px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.audienceMode === mode ? 'bg-white text-primary shadow-sm' : 'text-slate-400'
+                          }`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="min-h-[200px]">
                   {formData.audienceMode === 'groups' ? (

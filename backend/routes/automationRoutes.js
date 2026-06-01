@@ -7,16 +7,17 @@ import {
   deleteAutomation 
 } from '../controllers/automationController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
+import { requireActiveSubscription } from '../middlewares/subscriptionMiddleware.js';
 
 const router = express.Router();
 
 router.route('/')
   .get(verifyToken, getAutomations)
-  .post(verifyToken, createAutomation);
+  .post(verifyToken, requireActiveSubscription, createAutomation);
 
 router.route('/:id')
   .get(verifyToken, getAutomationById)
-  .put(verifyToken, updateAutomation)
+  .put(verifyToken, requireActiveSubscription, updateAutomation)
   .delete(verifyToken, deleteAutomation);
 
 export default router;

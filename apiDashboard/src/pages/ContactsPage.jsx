@@ -9,6 +9,7 @@ import {
   Check, Phone, FilterX, MessageSquare, LayoutGrid, List,
   QrCode, Copy
 } from 'lucide-react';
+import { useSubscriptionGate } from '../context/SubscriptionGateContext';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -40,6 +41,7 @@ const StatCard = ({ label, value, color, icon: Icon }) => {
 };
 
 export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
+  const { requireSub } = useSubscriptionGate();
   const [contacts, setContacts] = useState(() => {
     const saved = localStorage.getItem('cached_contacts');
     return saved ? JSON.parse(saved) : [];
@@ -238,37 +240,33 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/messages/send`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          to: selectedContactForChat.phoneNumber,
-          message: chatMessage
-        })
-      });
+      const result = await requireSub(() =>
+        fetch(`${API_BASE_URL}/messages/send`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            to: selectedContactForChat.phoneNumber,
+            message: chatMessage
+          })
+        }).then(r => r.json().then(d => ({ ...d, _ok: r.ok })))
+      );
 
-      if (response.ok) {
+      if (!result) return;
+
+      if (result._ok) {
         setChatMessage('');
         setShowChatModal(false);
-
-        // Use both setActiveTab for immediate UI update and onNavigate for URL sync
-        if (setActiveTab) {
-          setActiveTab('Messages');
-        }
-        if (onNavigate) {
-          onNavigate('/messages');
-        }
+        if (setActiveTab) setActiveTab('Messages');
+        if (onNavigate) onNavigate('/messages');
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to send message:", errorData);
-        alert(errorData.error || "Failed to send message.");
+        alert(result.error || 'Failed to send message.');
       }
     } catch (err) {
-      console.error("Error in handleSendMessage:", err);
-      alert("Error sending message. Please try again.");
+      console.error('Error in handleSendMessage:', err);
+      alert('Error sending message. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -892,11 +890,11 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
 
       {/* Lead QR Modal */}
       {showQRModal && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
           onClick={() => setShowQRModal(false)}
         >
-          <div 
+          <div
             className="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200 flex flex-col max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -938,12 +936,12 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Direct Link</label>
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50/50 rounded-xl border border-slate-200/60">
-                  <input 
+                  <input
                     readOnly
                     value={`${window.location.origin}/lead/${userData?._id || ''}`}
                     className="flex-1 bg-transparent border-none text-[10px] font-bold text-slate-500 truncate focus:outline-none"
                   />
-                  <button 
+                  <button
                     onClick={() => {
                       navigator.clipboard.writeText(`${window.location.origin}/lead/${userData?._id || ''}`);
                       alert("Copied!");

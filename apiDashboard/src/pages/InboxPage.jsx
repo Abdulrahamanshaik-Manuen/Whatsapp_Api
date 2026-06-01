@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useSubscriptionGate } from '../context/SubscriptionGateContext';
 
 import {
   MessageSquare,
@@ -24,6 +25,7 @@ import { useSocket } from '../context/SocketContext';
 
 const InboxPage = () => {
   const { socket } = useSocket();
+  const { requireSub } = useSubscriptionGate();
   const [conversations, setConversations] = useState(() => {
     const saved = localStorage.getItem('cached_conversations');
     return saved ? JSON.parse(saved) : [];
@@ -47,16 +49,16 @@ const InboxPage = () => {
   useEffect(() => {
     fetchConversations();
     fetchGroups();
-    
+
     if (socket) {
       socket.on('new_message', (data) => {
         const { message, contact } = data;
-        
+
         // Update messages if this is the active chat
         if (activeChat && activeChat._id === message.to) {
           setMessages(prev => [...prev, message]);
         }
-        
+
         // Update conversations list
         setConversations(prev => {
           const exists = prev.find(c => c._id === message.to);
@@ -83,7 +85,7 @@ const InboxPage = () => {
       socket.on('message_status_update', (data) => {
         const { meta_message_id, status } = data;
         setMessages(prev => prev.map(m => m.meta_message_id === meta_message_id ? { ...m, status } : m));
-        
+
         // Update in conversations as well if it's the last message
         setConversations(prev => prev.map(c => {
           if (c.lastMessage?.meta_message_id === meta_message_id) {
@@ -256,14 +258,23 @@ const InboxPage = () => {
         }
       }
 
-      await axios.post(`${API_BASE_URL}/messages/reply`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const result = await requireSub(() =>
+        axios.post(`${API_BASE_URL}/messages/reply`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => r.data)
+          .catch(err => err.response?.data || { error: err.message })
+      );
 
-      setReplyText('');
-      setSelectedFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      fetchMessages(activeChat._id);
+      if (!result) return;
+
+      if (!result.error) {
+        setReplyText('');
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        fetchMessages(activeChat._id);
+      } else {
+        alert('Failed to send: ' + result.error);
+      }
     } catch (err) {
       console.error('Send error:', err);
       alert('Failed to send message: ' + (err.response?.data?.error || err.message));
