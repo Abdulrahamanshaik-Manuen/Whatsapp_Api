@@ -9,6 +9,8 @@ import DashboardPage from './pages/DashboardPage';
 import LeadCapturePage from './pages/LeadCapturePage';
 import AdminPanel from './pages/admin/AdminPanel';
 
+
+
 // Simple Router Hook
 function getCurrentPath() {
     let path = window.location.pathname || '/';
@@ -75,6 +77,7 @@ function AppContent() {
     if (activePath === '/login') return <LoginPage onNavigate={navigateTo} />;
     if (activePath === '/forgot-password') return <ForgotPasswordPage onNavigate={navigateTo} />;
     if (activePath.startsWith('/lead')) return <LeadCapturePage />;
+
     
     if (activePath.startsWith('/admin') || (activePath === '/automations/builder' && isAdmin)) {
         return <AdminPanel onNavigate={navigateTo} initialPath={activePath} />;

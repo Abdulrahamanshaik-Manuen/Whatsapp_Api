@@ -116,6 +116,11 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                             </span>
                                             <span className="text-xs font-bold text-slate-400">/{isAnnual ? 'yr' : 'mo'}</span>
                                         </div>
+                                        <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider flex items-center gap-1">
+                                            <span>≈</span>
+                                            <span>₹{Math.round(parseFloat((isAnnual ? plan.yearlyPrice : plan.monthlyPrice).replace(/,/g, '')) / (isAnnual ? 365 : 30))}</span>
+                                            <span>/ day</span>
+                                        </div>
                                     </div>
                                     <div className="space-y-5 flex-1 mb-10">
                                         {plan.features.map((feature, j) => (
@@ -174,7 +179,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                 </section>
             </main>
 
-            <Footer />
+            <Footer onNavigate={onNavigate} />
         </div>
     );
 };

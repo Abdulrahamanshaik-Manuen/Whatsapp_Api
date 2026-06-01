@@ -106,10 +106,53 @@ export default function BillingPage({ userData }) {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#F9FAFB]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 size={32} className="text-primary animate-spin" />
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Billing Details...</p>
+      <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] p-4 md:p-6 lg:p-8 space-y-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center">
+          <div className="space-y-3">
+            <div className="h-8 w-48 bg-slate-200 rounded-xl"></div>
+            <div className="h-3 w-64 bg-slate-200 rounded-md"></div>
+          </div>
+          <div className="h-10 w-44 bg-slate-200 rounded-xl"></div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 h-24 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-16 bg-slate-100 rounded"></div>
+                <div className="h-6 w-24 bg-slate-200 rounded-lg"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 bg-white rounded-[1.5rem] border border-slate-100 p-8 h-96 space-y-6">
+            <div className="flex justify-between">
+              <div className="h-6 w-40 bg-slate-200 rounded-lg"></div>
+              <div className="h-6 w-20 bg-slate-100 rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="h-24 bg-slate-50 rounded-2xl"></div>
+                <div className="h-4 w-full bg-slate-100 rounded"></div>
+                <div className="h-4 w-5/6 bg-slate-100 rounded"></div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-4 w-24 bg-slate-100 rounded"></div>
+                <div className="h-4 w-full bg-slate-200 rounded"></div>
+                <div className="h-6 w-36 bg-slate-50 rounded-xl mx-auto"></div>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-[1.5rem] border border-slate-100 p-6 h-48"></div>
+            <div className="bg-white rounded-[1.5rem] border border-slate-100 p-6 h-48"></div>
+          </div>
         </div>
       </div>
     );
@@ -117,6 +160,8 @@ export default function BillingPage({ userData }) {
 
   const currentPlan = subStatus?.plan;
   const usage = subStatus?.usage || { messages_used: 0, message_limit: 1000, contact_limit: 1000 };
+  const showPricingCards = (!currentPlan || subStatus?.status !== 'active') || 
+    (usage.messages_used >= usage.message_limit * 0.9 || (userData?.contacts_count || 0) >= (usage.contact_limit || 1000) * 0.9);
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#F9FAFB] custom-scrollbar">
@@ -130,21 +175,23 @@ export default function BillingPage({ userData }) {
             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Manage your subscription and monitor resource usage</p>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-sm w-fit">
-            <button
-              onClick={() => setIsAnnual(false)}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!isAnnual ? 'bg-[#003B6D] text-white shadow-lg shadow-[#003B6D]/20' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIsAnnual(true)}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isAnnual ? 'bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Annual
-              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${isAnnual ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600'}`}>SAVE 20%</span>
-            </button>
-          </div>
+          {showPricingCards && (
+            <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-sm w-fit">
+              <button
+                onClick={() => setIsAnnual(false)}
+                className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!isAnnual ? 'bg-[#003B6D] text-white shadow-lg shadow-[#003B6D]/20' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setIsAnnual(true)}
+                className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isAnnual ? 'bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Annual
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${isAnnual ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600'}`}>SAVE 20%</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -167,17 +214,17 @@ export default function BillingPage({ userData }) {
               color="emerald"
               icon={Users}
             />
-            <StatCard 
-              label="Infrastructure" 
-              value="Optimized" 
-              color="indigo" 
-              icon={ShieldCheck} 
+            <StatCard
+              label="Infrastructure"
+              value="Optimized"
+              color="indigo"
+              icon={ShieldCheck}
             />
-            <StatCard 
-              label="Connectivity" 
-              value="Stable" 
-              color="orange" 
-              icon={Activity} 
+            <StatCard
+              label="Connectivity"
+              value="Stable"
+              color="orange"
+              icon={Activity}
             />
           </div>
 
@@ -249,8 +296,8 @@ export default function BillingPage({ userData }) {
                 </div>
               </div>
 
-              {/* Pricing Cards - Conditional Display based on usage completion (Messages or Contacts) */}
-              {(usage.messages_used >= usage.message_limit * 0.9 || (userData?.contacts_count || 0) >= (usage.contact_limit || 1000) * 0.9) ? (
+              {/* Pricing Cards - Conditional Display based on subscription status or usage nearing limit */}
+              {showPricingCards ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   {availablePlans
                     .filter(p => p.interval === (isAnnual ? 'yearly' : 'monthly'))
@@ -268,14 +315,19 @@ export default function BillingPage({ userData }) {
                                 <span className="text-3xl font-black text-slate-900 tracking-tighter">₹{plan.price}</span>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">/ {plan.interval === 'yearly' ? 'year' : 'month'}</span>
                               </div>
+                              <div className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider flex items-center gap-1">
+                                <span>≈</span>
+                                <span>₹{plan.interval === 'yearly' ? Math.round(parseFloat(String(plan.price).replace(/,/g, '')) / 365) : Math.round(parseFloat(String(plan.price).replace(/,/g, '')) / 30)}</span>
+                                <span>/ day</span>
+                              </div>
                             </div>
 
                             <button
                               disabled={submitting || isCurrent}
                               onClick={() => handleSubscribe(plan._id)}
                               className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCurrent
-                                  ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
-                                  : 'bg-primary text-white shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95'
+                                ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                                : 'bg-primary text-white shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95'
                                 }`}
                             >
                               {submitting ? 'Processing...' : isCurrent ? 'Active Plan' : 'Select Blueprint'}
@@ -298,40 +350,40 @@ export default function BillingPage({ userData }) {
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
-                     <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                        Message charges are billed directly by Meta based on your WhatsApp Business Account usage.
-                     </p>
+                    <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                      Message charges are billed directly by Meta based on your WhatsApp Business Account usage.
+                    </p>
                   </div>
                   <div className="space-y-3">
-                     <a 
-                        href="https://business.facebook.com/billing_hub/payment_methods" 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
-                     >
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                              <Receipt size={14} />
-                           </div>
-                           <span className="text-xs font-black text-slate-700">Payment Methods</span>
+                    <a
+                      href="https://business.facebook.com/billing_hub/payment_methods"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                          <Receipt size={14} />
                         </div>
-                        <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
-                     </a>
-                     
-                     <a 
-                        href="https://business.facebook.com/settings/whatsapp-business-accounts/" 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
-                     >
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                              <MessageSquare size={14} />
-                           </div>
-                           <span className="text-xs font-black text-slate-700">WABA Settings</span>
+                        <span className="text-xs font-black text-slate-700">Payment Methods</span>
+                      </div>
+                      <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
+                    </a>
+
+                    <a
+                      href="https://business.facebook.com/settings/whatsapp-business-accounts/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                          <MessageSquare size={14} />
                         </div>
-                        <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
-                     </a>
+                        <span className="text-xs font-black text-slate-700">WABA Settings</span>
+                      </div>
+                      <ArrowUpRight size={14} className="text-slate-400 group-hover:text-primary transition-colors" />
+                    </a>
                   </div>
                 </div>
               </div>

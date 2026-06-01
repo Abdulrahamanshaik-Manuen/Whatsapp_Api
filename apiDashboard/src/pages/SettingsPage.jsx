@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   User, Shield, Save, Trash2, ShieldCheck, Plus,
-  Landmark, Package, ShoppingBag, PlusCircle, Edit3, Loader2, Search,
+  Package, ShoppingBag, PlusCircle, Edit3, Loader2, Search,
   Upload, Download, ChevronRight, ChevronDown
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -30,7 +30,6 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
   const tabs = [
     { id: 'Profile', icon: User, label: 'Profile' },
     { id: 'Security', icon: Shield, label: 'Security' },
-    { id: 'Bank', icon: Landmark, label: 'Bank Details' },
     { id: 'Catalogue', icon: ShoppingBag, label: 'Catalogue' }
   ];
 
@@ -43,10 +42,6 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
     city: businessData?.city || '',
     state: businessData?.state || '',
     country: businessData?.country || '',
-    bank_name: businessData?.bank_name || '',
-    account_number: businessData?.account_number || '',
-    ifsc_code: businessData?.ifsc_code || '',
-    account_holder_name: businessData?.account_holder_name || '',
     logo_url: businessData?.logo_url || ''
   });
 
@@ -61,10 +56,6 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
         city: businessData.city || '',
         state: businessData.state || '',
         country: businessData.country || '',
-        bank_name: businessData.bank_name || '',
-        account_number: businessData.account_number || '',
-        ifsc_code: businessData.ifsc_code || '',
-        account_holder_name: businessData.account_holder_name || '',
         logo_url: businessData.logo_url || ''
       });
     }
@@ -472,66 +463,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                     </div>
                   </div>
                 )}
-
-                {activeTab === 'Bank' && (
-                  <div className="p-4 sm:p-6 md:p-10 space-y-8 md:space-y-10 animate-in fade-in duration-500">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm shadow-emerald-100/50">
-                        <Landmark size={28} />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Bank Details</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Configure your business bank account details</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bank Name</label>
-                        <input
-                          value={formData.bank_name}
-                          onChange={e => setFormData({ ...formData, bank_name: e.target.value })}
-                          placeholder="e.g. HDFC International"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Holder Name</label>
-                        <input
-                          value={formData.account_holder_name}
-                          onChange={e => setFormData({ ...formData, account_holder_name: e.target.value })}
-                          placeholder="Name on records"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Number</label>
-                        <input
-                          value={formData.account_number}
-                          onChange={e => setFormData({ ...formData, account_number: e.target.value })}
-                          placeholder="0000 0000 0000"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">IFSC Code</label>
-                        <input
-                          value={formData.ifsc_code}
-                          onChange={e => setFormData({ ...formData, ifsc_code: e.target.value })}
-                          placeholder="IFSC / SWIFT"
-                          className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
-                      <ShieldCheck size={20} className="text-emerald-500 shrink-0" />
-                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed">Bank details are encrypted. Ensure all information matches your legal bank documents to avoid payout delays.</p>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'Security' && (
+                 {activeTab === 'Security' && (
                   <div className="p-4 sm:p-6 md:p-10 space-y-8 md:space-y-10 animate-in fade-in duration-500">
                     <div className="space-y-1">
                       <h3 className="text-xl font-black text-[#003B6D] tracking-tight">Change Password</h3>

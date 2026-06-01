@@ -11,8 +11,7 @@ export const createProfile = async (req, res) => {
     try {
         const { 
             business_name, business_category, business_description, email, 
-            address, city, state, country, business_hours, logo_url,
-            bank_name, account_number, ifsc_code, account_holder_name 
+            address, city, state, country, business_hours, logo_url
         } = req.body;
         const user_id = req.user.user_id;
 
@@ -35,11 +34,7 @@ export const createProfile = async (req, res) => {
             state,
             country,
             business_hours,
-            logo_url,
-            bank_name,
-            account_number,
-            ifsc_code,
-            account_holder_name
+            logo_url
         });
 
         await profile.save();

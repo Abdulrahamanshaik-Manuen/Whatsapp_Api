@@ -40,7 +40,14 @@ const MainNavigation = ({ activePath, onNavigate }) => {
                             key={item.label}
                             onClick={() => {
                                 if (item.path.startsWith('#')) {
-                                    document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                    if (window.location.pathname !== '/') {
+                                        onNavigate('/');
+                                        setTimeout(() => {
+                                            document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                        }, 100);
+                                    } else {
+                                        document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                    }
                                 } else {
                                     onNavigate(item.path);
                                 }
@@ -88,7 +95,14 @@ const MainNavigation = ({ activePath, onNavigate }) => {
                                 onClick={() => {
                                     setIsMobileMenuOpen(false);
                                     if (item.path.startsWith('#')) {
-                                        document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                        if (window.location.pathname !== '/') {
+                                            onNavigate('/');
+                                            setTimeout(() => {
+                                                document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                            }, 100);
+                                        } else {
+                                            document.querySelector(item.path)?.scrollIntoView({ behavior: 'smooth' });
+                                        }
                                     } else {
                                         onNavigate(item.path);
                                     }
