@@ -1,5 +1,6 @@
 import Contact from '../models/Contact.js';
 import Message from '../models/Message.js';
+import User from '../models/User.js';
 import { parseFile, validateContactData } from '../utility/csvParser.js';
 import fs from 'fs';
 import { uploadToCloudinary } from '../config/cloudinary.js';
@@ -56,6 +57,16 @@ export const saveContact = async (req, res) => {
             return res.status(200).json(contact);
         }
 
+        // Enforce plan contact limit for new contact creation
+        const user = await User.findById(userId).populate('planId');
+        const limit = user?.planId?.contact_limit || 1000;
+        const currentCount = await Contact.countDocuments({ userId });
+        if (currentCount >= limit) {
+            return res.status(403).json({
+                error: `Contact limit of ${limit.toLocaleString()} reached. Please upgrade your subscription plan to add more contacts.`
+            });
+        }
+
         contact = new Contact({
             phoneNumber: cleanPhone,
             name,
@@ -85,6 +96,20 @@ export const captureQRConsent = async (req, res) => {
         }
 
         const cleanPhone = phoneNumber.replace(/\D/g, '');
+        const targetUserId = userId || 'system';
+
+        // Enforce contact limit for new QR lead
+        const existing = await Contact.findOne({ phoneNumber: cleanPhone, userId: targetUserId });
+        if (!existing && targetUserId !== 'system') {
+            const userObj = await User.findById(targetUserId).populate('planId');
+            const limit = userObj?.planId?.contact_limit || 1000;
+            const currentCount = await Contact.countDocuments({ userId: targetUserId });
+            if (currentCount >= limit) {
+                return res.status(403).json({
+                    error: `Contact limit of ${limit.toLocaleString()} reached. Cannot record new QR lead.`
+                });
+            }
+        }
 
         const updateData = {
             name: name || 'QR Lead',
@@ -92,7 +117,7 @@ export const captureQRConsent = async (req, res) => {
             consent_status: 'verified',
             consent_source: 'qr',
             consent_timestamp: new Date(),
-            userId: userId || 'system',
+            userId: targetUserId,
             details: {
                 ...details,
                 joined: new Date().toISOString()
@@ -103,7 +128,7 @@ export const captureQRConsent = async (req, res) => {
         if (email) updateData.email = email;
 
         const contact = await Contact.findOneAndUpdate(
-            { phoneNumber: cleanPhone },
+            { phoneNumber: cleanPhone, userId: targetUserId },
             { $set: updateData },
             { upsert: true, returnDocument: 'after' }
         );
@@ -147,6 +172,11 @@ export const uploadContacts = async (req, res) => {
             cloudinary_url: cloudinaryUrl
         };
 
+        const userId = req.user.user_id;
+        const user = await User.findById(userId).populate('planId');
+        const limit = user?.planId?.contact_limit || 1000;
+        let contactCount = await Contact.countDocuments({ userId });
+
         for (const [index, item] of rawData.entries()) {
             try {
                 const { valid, data, error } = validateContactData(item);
@@ -156,7 +186,20 @@ export const uploadContacts = async (req, res) => {
                     continue;
                 }
 
-                const userId = req.user.user_id;
+                // Check if contact already exists to respect limit rules
+                const existing = await Contact.findOne({ phoneNumber: data.phoneNumber, userId });
+                if (!existing) {
+                    if (contactCount >= limit) {
+                        results.failed++;
+                        results.errors.push({
+                            item,
+                            error: `Contact limit reached (${limit.toLocaleString()}). Please upgrade your plan to import new contacts.`
+                        });
+                        continue;
+                    }
+                    contactCount++;
+                }
+
                 const finalData = {
                     ...data,
                     userId, // Set userId from request

@@ -60,8 +60,13 @@ The Maneun WhatsApp Business Platform is an easy-to-use software that helps you 
         document.body.removeChild(element);
     };
 
-    const handleNavigation = (e, path) => {
+    const handleNavigation = (e, path, hash = '') => {
         e.preventDefault();
+        if (hash) {
+            window.location.hash = hash;
+        } else {
+            window.location.hash = '';
+        }
         if (onNavigate) {
             onNavigate(path);
         } else {
@@ -106,17 +111,7 @@ The Maneun WhatsApp Business Platform is an easy-to-use software that helps you 
                                 <li key={item}>
                                     <a
                                         href="#solutions"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (window.location.pathname !== '/') {
-                                                if (onNavigate) onNavigate('/');
-                                                setTimeout(() => {
-                                                    document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' });
-                                                }, 100);
-                                            } else {
-                                                document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' });
-                                            }
-                                        }}
+                                        onClick={(e) => handleNavigation(e, '/', '#solutions')}
                                         className="text-sm text-slate-500 hover:text-primary transition-colors"
                                     >
                                         {item}
@@ -132,17 +127,7 @@ The Maneun WhatsApp Business Platform is an easy-to-use software that helps you 
                             <li>
                                 <a
                                     href="#features"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (window.location.pathname !== '/') {
-                                            if (onNavigate) onNavigate('/');
-                                            setTimeout(() => {
-                                                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                                            }, 100);
-                                        } else {
-                                            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                                        }
-                                    }}
+                                    onClick={(e) => handleNavigation(e, '/', '#features')}
                                     className="text-sm text-slate-500 hover:text-primary transition-colors"
                                 >
                                     About Us
@@ -151,17 +136,7 @@ The Maneun WhatsApp Business Platform is an easy-to-use software that helps you 
                             <li>
                                 <a
                                     href="#pricing"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (window.location.pathname !== '/') {
-                                            if (onNavigate) onNavigate('/');
-                                            setTimeout(() => {
-                                                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                                            }, 100);
-                                        } else {
-                                            document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                                        }
-                                    }}
+                                    onClick={(e) => handleNavigation(e, '/', '#pricing')}
                                     className="text-sm text-slate-500 hover:text-primary transition-colors"
                                 >
                                     Contact

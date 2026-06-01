@@ -224,12 +224,12 @@ export const submitToMeta = async (req, res) => {
 
 export const getClientTemplates = async (req, res) => {
     try {
-        // Clients see all approved templates + any template they created themselves (even if pending)
+        // Clients see standard approved Admin templates + any custom templates they requested themselves
         const templates = await Template.find({
             $or: [
-                { status: 'approved' },
-                { created_by: req.user.user_id },
-                { requested_by: req.user.user_id }
+                { status: 'approved', is_custom_request: false },
+                { created_by: req.user.user_id, is_custom_request: true },
+                { requested_by: req.user.user_id, is_custom_request: true }
             ]
         }).sort({ createdAt: -1, _id: -1 });
         res.status(200).json(templates);
@@ -443,9 +443,12 @@ export const syncTemplateStatus = async (req, res) => {
 
 export const syncAllTemplatesFromMeta = async (req, res) => {
     try {
-        const user = await User.findById(req.user.user_id);
-        const waba_id = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || user?.waba_id;
-        const access_token = process.env.ACCESSTOKEN || user?.access_token;
+        const waba_id = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
+        const access_token = process.env.ACCESSTOKEN;
+
+        if (!waba_id || !access_token) {
+            return res.status(400).json({ error: "System Admin credentials (WHATSAPP_BUSINESS_ACCOUNT_ID and ACCESSTOKEN) are not configured." });
+        }
 
         const result = await whatsappService.getAllTemplatesFromMeta(waba_id, access_token);
 
@@ -522,7 +525,8 @@ export const syncAllTemplatesFromMeta = async (req, res) => {
                         footer,
                         buttons,
                         meta_template_id: mt.id,
-                        created_by: req.user.user_id
+                        created_by: req.user.user_id,
+                        is_custom_request: false
                     },
                     { upsert: true, returnDocument: 'after' }
                 );

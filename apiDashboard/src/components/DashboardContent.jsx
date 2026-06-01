@@ -301,7 +301,9 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-slate-500 font-medium">Resets</span>
-                    <span className="text-xs font-bold text-slate-800">01 Jun</span>
+                    <span className="text-xs font-bold text-slate-800">
+                      {usage.expiry ? new Date(usage.expiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}
+                    </span>
                   </div>
                 </div>
               </div>

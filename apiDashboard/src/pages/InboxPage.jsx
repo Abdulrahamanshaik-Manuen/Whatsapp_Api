@@ -30,13 +30,64 @@ const InboxPage = () => {
     const saved = localStorage.getItem('cached_conversations');
     return saved ? JSON.parse(saved) : [];
   });
-  const [activeChat, setActiveChat] = useState(null);
+  const [activeChat, setActiveChat] = useState(() => {
+    const savedId = localStorage.getItem('inbox_active_chat_id');
+    if (!savedId) return null;
+    const savedConvs = localStorage.getItem('cached_conversations');
+    if (savedConvs) {
+      try {
+        const convs = JSON.parse(savedConvs);
+        const chat = convs.find(c => c._id === savedId);
+        if (chat) {
+          return {
+            _id: chat._id,
+            name: chat.contactInfo?.name || chat._id,
+            contactInfo: chat.contactInfo,
+            lastMessage: chat.lastMessage,
+            lastIncomingMessageAt: chat.lastIncomingMessageAt
+          };
+        }
+      } catch (e) {
+        console.error('Error parsing cached conversations:', e);
+      }
+    }
+    return null;
+  });
   const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    if (activeChat) {
+      localStorage.setItem('inbox_active_chat_id', activeChat._id);
+    } else {
+      localStorage.removeItem('inbox_active_chat_id');
+    }
+  }, [activeChat]);
+
+  useEffect(() => {
+    isChatSwitching.current = true;
+  }, [activeChat]);
+
+  useEffect(() => {
+    const savedId = localStorage.getItem('inbox_active_chat_id');
+    if (savedId && !activeChat) {
+      const chat = conversations.find(c => c._id === savedId);
+      if (chat) {
+        setActiveChat({
+          _id: chat._id,
+          name: chat.contactInfo?.name || chat._id,
+          contactInfo: chat.contactInfo,
+          lastMessage: chat.lastMessage,
+          lastIncomingMessageAt: chat.lastIncomingMessageAt
+        });
+      }
+    }
+  }, [conversations, activeChat]);
   const [loading, setLoading] = useState(!conversations.length);
   const [search, setSearch] = useState('');
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const chatEndRef = useRef(null);
+  const isChatSwitching = useRef(true);
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -145,7 +196,14 @@ const InboxPage = () => {
   };
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) {
+      const behavior = isChatSwitching.current ? 'auto' : 'smooth';
+      const timer = setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior, block: 'nearest' });
+        isChatSwitching.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, [messages]);
 
   const fetchConversations = async () => {

@@ -113,7 +113,8 @@ export const getDashboardStats = async (req, res) => {
                 used: user.messages_used,
                 limit: user.message_limit,
                 percentage: user.message_limit > 0 ? Math.round((user.messages_used / user.message_limit) * 100) : 0,
-                remaining: user.message_limit - user.messages_used
+                remaining: user.message_limit - user.messages_used,
+                expiry: user.subscription_expiry
             },
             connection: {
                 connected: user.whatsapp_connected,

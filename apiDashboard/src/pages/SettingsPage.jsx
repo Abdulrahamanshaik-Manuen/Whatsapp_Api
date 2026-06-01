@@ -281,38 +281,39 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F9FAFB] overflow-hidden">
 
-      {/* Header Section */}
-      <div className="px-4 md:px-8 pt-8 pb-2 shrink-0">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black text-primary tracking-tight">Settings</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Configure your account protocols and financial nodes</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {activeTab === 'Catalogue' && (
-              <button
-                onClick={downloadSampleTemplate}
-                className="px-4 py-3 bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
-              >
-                <Download size={16} />
-                Template
-              </button>
-            )}
-            <button
-              onClick={activeTab === 'Catalogue' ? handleSaveProduct : handleUpdateProfile}
-              disabled={loading}
-              className="px-8 py-3 bg-[#003B6D] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#003B6D]/20 active:scale-95 flex items-center gap-2"
-            >
-              <Save size={16} />
-              {loading ? 'Processing...' : (activeTab === 'Catalogue' ? 'Sync Inventory' : 'Save Configuration')}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <main className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 py-6">
         <div className="max-w-7xl mx-auto space-y-8">
+
+          {/* Header Section */}
+          <div className="pb-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-black text-primary tracking-tight">Settings</h1>
+                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Configure your account protocols and financial nodes</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {activeTab === 'Catalogue' && (
+                  <button
+                    onClick={downloadSampleTemplate}
+                    className="px-4 py-3 bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+                  >
+                    <Download size={16} />
+                    Template
+                  </button>
+                )}
+                <button
+                  onClick={activeTab === 'Catalogue' ? handleSaveProduct : handleUpdateProfile}
+                  disabled={loading}
+                  className="px-8 py-3 bg-[#003B6D] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg shadow-[#003B6D]/20 active:scale-95 flex items-center gap-2"
+                >
+                  <Save size={16} />
+                  {loading ? 'Processing...' : (activeTab === 'Catalogue' ? 'Sync Inventory' : 'Save Configuration')}
+                </button>
+              </div>
+            </div>
+          </div>
+
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
 

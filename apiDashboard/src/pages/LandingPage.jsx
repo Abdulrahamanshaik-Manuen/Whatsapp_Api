@@ -9,16 +9,38 @@ import { ShoppingBag, Calendar, Rocket, ArrowRight, Check } from 'lucide-react';
 
 const LandingPage = ({ activePath, onNavigate }) => {
     const [isAnnual, setIsAnnual] = React.useState(true);
+
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+
+        const handleHashScroll = () => {
+            const hash = window.location.hash;
+            if (hash) {
+                const element = document.getElementById(hash.substring(1));
+                if (element) {
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }, 250);
+                }
+            }
+        };
+
+        handleHashScroll();
+
+        window.addEventListener('hashchange', handleHashScroll);
+        return () => window.removeEventListener('hashchange', handleHashScroll);
+    }, []);
+
     return (
         <div className="min-h-screen bg-background">
-            <MainNavigation 
-                activePath={activePath} 
-                onNavigate={onNavigate} 
+            <MainNavigation
+                activePath={activePath}
+                onNavigate={onNavigate}
             />
-            
+
             <main>
                 <Hero onNavigate={onNavigate} />
-                
+
                 <FeatureGrid />
 
                 {/* Industry Solutions Section */}
@@ -30,7 +52,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                 <h2 className="h2-display text-primary">Tailored Solutions for <span className="text-secondary">Every Industry</span></h2>
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                             {[
                                 { title: 'Dynamic Retail', desc: 'Streamline customer orders and inventory updates directly through intuitive chat interfaces.', icon: ShoppingBag },
@@ -58,11 +80,11 @@ const LandingPage = ({ activePath, onNavigate }) => {
                         <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
                             <p className="text-secondary font-display font-black text-[11px] uppercase tracking-[0.3em]">Transparent Scalability</p>
                             <h2 className="h2-display text-primary">Strategic Plans for <span className="text-secondary">Global Reach</span></h2>
-                            
+
                             {/* Toggle */}
                             <div className="pt-8 flex items-center justify-center gap-4">
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${!isAnnual ? 'text-primary' : 'text-slate-400'}`}>Monthly</span>
-                                <button 
+                                <button
                                     onClick={() => setIsAnnual(!isAnnual)}
                                     className="w-14 h-7 bg-slate-200 rounded-full relative p-1 transition-colors duration-300 hover:bg-slate-300"
                                 >
@@ -77,25 +99,25 @@ const LandingPage = ({ activePath, onNavigate }) => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 items-start">
                             {[
-                                { 
-                                    name: 'Starter', 
-                                    monthlyPrice: '2,499', 
+                                {
+                                    name: 'Starter',
+                                    monthlyPrice: '2,499',
                                     yearlyPrice: '23,990',
                                     features: ['5,000 Messages/mo', 'Contact Management', 'Basic Templates', 'Direct Chat Support'],
                                     recommended: false,
                                     btnClass: 'bg-white text-primary border-2 border-slate-100 hover:border-primary'
                                 },
-                                { 
-                                    name: 'Growth', 
-                                    monthlyPrice: '5,999', 
+                                {
+                                    name: 'Growth',
+                                    monthlyPrice: '5,999',
                                     yearlyPrice: '57,590',
                                     features: ['25,000 Messages/mo', 'Advanced Automation', 'Dynamic Drip Campaigns', 'Priority API Access', 'Custom Analytics'],
                                     recommended: true,
                                     btnClass: 'bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105'
                                 },
-                                { 
-                                    name: 'Enterprise', 
-                                    monthlyPrice: '19,999', 
+                                {
+                                    name: 'Enterprise',
+                                    monthlyPrice: '19,999',
                                     yearlyPrice: '1,91,990',
                                     features: ['100,000 Messages/mo', 'Dedicated Node Manager', 'White-label Options', '24/7 Strategic Support', 'SLA Guarantee'],
                                     recommended: false,
@@ -132,7 +154,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                             </div>
                                         ))}
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => onNavigate('/register')}
                                         className={`w-full py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 ${plan.btnClass}`}
                                     >
@@ -152,7 +174,7 @@ const LandingPage = ({ activePath, onNavigate }) => {
                         {/* Ambient Background */}
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px]"></div>
                         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-[120px]"></div>
-                        
+
                         <div className="relative z-10 space-y-6">
                             <h2 className="font-display text-3xl md:text-5xl text-white leading-[1.1] max-w-3xl mx-auto font-black">
                                 Ready to Transform Your <span className="text-secondary">Communication?</span>
@@ -161,9 +183,9 @@ const LandingPage = ({ activePath, onNavigate }) => {
                                 Join the elite circle of businesses scaling their engagement through our optimized WhatsApp ecosystem.
                             </p>
                         </div>
-                        
+
                         <div className="pt-6 relative z-10 flex flex-col items-center gap-6">
-                            <button 
+                            <button
                                 onClick={() => onNavigate('/login')}
                                 className="btn-secondary px-12 py-5 text-base shadow-[0_20px_50px_rgba(99,193,50,0.3)]"
                             >

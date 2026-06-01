@@ -25,7 +25,6 @@ const tabPathMap = {
   'Contacts': '/contacts',
   'Messages': '/messages',
   'Message History': '/history',
-
   'Templates': '/templates',
   'Automations': '/automations',
   'Automation Builder': '/automations/builder',
@@ -107,7 +106,7 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     const normalize = p => p?.replace(/\/+$/, '') || '';
     const targetPath = tabPathMap[activeTab];
     const currentPath = normalize(window.location.pathname);
-    
+
 
     if (targetPath && normalize(targetPath) !== currentPath) {
     }
@@ -119,6 +118,9 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('activeDashboardTab');
+    localStorage.removeItem('inbox_active_chat_id');
+    localStorage.removeItem('cached_conversations');
+    localStorage.removeItem('cached_contact_groups');
     if (onNavigate) onNavigate('/login');
   };
 
@@ -144,10 +146,10 @@ export default function DashboardPage({ onNavigate, initialPath }) {
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        <Header 
-          toggleSidebar={toggleSidebar} 
-          onNavigate={onNavigate} 
-          userData={userData} 
+        <Header
+          toggleSidebar={toggleSidebar}
+          onNavigate={onNavigate}
+          userData={userData}
           businessData={businessData}
           onLogout={handleLogout}
           setActiveTab={setActiveTab}
@@ -182,14 +184,14 @@ export default function DashboardPage({ onNavigate, initialPath }) {
               }
             }} />
           ) : activeTab === 'Template Details' ? (
-            <TemplateDetailsPage 
-              template={selectedTemplateData} 
+            <TemplateDetailsPage
+              template={selectedTemplateData}
               onBack={() => {
                 localStorage.removeItem('selectedTemplateData');
                 setSelectedTemplateData(null);
                 setActiveTab('Templates');
                 onNavigate('/templates');
-              }} 
+              }}
             />
           ) : activeTab === 'Contacts' ? (
             <ContactsPage onNavigate={onNavigate} setActiveTab={setActiveTab} userData={userData} />
@@ -208,14 +210,14 @@ export default function DashboardPage({ onNavigate, initialPath }) {
               onNavigate(path);
             }} />
           ) : activeTab === 'Automation Builder' ? (
-            <AutomationBuilder 
+            <AutomationBuilder
               automation={selectedAutomationData}
               onClose={() => {
                 localStorage.removeItem('selectedAutomationData');
                 setSelectedAutomationData(null);
                 setActiveTab('Automations');
                 onNavigate('/automations');
-              }} 
+              }}
             />
           ) : activeTab === 'WhatsApp Setup' ? (
             <WhatsAppSetupPage userData={userData} onUpdate={fetchUserData} />
