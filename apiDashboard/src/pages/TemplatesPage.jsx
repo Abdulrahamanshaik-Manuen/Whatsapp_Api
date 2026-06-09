@@ -453,23 +453,23 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
     <div className="flex-1 flex flex-col h-full bg-[#F8FAFC] overflow-hidden relative">
       <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar pb-24">
         {/* Page Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-3.5 border-b border-slate-100">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Templates</h1>
             <p className="text-xs text-slate-400 font-semibold leading-none mt-2">Manage your templates</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <button
               onClick={handleSync}
               disabled={loading}
-              className="flex items-center justify-center gap-1.5 h-10 px-4 bg-white border border-slate-200 hover:bg-slate-50 active:scale-98 text-slate-600 text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer shrink-0 disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 h-10 px-4 bg-white border border-slate-200 hover:bg-slate-50 active:scale-98 text-slate-600 text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer shrink-0 disabled:opacity-50"
             >
               <RefreshCcw size={14} className={loading ? 'animate-spin' : ''} />
               <span>Sync Meta</span>
             </button>
             <button
               onClick={() => onNavigate('/templates/create')}
-              className="flex items-center justify-center gap-1.5 h-10 px-4 bg-[#25D366] hover:brightness-105 active:scale-98 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 h-10 px-4 bg-[#25D366] hover:brightness-105 active:scale-98 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer shrink-0"
             >
               <Plus size={16} strokeWidth={2.5} />
               <span>Create Template</span>
@@ -478,7 +478,7 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
         </div>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
               <Layers size={20} />
@@ -538,32 +538,35 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
               />
             </div>
 
-            {/* Category Dropdown */}
-            <div className="relative w-full sm:w-auto">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full sm:w-36 pl-3 pr-8 h-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-655 outline-none cursor-pointer appearance-none animate-in fade-in"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
-              >
-                {uniqueCategories.map(cat => (
-                  <option key={cat} value={cat}>{cat === 'ALL' ? 'All Categories' : cat}</option>
-                ))}
-              </select>
-            </div>
+            {/* Dropdowns side-by-side on mobile */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {/* Category Dropdown */}
+              <div className="relative flex-1 sm:flex-initial">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full sm:w-36 pl-3 pr-8 h-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 outline-none cursor-pointer appearance-none animate-in fade-in"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
+                >
+                  {uniqueCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat === 'ALL' ? 'All Categories' : cat}</option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Language Dropdown */}
-            <div className="relative w-full sm:w-auto">
-              <select
-                value={langFilter}
-                onChange={(e) => setLangFilter(e.target.value)}
-                className="w-full sm:w-36 pl-3 pr-8 h-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-655 outline-none cursor-pointer appearance-none animate-in fade-in"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
-              >
-                {uniqueLanguages.map(lang => (
-                  <option key={lang} value={lang}>{lang === 'ALL' ? 'All Languages' : lang}</option>
-                ))}
-              </select>
+              {/* Language Dropdown */}
+              <div className="relative flex-1 sm:flex-initial">
+                <select
+                  value={langFilter}
+                  onChange={(e) => setLangFilter(e.target.value)}
+                  className="w-full sm:w-36 pl-3 pr-8 h-8 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 outline-none cursor-pointer appearance-none animate-in fade-in"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
+                >
+                  {uniqueLanguages.map(lang => (
+                    <option key={lang} value={lang}>{lang === 'ALL' ? 'All Languages' : lang}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -601,7 +604,7 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
             </div>
           ) : (
             <div className="overflow-x-auto custom-scrollbar min-h-[280px]">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full min-w-[950px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-200 bg-slate-50/70 select-none">
                     <th className="py-3 px-4 font-bold text-center w-12">
@@ -615,7 +618,9 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
                     <th className="py-3 px-4 font-bold">Template Name</th>
                     <th className="py-3 px-2 font-bold">Category</th>
                     <th className="py-3 px-2 font-bold">Language</th>
-                    <th className="py-3 px-2 font-bold">Status</th>
+                    <th className="py-3 px-2 font-bold">Admin Status</th>
+                    <th className="py-3 px-2 font-bold">Meta Status</th>
+                    <th className="py-3 px-2 font-bold">Variables</th>
                     <th className="py-3 px-2 font-bold">Last Updated</th>
                     <th className="py-3 px-4 font-bold text-center w-20">Actions</th>
                   </tr>
@@ -772,9 +777,15 @@ export default function TemplatesPage({ onNavigate, setActiveTab, setSelectedTem
       </main>
 
       {/* Right-Side Sliding Preview Drawer */}
+      {drawerTemplate && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
+          onClick={() => setDrawerTemplate(null)}
+        />
+      )}
       <div
         ref={drawerRef}
-        className={`fixed top-0 right-0 h-full w-[360px] bg-white border-l border-slate-200 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${drawerTemplate ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 h-full w-full sm:w-[380px] max-w-full bg-white border-l border-slate-200 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${drawerTemplate ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
         <div className="h-14 border-b border-slate-100 flex items-center justify-between px-4 shrink-0">

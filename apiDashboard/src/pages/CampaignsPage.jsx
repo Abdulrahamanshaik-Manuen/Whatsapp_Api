@@ -133,7 +133,7 @@ export default function CampaignsPage({ onNavigate }) {
       <main className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar pb-12">
 
         {/* Page Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Campaigns</h1>
             <p className="text-xs text-slate-400 font-semibold leading-none mt-2">Manage and monitor your outbound messaging campaigns</p>
@@ -148,7 +148,7 @@ export default function CampaignsPage({ onNavigate }) {
         </div>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           {/* Card 1: Total */}
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
@@ -252,7 +252,7 @@ export default function CampaignsPage({ onNavigate }) {
           </div>
 
           {/* Right Status Tabs */}
-          <div className="flex items-center bg-slate-55 p-1 rounded-lg border border-slate-200/60 w-full lg:w-auto overflow-x-auto no-scrollbar gap-0.5">
+          <div className="flex items-center bg-slate-50 p-1 rounded-lg border border-slate-200/60 w-full lg:w-auto overflow-x-auto no-scrollbar gap-0.5">
             {['All', 'Running', 'Completed', 'Scheduled', 'Failed'].map(status => (
               <button
                 key={status}
@@ -278,7 +278,7 @@ export default function CampaignsPage({ onNavigate }) {
             </div>
           ) : filteredCampaigns.length > 0 ? (
             <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full min-w-[850px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-100">
                     <th className="py-3 px-4 font-bold">Campaign Name</th>

@@ -177,7 +177,7 @@ export default function TemplateDetailsPage({ template, onBack, onNavigate, setA
         <div className="p-4 md:p-5 max-w-7xl mx-auto space-y-4 pb-10">
 
           {/* ── Header bar ── */}
-          <div className="flex items-start justify-between gap-4 pb-3.5 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-slate-100">
             <div className="flex items-start gap-3 min-w-0 flex-1">
               <button
                 onClick={onBack}
@@ -212,7 +212,7 @@ export default function TemplateDetailsPage({ template, onBack, onNavigate, setA
             </div>
 
             {/* Action toolbar */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
               {/* Edit — only allowed before admin reviews or after rejection */}
               {['pending_admin_approval', 'rejected', 'draft', ''].includes((template.status || '').toLowerCase()) ? (
                 <button

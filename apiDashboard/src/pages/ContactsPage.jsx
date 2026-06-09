@@ -408,7 +408,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
         </div>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Card 1: Total Contacts */}
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-[#004277] flex items-center justify-center shrink-0">
@@ -473,11 +473,11 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             />
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <select
               value={filters.consent_status}
               onChange={(e) => setFilters({ ...filters, consent_status: e.target.value })}
-              className="h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
+              className="flex-1 md:flex-initial h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
               style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
             >
               <option value="">Status ▼</option>
@@ -488,7 +488,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
             <select
               value={filters.consent_source}
               onChange={(e) => setFilters({ ...filters, consent_source: e.target.value })}
-              className="h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
+              className="flex-1 md:flex-initial h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
               style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
             >
               <option value="">Source ▼</option>
@@ -497,7 +497,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
               <option value="qr">QR Code</option>
               <option value="store">Store</option>
             </select>
-
+            
             <button
               onClick={() => { setFilters({ consent_status: '', consent_source: '' }); setSearchQuery(''); fetchContacts(); }}
               className="h-8 px-2.5 bg-slate-50 border border-slate-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200 text-slate-400 rounded-lg transition-colors cursor-pointer flex items-center justify-center shrink-0"
@@ -512,7 +512,7 @@ export default function ContactsPage({ onNavigate, setActiveTab, userData }) {
         {viewMode === 'table' ? (
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[800px] text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200/80 text-[10px] text-slate-500 font-bold uppercase tracking-wider select-none">
                     <th className="py-3 pl-4 pr-2 w-10 text-center border-r border-slate-100">

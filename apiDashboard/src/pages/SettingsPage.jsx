@@ -231,20 +231,20 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
         </div>
 
         {/* ── Two-column layout: Nav + Content ── */}
-        <div className="flex gap-4 min-h-0">
+        <div className="flex flex-col md:flex-row gap-4 min-h-0">
 
           {/* ── Left: Compact Nav ── */}
-          <div className="w-44 shrink-0">
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden sticky top-0">
-              <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/50">
+          <div className="w-full md:w-44 shrink-0">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden md:sticky md:top-0">
+              <div className="hidden md:block px-3 py-2.5 border-b border-slate-100 bg-slate-50/50">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Settings</p>
               </div>
-              <nav className="p-1.5 space-y-0.5">
+              <nav className="p-1.5 flex flex-row md:flex-col gap-1 overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-all text-left cursor-pointer ${
+                    className={`flex-1 md:w-full flex items-center justify-center md:justify-start gap-2.5 px-3 py-2 rounded-md transition-all text-left cursor-pointer shrink-0 whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'bg-[#004277] text-white'
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
@@ -252,7 +252,7 @@ export default function SettingsPage({ userData, businessData, onUpdate }) {
                   >
                     <tab.icon size={14} className="shrink-0" />
                     <span className="text-xs font-semibold">{tab.label}</span>
-                    {activeTab === tab.id && <ChevronRight size={12} className="ml-auto opacity-60" />}
+                    {activeTab === tab.id && <ChevronRight size={12} className="ml-auto opacity-60 hidden md:block" />}
                   </button>
                 ))}
               </nav>

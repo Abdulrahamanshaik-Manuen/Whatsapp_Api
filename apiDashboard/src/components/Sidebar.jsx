@@ -72,8 +72,9 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
               setActiveTab(item.name);
               if (onNavigate) onNavigate(item.path);
             }}
-            className={`w-full flex items-center rounded-lg transition-all duration-150 group relative ${isCollapsed ? 'lg:justify-center lg:px-2 lg:py-2.5 px-3.5 py-2.5' : 'gap-3 px-3.5 py-2.5'
-              } ${activeTab === item.name
+            className={`w-full flex items-center rounded-lg transition-all duration-150 group relative gap-3 px-3.5 py-2.5 ${
+              isCollapsed ? 'lg:justify-center lg:px-2 lg:py-2.5 lg:gap-0' : ''
+            } ${activeTab === item.name
                 ? 'bg-[#0D2E5C] text-white font-semibold'
                 : 'hover:bg-white/5 hover:text-white'
               }`}
@@ -98,8 +99,9 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
         <button
           onClick={() => setShowSupport(true)}
           title="Technical Support"
-          className={`w-full hover:bg-white/5 text-white/70 hover:text-white text-xs font-semibold rounded-lg transition-all flex items-center ${isCollapsed ? 'lg:justify-center lg:py-2.5 lg:px-0 gap-0' : 'py-2 px-1 gap-2.5'
-            }`}
+          className={`w-full hover:bg-white/5 text-white/70 hover:text-white text-xs font-semibold rounded-lg transition-all flex items-center py-2 px-1 gap-2.5 ${
+            isCollapsed ? 'lg:justify-center lg:py-2.5 lg:px-0 lg:gap-0' : ''
+          }`}
         >
           <Headphones size={16} className="text-white/40" />
           <span className={isCollapsed ? 'lg:hidden' : 'block'}>Technical Support</span>
@@ -107,8 +109,9 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
         <button
           onClick={onLogout}
           title="Log Out System"
-          className={`w-full mt-3 bg-transparent border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 text-xs font-bold rounded-lg transition-all flex items-center justify-center py-2 px-3 ${isCollapsed ? 'lg:py-2.5 lg:px-0 gap-0 border border-rose-500/30' : 'gap-2'
-            }`}
+          className={`w-full mt-3 bg-transparent border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 text-xs font-bold rounded-lg transition-all flex items-center justify-center py-2 px-3 gap-2 ${
+            isCollapsed ? 'lg:py-2.5 lg:px-0 lg:gap-0' : ''
+          }`}
         >
           <LogOut size={14} />
           <span className={isCollapsed ? 'lg:hidden' : 'block'}>Log Out</span>

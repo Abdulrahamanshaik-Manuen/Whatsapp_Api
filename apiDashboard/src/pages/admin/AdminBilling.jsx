@@ -179,7 +179,7 @@ export default function AdminBilling() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                <StatCard
                   label="Gross Revenue"
                   value={`₹${billingData?.stats?.grossRevenue?.toLocaleString() || '0'}`}
@@ -332,7 +332,7 @@ export default function AdminBilling() {
             {/* Subscriptions Table */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/40 overflow-hidden">
                <div className="overflow-x-auto custom-scrollbar">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full min-w-[850px] text-left border-collapse">
                      <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-200">
                            <th className="pl-8 pr-4 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em] border-r border-slate-100/50">Client Node</th>

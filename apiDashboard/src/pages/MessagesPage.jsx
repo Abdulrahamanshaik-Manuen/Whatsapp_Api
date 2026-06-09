@@ -182,7 +182,7 @@ export default function MessagesPage({ onNavigate }) {
       <main className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar pb-10">
 
         {/* Page Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Message History</h1>
             <p className="text-xs text-slate-400 font-semibold mt-2 leading-none">Track your broadcast delivery performance</p>
@@ -206,7 +206,7 @@ export default function MessagesPage({ onNavigate }) {
         </div>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Card 1: Total Sent */}
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
@@ -256,17 +256,38 @@ export default function MessagesPage({ onNavigate }) {
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4">
           
           {/* Search + Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full bg-slate-55 bg-slate-100/50 border border-slate-200/60 rounded-lg p-2">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by phone..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-400 transition-all text-slate-700"
-              />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full bg-slate-100/50 border border-slate-200/60 rounded-lg p-2">
+            {/* Search & Mobile Date Group */}
+            <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-initial">
+              {/* Search Input */}
+              <div className="relative flex-1 sm:w-64 sm:flex-initial">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search by phone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-400 transition-all text-slate-700"
+                />
+              </div>
+
+              {/* Mobile Date Filter (hidden on desktop) */}
+              <div className="relative sm:hidden shrink-0">
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 px-3 py-1.5 focus:outline-none focus:border-slate-400 cursor-pointer shadow-sm w-full"
+                />
+                {dateFilter && (
+                  <button
+                    onClick={() => setDateFilter('')}
+                    className="absolute right-7 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-[10px] font-bold"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Status Filters */}
@@ -289,8 +310,8 @@ export default function MessagesPage({ onNavigate }) {
             {/* Spacer for desktop */}
             <div className="hidden sm:block flex-1"></div>
 
-            {/* Date Filter */}
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {/* Desktop Date Filter */}
+            <div className="hidden sm:flex items-center gap-2 justify-end shrink-0">
               <div className="relative">
                 <input
                   type="date"
@@ -312,7 +333,7 @@ export default function MessagesPage({ onNavigate }) {
 
           {/* Table Area */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[700px] text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="px-4 py-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recipient</th>
@@ -469,7 +490,7 @@ export default function MessagesPage({ onNavigate }) {
       {viewingDetailsMessage && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-slate-150 flex items-center justify-between">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none">Message Log Details</h3>
               <button
                 onClick={() => setViewingDetailsMessage(null)}

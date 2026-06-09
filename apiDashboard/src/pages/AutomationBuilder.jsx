@@ -195,7 +195,8 @@ function BuilderCanvas({ onClose, automation }) {
     description: automation?.description || 'Automated WhatsApp conversation'
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(true);
+  const [showLeftPanel, setShowLeftPanel] = useState(() => window.innerWidth >= 1024);
+  const [showRightPanel, setShowRightPanel] = useState(() => window.innerWidth >= 1024);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
   const [clients, setClients] = useState([]);
@@ -498,7 +499,7 @@ function BuilderCanvas({ onClose, automation }) {
     <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
       
       {/* Top action header bar */}
-      <div className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 select-none z-10">
+      <div className="min-h-14 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 px-4 py-2 shrink-0 select-none z-10">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
@@ -550,7 +551,7 @@ function BuilderCanvas({ onClose, automation }) {
             <>
               <button
                 onClick={handleValidate}
-                className="h-8 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-650 font-bold text-xs rounded-lg flex items-center gap-1 shadow-sm cursor-pointer"
+                className="h-8 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-xs rounded-lg flex items-center gap-1 shadow-sm cursor-pointer"
                 title="Validate Connections"
               >
                 <Check size={12} className="text-[#004277]" />
@@ -577,11 +578,24 @@ function BuilderCanvas({ onClose, automation }) {
               </button>
 
               <button
+                onClick={() => setShowLeftPanel(!showLeftPanel)}
+                className={`h-8 px-3 border rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer transition-all ${
+                  showLeftPanel 
+                    ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-150' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                }`}
+                title="Toggle Add Nodes Panel"
+              >
+                <Plus size={13} />
+                <span>{showLeftPanel ? 'Hide Nodes' : 'Add Nodes'}</span>
+              </button>
+
+              <button
                 onClick={() => setShowRightPanel(!showRightPanel)}
                 className={`h-8 px-3 border rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer transition-all ${
                   showRightPanel 
                     ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-150' 
-                    : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
                 title="Toggle Properties Panel"
               >
@@ -617,7 +631,7 @@ function BuilderCanvas({ onClose, automation }) {
                 className={`h-8 px-3 border rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer transition-all ${
                   showRightPanel 
                     ? 'bg-slate-100 text-slate-700 border-slate-300' 
-                    : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
                 title="Toggle Info Panel"
               >
@@ -632,30 +646,45 @@ function BuilderCanvas({ onClose, automation }) {
       <div className="flex-1 flex overflow-hidden min-h-0 relative">
         
         {/* Left Node Drawer list for drag and add (admin only) */}
-        {isAdmin && (
-          <aside className="w-60 bg-white border-r border-slate-200 flex flex-col shrink-0">
-            <div className="p-4 border-b border-slate-100">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest leading-none">Add Nodes</h3>
-              <p className="text-[10px] text-slate-400 font-semibold mt-1">Drag nodes to canvas or click to insert</p>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
-              <NodeDragSection title="Triggers" onNodeAdd={onNodeAdd} nodes={[
-                { type: 'triggerNode', label: 'Trigger', icon: Zap, color: 'text-red-500 bg-red-50' },
-              ]} />
+        {isAdmin && showLeftPanel && (
+          <>
+            {/* Mobile Left Sidebar Backdrop */}
+            <div 
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setShowLeftPanel(false)}
+            />
+            <aside className="fixed inset-y-0 left-0 w-full sm:w-60 bg-white z-50 border-r border-slate-200 flex flex-col shrink-0 lg:static lg:w-60 lg:h-auto lg:z-auto shadow-2xl lg:shadow-none">
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest leading-none">Add Nodes</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold mt-1">Drag nodes or click to insert</p>
+                </div>
+                <button 
+                  onClick={() => setShowLeftPanel(false)}
+                  className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+                <NodeDragSection title="Triggers" onNodeAdd={onNodeAdd} nodes={[
+                  { type: 'triggerNode', label: 'Trigger', icon: Zap, color: 'text-red-500 bg-red-50' },
+                ]} />
 
-              <NodeDragSection title="Actions" onNodeAdd={onNodeAdd} nodes={[
-                { type: 'messageNode', label: 'Send Text', icon: MessageSquare, color: 'text-emerald-500 bg-emerald-50' },
-                { type: 'actionNode', label: 'System Action', icon: Database, color: 'text-blue-500 bg-blue-50' },
-              ]} />
+                <NodeDragSection title="Actions" onNodeAdd={onNodeAdd} nodes={[
+                  { type: 'messageNode', label: 'Send Text', icon: MessageSquare, color: 'text-emerald-500 bg-emerald-50' },
+                  { type: 'actionNode', label: 'System Action', icon: Database, color: 'text-blue-500 bg-blue-50' },
+                ]} />
 
-              <NodeDragSection title="Logic" onNodeAdd={onNodeAdd} nodes={[
-                { type: 'waitNode', label: 'Wait for Reply', icon: Clock, color: 'text-purple-500 bg-purple-50' },
-                { type: 'conditionNode', label: 'Branching', icon: GitBranch, color: 'text-amber-600 bg-amber-50' },
-                { type: 'delayNode', label: 'Delay', icon: Timer, color: 'text-slate-500 bg-slate-100' },
-              ]} />
-            </div>
-          </aside>
+                <NodeDragSection title="Logic" onNodeAdd={onNodeAdd} nodes={[
+                  { type: 'waitNode', label: 'Wait for Reply', icon: Clock, color: 'text-purple-500 bg-purple-50' },
+                  { type: 'conditionNode', label: 'Branching', icon: GitBranch, color: 'text-amber-600 bg-amber-50' },
+                  { type: 'delayNode', label: 'Delay', icon: Timer, color: 'text-slate-500 bg-slate-100' },
+                ]} />
+              </div>
+            </aside>
+          </>
         )}
 
         {/* Canvas area wrapper */}
@@ -720,7 +749,7 @@ function BuilderCanvas({ onClose, automation }) {
             </button>
             <button
               onClick={() => setShowMiniMap(!showMiniMap)}
-              className={`w-7 h-7 rounded-lg hover:bg-slate-50 flex items-center justify-center text-slate-500 hover:text-slate-850 transition-colors border border-slate-100 shadow-sm cursor-pointer ${showMiniMap ? 'bg-slate-100 text-[#004277]' : ''}`}
+              className={`w-7 h-7 rounded-lg hover:bg-slate-50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors border border-slate-100 shadow-sm cursor-pointer ${showMiniMap ? 'bg-slate-100 text-[#004277]' : ''}`}
               title="Toggle Map"
             >
               <Map size={13} />
@@ -729,19 +758,36 @@ function BuilderCanvas({ onClose, automation }) {
         </div>
 
         {/* Right Collapsible Property Panel */}
-        <aside className={`bg-white border-l border-slate-200 flex flex-col shrink-0 transition-all duration-300 overflow-hidden relative z-10 ${showRightPanel ? 'w-80' : 'w-0 border-l-0'}`}>
-          <div className="p-4 border-b border-slate-150 flex items-center justify-between shrink-0 bg-slate-50/50">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest leading-none">
-              {selectedNode ? 'Node Settings' : 'Automation Info'}
-            </h3>
-            <button
-              onClick={() => setSelectedNode(null)}
-              className={`p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-650 transition-colors ${!selectedNode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-              title="Clear Selection"
-            >
-              <X size={14} />
-            </button>
-          </div>
+        {showRightPanel && (
+          <>
+            {/* Mobile Right Sidebar Backdrop */}
+            <div 
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setShowRightPanel(false)}
+            />
+            <aside className="fixed inset-y-0 right-0 w-full sm:w-80 bg-white z-50 border-l border-slate-200 flex flex-col shrink-0 lg:static lg:w-80 lg:h-auto lg:z-auto shadow-2xl lg:shadow-none">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50/50">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest leading-none">
+                  {selectedNode ? 'Node Settings' : 'Automation Info'}
+                </h3>
+                <div className="flex items-center gap-1">
+                  {selectedNode && (
+                    <button
+                      onClick={() => setSelectedNode(null)}
+                      className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                      title="Clear Selection"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setShowRightPanel(false)}
+                    className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
 
           {/* Panel Form Fields */}
           <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar bg-white">
@@ -810,11 +856,11 @@ function BuilderCanvas({ onClose, automation }) {
                 <div className="h-[1px] bg-slate-100 my-2" />
 
                 <div className="grid grid-cols-2 gap-2 mt-4">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-150/60">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                     <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Nodes</h5>
                     <p className="text-lg font-black text-slate-800 mt-1 leading-none">{nodes.length}</p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-150/60">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                     <h5 className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Connections</h5>
                     <p className="text-lg font-black text-slate-800 mt-1 leading-none">{edges.length}</p>
                   </div>
@@ -823,7 +869,7 @@ function BuilderCanvas({ onClose, automation }) {
             ) : (
               // Dynamic selected node editor
               <div className="space-y-4">
-                <div className="p-3 bg-slate-50 border border-slate-150/60 rounded-xl flex items-center gap-2">
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 border border-slate-200">
                     {selectedNode.type === 'triggerNode' ? <Zap size={14} className="text-red-500" fill="currentColor" /> :
                      selectedNode.type === 'messageNode' ? <MessageSquare size={14} className="text-emerald-500" fill="currentColor" /> :
@@ -1058,6 +1104,8 @@ function BuilderCanvas({ onClose, automation }) {
             )}
           </div>
         </aside>
+      </>
+    )}
 
       </div>
     </div>
@@ -1083,7 +1131,7 @@ function NodeDragSection({ title, nodes, onNodeAdd }) {
             className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-grab active:cursor-grabbing hover:bg-white hover:border-[#004277]/20 hover:shadow-md transition-all active:scale-[0.98] select-none"
             title="Drag to canvas or click to add"
           >
-            <div className={`w-8 h-8 ${node.color} rounded-lg flex items-center justify-center shrink-0 border border-slate-150/40`}>
+            <div className={`w-8 h-8 ${node.color} rounded-lg flex items-center justify-center shrink-0 border border-slate-200/40`}>
               <node.icon size={14} fill={node.type.includes('trigger') ? 'currentColor' : 'none'} />
             </div>
             <span className="text-xs font-bold text-slate-700">{node.label}</span>

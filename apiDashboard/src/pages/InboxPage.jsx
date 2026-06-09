@@ -557,7 +557,7 @@ const InboxPage = ({ onNavigate }) => {
     <div className="flex-1 flex flex-col h-full bg-[#F5F7FA] overflow-hidden font-sans select-none">
 
       {/* ── Page Header ── */}
-      <div className="flex items-center justify-between px-5 pb-3.5 pt-4 border-b border-slate-100 shrink-0">
+      <div className="hidden lg:flex items-center justify-between px-5 pb-3.5 pt-4 border-b border-slate-100 shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Inbox</h1>
           <p className="text-xs text-slate-400 font-semibold mt-2 leading-none">Respond to customer conversations in real-time</p>
@@ -565,10 +565,10 @@ const InboxPage = ({ onNavigate }) => {
       </div>
 
       {/* ── Two-column chat layout ── */}
-      <div className="flex flex-1 gap-5 px-5 pb-5 overflow-hidden min-h-0">
+      <div className="flex flex-1 gap-0 lg:gap-5 lg:px-5 lg:pb-5 overflow-hidden min-h-0">
       
       {/* Column 1: Conversations List Card */}
-      <div className="w-[24%] min-w-[270px] max-w-[340px] shrink-0 bg-white border border-slate-200 rounded-2xl flex flex-col min-h-0 overflow-hidden shadow-sm">
+      <div className={`w-full lg:w-[24%] lg:min-w-[270px] lg:max-w-[340px] shrink-0 bg-white border-0 lg:border lg:border-slate-200 rounded-none lg:rounded-2xl flex flex-col min-h-0 overflow-hidden lg:shadow-sm ${activeChat ? 'hidden lg:flex' : 'flex'}`}>
         
         {/* Search & Filter Section */}
         <div className="p-4 pb-3 shrink-0 flex flex-col gap-3">
@@ -781,7 +781,7 @@ const InboxPage = ({ onNavigate }) => {
       </div>
 
       {/* Column 2: Chat Workspace Card */}
-      <div className="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col min-h-0 overflow-hidden shadow-sm relative">
+      <div className={`flex-1 bg-white border-0 lg:border lg:border-slate-200 rounded-none lg:rounded-2xl flex flex-col min-h-0 overflow-hidden lg:shadow-sm relative ${activeChat ? 'flex' : 'hidden lg:flex'}`}>
         {!activeChat ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F8FAFC]/40">
             <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4 border border-slate-100 shadow-sm">
@@ -801,7 +801,7 @@ const InboxPage = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setActiveChat(null)}
-                  className="lg:hidden p-1.5 -ml-1 text-slate-400 hover:text-slate-655 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
+                  className="lg:hidden p-1.5 -ml-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -811,25 +811,25 @@ const InboxPage = ({ onNavigate }) => {
                   </div>
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#25D366] border-2 border-white rounded-full"></span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-slate-800 leading-none">{activeChat.name}</h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="text-sm font-bold text-slate-800 leading-none truncate max-w-[120px] sm:max-w-[200px]" title={activeChat.name}>{activeChat.name}</h3>
                     {(() => {
                       const status = getWindowStatus(activeChat);
                       return (
-                        <span className={`px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border leading-none ${
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border leading-none shrink-0 ${
                           status.active 
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
                             : 'bg-red-50 text-red-600 border-red-100'
                         }`}>
-                          {status.active ? 'Active' : 'Window Expired'}
+                          {status.active ? 'Active' : 'Expired'}
                         </span>
                       );
                     })()}
                   </div>
-                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-1 font-bold leading-none">
-                    <span className={`w-1.5 h-1.5 rounded-full ${getWindowStatus(activeChat).active ? 'bg-[#25D366]' : 'bg-slate-300'}`}></span>
-                    {activeChat.lastIncomingMessageAt ? `Last active: ${formatTime(activeChat.lastIncomingMessageAt)}` : 'No recent activity'}
+                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-1.5 font-bold leading-none truncate">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getWindowStatus(activeChat).active ? 'bg-[#25D366]' : 'bg-slate-300'}`}></span>
+                    <span className="truncate">{activeChat.lastIncomingMessageAt ? `Last active: ${formatTime(activeChat.lastIncomingMessageAt)}` : 'No recent activity'}</span>
                   </p>
                 </div>
               </div>
@@ -846,7 +846,7 @@ const InboxPage = ({ onNavigate }) => {
                   }`}
                   title="Pin Conversation"
                 >
-                  <Star size={14} className={pinnedConvs.includes(activeChat._id) ? 'fill-amber-555 fill-amber-500' : ''} />
+                  <Star size={14} className={pinnedConvs.includes(activeChat._id) ? 'fill-amber-500' : ''} />
                 </button>
                 <button
                   type="button"
@@ -952,82 +952,84 @@ const InboxPage = ({ onNavigate }) => {
 
             {/* Chat Composer Footer */}
             <div className="p-4 bg-white border-t border-slate-100 shrink-0">
-              <div className="bg-[#F8FAFC] rounded-2xl p-2 flex flex-col gap-2 border border-slate-200 focus-within:bg-white focus-within:border-emerald-500/30 transition-all shadow-sm">
+              <div className="bg-[#F8FAFC] rounded-2xl p-2.5 flex flex-col gap-2.5 border border-slate-200 focus-within:bg-white focus-within:border-emerald-500/30 transition-all shadow-sm">
                 
                 {selectedFile && (
-                  <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-emerald-755 text-emerald-700 font-bold shrink-0">
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-emerald-700 font-bold shrink-0">
                     <span className="truncate">📎 {selectedFile.name}</span>
-                    <button type="button" onClick={() => setSelectedFile(null)} className="hover:text-emerald-955 hover:text-emerald-950 font-black">✕</button>
+                    <button type="button" onClick={() => setSelectedFile(null)} className="hover:text-emerald-950 font-black">✕</button>
                   </div>
                 )}
                 
-                <div className="flex items-end gap-2">
-                  <div className="flex items-center gap-1.5 shrink-0 select-none pb-0.5">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="p-2 hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 rounded-xl transition-colors cursor-pointer"
-                        title="Emoji"
-                      >
-                        <Smile size={18} />
-                      </button>
-                      {showEmojiPicker && (
-                        <div className="absolute left-0 bottom-full mb-2.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 w-64">
-                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Emoji</span>
-                            <button 
-                              type="button" 
-                              onClick={() => setShowEmojiPicker(false)}
-                              className="text-xs text-slate-400 hover:text-slate-700 font-bold"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-8 gap-1.5 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
-                            {COMMON_EMOJIS.map((emoji, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => {
-                                  setReplyText(prev => prev + emoji);
-                                }}
-                                className="w-7 h-7 flex items-center justify-center text-lg hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
+                {/* Actions Toolbar Row */}
+                <div className="flex items-center gap-2 border-b border-slate-100/60 pb-2 select-none shrink-0">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-1.5 hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 rounded-lg transition-colors cursor-pointer"
+                      title="Emoji"
+                    >
+                      <Smile size={18} />
+                    </button>
+                    {showEmojiPicker && (
+                      <div className="absolute left-0 bottom-full mb-2.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 w-64">
+                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Emoji</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setShowEmojiPicker(false)}
+                            className="text-xs text-slate-400 hover:text-slate-700 font-bold"
+                          >
+                            ✕
+                          </button>
                         </div>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`p-2 hover:bg-slate-200/60 rounded-xl text-slate-400 hover:text-slate-600 transition-colors cursor-pointer ${
-                        selectedFile ? 'text-emerald-500 bg-emerald-50' : ''
-                      }`}
-                      title="Attach File"
-                    >
-                      <Paperclip size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onNavigate && onNavigate('/campaigns')}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-                      title="Use Message Template"
-                    >
-                      <FileText size={14} className="text-slate-505 text-slate-500" />
-                      Template
-                    </button>
+                        <div className="grid grid-cols-8 gap-1.5 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
+                          {COMMON_EMOJIS.map((emoji, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setReplyText(prev => prev + emoji);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center text-lg hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`p-1.5 hover:bg-slate-200/60 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer ${
+                      selectedFile ? 'text-emerald-500 bg-emerald-50' : ''
+                    }`}
+                    title="Attach File"
+                  >
+                    <Paperclip size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('/campaigns')}
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
+                    title="Use Message Template"
+                  >
+                    <FileText size={12} className="text-slate-500" />
+                    <span>Use Template</span>
+                  </button>
+                </div>
 
+                {/* Input & Send button Row */}
+                <div className="flex items-end gap-2">
                   <textarea
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
@@ -1040,7 +1042,7 @@ const InboxPage = ({ onNavigate }) => {
                     placeholder="Type your message..."
                     rows={1}
                     disabled={!getWindowStatus(activeChat).active}
-                    className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-xs py-2 px-1.5 resize-none max-h-24 no-scrollbar text-slate-700 font-semibold disabled:cursor-not-allowed disabled:text-slate-400"
+                    className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-xs py-2 px-1 resize-none max-h-24 no-scrollbar text-slate-700 font-semibold disabled:cursor-not-allowed disabled:text-slate-400"
                   />
 
                   {/* Split Send button */}
@@ -1091,7 +1093,23 @@ const InboxPage = ({ onNavigate }) => {
 
       {/* Column 3: Customer Details Sidebar Card */}
       {activeChat && showCrmPanel && (
-        <div className="w-[25%] min-w-[270px] max-w-[340px] shrink-0 bg-white border border-slate-200 rounded-2xl flex flex-col min-h-0 overflow-y-auto custom-scrollbar shadow-sm p-5 space-y-5">
+        <>
+          {/* Mobile CRM Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+            onClick={() => setShowCrmPanel(false)}
+          />
+          <div className="fixed top-0 right-0 h-full w-[280px] sm:w-[320px] bg-white z-50 shadow-2xl p-5 space-y-5 flex flex-col min-h-0 overflow-y-auto custom-scrollbar lg:static lg:h-auto lg:w-[25%] lg:min-w-[270px] lg:max-w-[340px] lg:shrink-0 lg:border lg:border-slate-200 lg:rounded-2xl lg:shadow-sm lg:z-auto lg:p-5">
+            {/* Mobile close button */}
+            <div className="flex justify-end lg:hidden -mb-3">
+              <button 
+                type="button" 
+                onClick={() => setShowCrmPanel(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+              >
+                <XCircle size={18} />
+              </button>
+            </div>
           
           {/* Profile Header */}
           <div className="flex flex-col items-center text-center pb-4 border-b border-slate-100">
@@ -1273,7 +1291,7 @@ const InboxPage = ({ onNavigate }) => {
 
                 {messages.length > 0 && (
                   <div className="relative">
-                    <div className="absolute left-[-24px] top-0 w-3.5 h-3.5 bg-slate-100 rounded-full border border-slate-355 border-slate-300 shadow-sm flex items-center justify-center">
+                    <div className="absolute left-[-24px] top-0 w-3.5 h-3.5 bg-slate-100 rounded-full border border-slate-300 shadow-sm flex items-center justify-center">
                       <span className="text-[8px] text-slate-600 leading-none">-</span>
                     </div>
                     <p className="text-xs font-bold text-slate-700 leading-none">First Message</p>
@@ -1291,6 +1309,7 @@ const InboxPage = ({ onNavigate }) => {
 
           </div>
         </div>
+        </>
       )}
 
       {/* Tag Modal */}

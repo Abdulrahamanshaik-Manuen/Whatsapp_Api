@@ -94,7 +94,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
         </div>
 
         {/* 1. Stats Row - 5 separate Sleek Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
           <StatCard
             label="Messages Sent"
             value={stats.messagesSent}
@@ -348,7 +348,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
             </div>
             <div className="flex-1 overflow-auto custom-scrollbar">
               {recentCampaigns.length > 0 ? (
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full min-w-[600px] text-left text-xs border-collapse">
                   <thead>
                     <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-100">
                       <th className="py-2.5 font-bold">Campaign Name</th>
@@ -411,7 +411,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
             </div>
             <div className="flex-1 overflow-auto custom-scrollbar">
               {topTemplates.length > 0 ? (
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full min-w-[400px] text-left text-xs border-collapse">
                   <thead>
                     <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-100">
                       <th className="py-2.5 font-bold">Template Name</th>
@@ -424,8 +424,8 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                     {topTemplates.map((template, idx) => {
                       const isUtility = template.type.toLowerCase() === 'utility' || idx !== 1;
                       const badgeClasses = isUtility 
-                        ? 'bg-blue-50 text-blue-650 border border-blue-100' 
-                        : 'bg-purple-50 text-purple-650 border border-purple-100';
+                        ? 'bg-blue-50 text-blue-600 border border-blue-100' 
+                        : 'bg-purple-50 text-purple-600 border border-purple-100';
                       const label = isUtility ? 'Utility' : 'Marketing';
                       
                       return (
@@ -471,7 +471,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
         {/* 4. Quick Actions Container - Divided Row */}
         <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm">
           <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3.5 pl-0.5">Quick Actions</h3>
-          <div className="flex items-center justify-between divide-x divide-slate-100 border border-slate-200/60 rounded-lg overflow-hidden bg-white">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/50">
             <ActionChip label="Create Campaign" icon={Send} color="green" onClick={() => handleInternalNav('Campaigns', '/campaigns')} />
             <ActionChip label="Send Message" icon={MessageSquare} color="blue" onClick={() => handleInternalNav('Messages', '/messages')} />
             <ActionChip label="Add Contact" icon={Users} color="green" onClick={() => handleInternalNav('Contacts', '/contacts')} />
@@ -511,10 +511,10 @@ function ActionChip({ label, icon: Icon, color, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 flex items-center justify-center gap-2 hover:bg-slate-50 py-3.5 transition-colors cursor-pointer text-slate-700 hover:text-slate-900"
+      className="flex items-center justify-center gap-2 bg-white border border-slate-200/60 hover:bg-slate-100 py-3.5 px-4 rounded-xl transition-all cursor-pointer text-slate-700 hover:text-slate-900 font-bold hover:shadow-sm active:scale-98"
     >
       <Icon size={14} className={isGreen ? 'text-[#63C132]' : 'text-[#003B6D]'} />
-      <span className="text-[11px] font-bold tracking-wide">{label}</span>
+      <span className="text-[11px] tracking-wide">{label}</span>
     </button>
   );
 }

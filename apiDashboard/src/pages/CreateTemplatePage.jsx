@@ -248,7 +248,7 @@ export default function CreateTemplatePage({ onNavigate, prefillData }) {
          <div className="max-w-[1200px] mx-auto space-y-6">
             
             {/* Header / Title Row */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3.5 border-b border-slate-200 gap-4">
                <div>
                   <div className="flex items-center gap-2">
                      <button
@@ -262,7 +262,7 @@ export default function CreateTemplatePage({ onNavigate, prefillData }) {
                   <p className="text-xs text-slate-400 font-semibold mt-1 pl-7">Create and submit WhatsApp message templates</p>
                </div>
 
-               <div className="flex items-center gap-3">
+               <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   {/* Toggle Preview Button */}
                   <button
                      type="button"

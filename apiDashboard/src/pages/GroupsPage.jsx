@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, Plus, Users, Trash2, Edit2, X, Check, Loader2, Download, Folder,
-  Calendar, FolderOpen, UserPlus, ShieldCheck, ShieldAlert, CheckCircle2, AlertCircle, TrendingUp, Globe, Layers, Activity
+  Calendar, FolderOpen, UserPlus, ShieldCheck, ShieldAlert, CheckCircle2, AlertCircle, TrendingUp, Globe, Layers, Activity,
+  ArrowLeft
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -44,6 +45,7 @@ export default function GroupsPage() {
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [selectedDrawerContacts, setSelectedDrawerContacts] = useState([]);
   const [drawerSearchQuery, setDrawerSearchQuery] = useState('');
+  const [mobileView, setMobileView] = useState(selectedGroup ? 'details' : 'list');
 
   useEffect(() => {
     fetchGroups();
@@ -134,6 +136,7 @@ export default function GroupsPage() {
         const newGroup = await response.json();
         setGroups([newGroup, ...groups]);
         setSelectedGroup(newGroup);
+        setMobileView('details');
         setShowCreateModal(false);
         setGroupForm({ name: '', description: '', tags: [] });
       }
@@ -182,7 +185,9 @@ export default function GroupsPage() {
         const remaining = groups.filter(g => g._id !== id);
         setGroups(remaining);
         if (selectedGroup?._id === id) {
-          setSelectedGroup(remaining[0] || null);
+          const nextGroup = remaining[0] || null;
+          setSelectedGroup(nextGroup);
+          setMobileView(nextGroup ? 'details' : 'list');
         }
       }
     } catch (err) {
@@ -472,9 +477,8 @@ export default function GroupsPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
-      <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 space-y-4 custom-scrollbar">
-
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-y-auto lg:overflow-hidden relative">
+      <main className="flex-1 flex flex-col lg:overflow-hidden p-4 md:p-6 space-y-4 custom-scrollbar">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-4 shrink-0">
           <div>
@@ -496,7 +500,7 @@ export default function GroupsPage() {
         </div>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 shrink-0">
           {/* Card 1: Total Groups */}
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-[#004277] flex items-center justify-center shrink-0">
@@ -547,10 +551,10 @@ export default function GroupsPage() {
         </div>
 
         {/* Split Pane Layout */}
-        <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+        <div className="flex-1 flex gap-4 min-h-[550px] lg:min-h-0 lg:overflow-hidden">
           
           {/* Left Group List Panel */}
-          <div className="w-[260px] flex flex-col bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm shrink-0">
+          <div className={`w-full lg:w-[260px] flex flex-col bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm shrink-0 ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'}`}>
             {/* Sidebar Search */}
             <div className="p-3 border-b border-slate-100 bg-slate-50/30">
               <div className="relative group">
@@ -587,6 +591,7 @@ export default function GroupsPage() {
                         setGroupContacts([]);
                         localStorage.removeItem('cached_group_contacts');
                         setSelectedContactIds([]); // Clear selections
+                        setMobileView('details');
                       }}
                       className={`flex items-center justify-between p-2.5 rounded-lg transition-all cursor-pointer select-none group relative border ${
                         isSelected 
@@ -611,13 +616,19 @@ export default function GroupsPage() {
           </div>
 
           {/* Right Group Details & Contacts Table */}
-          <div className="flex-1 flex flex-col bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm min-w-0 relative">
+          <div className={`flex-1 flex flex-col bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm min-w-0 relative ${mobileView === 'details' ? 'flex' : 'hidden lg:flex'}`}>
             {selectedGroup ? (
               <div className="flex-1 flex flex-col min-h-0">
                 {/* Group Details Header Panel */}
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                   <div>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setMobileView('list')}
+                        className="lg:hidden p-1.5 rounded-lg hover:bg-slate-150/80 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer mr-1 shrink-0"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
                       <h2 className="text-base font-bold text-slate-800 tracking-tight">{selectedGroup.name}</h2>
                       <span className="text-[10px] text-slate-400 font-bold bg-slate-150/60 border border-slate-200 px-1.5 py-0.5 rounded-md leading-none">
                         Created {new Date(selectedGroup.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -707,8 +718,8 @@ export default function GroupsPage() {
                   </div>
 
                   {/* Dense Table View */}
-                  <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
-                    <table className="w-full text-left border-collapse">
+                  <div className="flex-1 overflow-auto custom-scrollbar min-h-0">
+                    <table className="w-full min-w-[650px] text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-200 text-[10px] text-slate-500 font-bold uppercase tracking-wider select-none">
                           <th className="py-2.5 pl-4 pr-2 w-10 text-center border-r border-slate-100">

@@ -24,6 +24,7 @@ export default function Header({ activeTab, toggleSidebar, isCollapsed, setIsCol
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
+  const notificationsRef = useRef(null);
 
   const user = userData || {};
   const userName = user.name || JSON.parse(localStorage.getItem('user') || '{}').name || 'User';
@@ -56,6 +57,17 @@ export default function Header({ activeTab, toggleSidebar, isCollapsed, setIsCol
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setSearchOpen(false);
         setSearchQuery('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  /* Close notifications on outside click */
+  useEffect(() => {
+    const handler = (e) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
+        setShowNotifications(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -181,7 +193,7 @@ export default function Header({ activeTab, toggleSidebar, isCollapsed, setIsCol
       {/* Right: bell + profile */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Notification bell */}
-        <div className="static sm:relative">
+        <div className="static sm:relative" ref={notificationsRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
             className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg relative cursor-pointer transition-colors"

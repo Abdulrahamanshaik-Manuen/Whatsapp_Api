@@ -223,7 +223,7 @@ export default function TemplateRequests({ onNavigateCreate }) {
 
           {/* Table Area */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[750px] text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50">
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Template Name</th>

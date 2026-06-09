@@ -155,8 +155,8 @@ export default function AutomationPage({ onNavigate }) {
   });
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
-      <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 space-y-4 custom-scrollbar">
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-y-auto lg:overflow-hidden relative">
+      <main className="flex-1 flex flex-col lg:overflow-hidden p-4 md:p-6 space-y-4 custom-scrollbar">
 
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-4 shrink-0">
@@ -176,7 +176,7 @@ export default function AutomationPage({ onNavigate }) {
         </div>
 
         {/* KPI Metrics Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 shrink-0">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 shrink-0">
           {/* Card 1: Total Executions */}
           <div className="bg-white rounded-lg border border-slate-200 p-3.5 shadow-sm flex items-center gap-3">
             <div className="w-11 h-11 rounded-lg bg-blue-50 text-[#004277] flex items-center justify-center shrink-0">
@@ -235,12 +235,12 @@ export default function AutomationPage({ onNavigate }) {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+          <div className="flex items-center gap-1.5 w-full md:w-auto shrink-0">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
+              className="flex-1 min-w-0 md:flex-initial h-8 pl-2 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none truncate"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '8px' }}
             >
               <option value="all">Status: All</option>
               <option value="active">Status: Active</option>
@@ -251,8 +251,8 @@ export default function AutomationPage({ onNavigate }) {
             <select
               value={creatorFilter}
               onChange={(e) => setCreatorFilter(e.target.value)}
-              className="h-8 pl-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '10px' }}
+              className="flex-1 min-w-0 md:flex-initial h-8 pl-2 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:outline-none cursor-pointer appearance-none truncate"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748B\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2.5\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '8px' }}
             >
               <option value="all">Created by: All</option>
               <option value="admin">Created by: Admin</option>
@@ -288,7 +288,7 @@ export default function AutomationPage({ onNavigate }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1.5 custom-scrollbar min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1.5 custom-scrollbar min-h-[400px] lg:min-h-0">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="h-24 bg-white rounded-xl border border-slate-100 animate-pulse shadow-sm" />
@@ -317,10 +317,10 @@ export default function AutomationPage({ onNavigate }) {
                 return (
                   <div
                     key={auto._id}
-                    className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between p-4 relative overflow-hidden group hover:border-[#004277]/30 transition-all gap-4"
+                    className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between p-4 relative group hover:border-[#004277]/30 transition-all gap-4"
                   >
                     {/* Vertical Status Indicator Strip */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${isAct ? 'bg-[#22C55E]' : isReq ? 'bg-amber-400' : 'bg-slate-300'}`} />
+                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] rounded-l-xl ${isAct ? 'bg-[#22C55E]' : isReq ? 'bg-amber-400' : 'bg-slate-300'}`} />
 
                     {/* Left Details block */}
                     <div className="flex items-start gap-3.5 min-w-0 pl-1.5">
