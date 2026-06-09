@@ -5,7 +5,7 @@ import {
   Lock, Copy, ExternalLink, Info, Check,
   Settings as SettingsIcon, Wand2, ShieldCheck,
   ChevronRight, AlertCircle, RefreshCcw, Headphones,
-  Server, Link2, Activity, Database
+  Server, Link2, Activity, Database, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 export default function WhatsAppSetupPage({ userData, onUpdate }) {
@@ -18,6 +18,8 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
   const [view, setView] = useState(isConnected ? 'success' : 'setup');
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(null);
   const [settings, setSettings] = useState({
     phone_number_id: userData?.phone_number_id || '',
     waba_id: userData?.waba_id || '',
@@ -28,10 +30,8 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
     ? 'http://localhost:5000'
     : window.location.origin;
 
-
   useEffect(() => {
     fetchStatus();
-
     const params = new URLSearchParams(window.location.search);
     if (params.get('status') === 'whatsapp_connected') {
       setActiveStep(2);
@@ -40,7 +40,6 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
     }
   }, []);
 
-  // Auto-detect success view if already connected
   useEffect(() => {
     if (isConnected && view === 'setup' && activeStep === 1) {
       setView('success');
@@ -54,12 +53,10 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-
       if (data.webhook_url) {
         setLiveStatus(data);
         localStorage.setItem('whatsapp_liveStatus', JSON.stringify(data));
         onUpdate(data);
-        
         setSettings({
           phone_number_id: data.phone_number_id || '',
           waba_id: data.waba_id || '',
@@ -78,9 +75,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error(err);
     }
@@ -96,10 +91,7 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/api/whatsapp/save-settings`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(settings)
       });
       if (res.ok) {
@@ -117,287 +109,506 @@ export default function WhatsAppSetupPage({ userData, onUpdate }) {
     }
   };
 
+  const copyToClipboard = (value, key) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1800);
+  };
+
   const steps = [
-    { id: 1, title: 'API Config', icon: Code, desc: 'Connect Meta App' },
-    { id: 2, title: 'Number Link', icon: Smartphone, desc: 'Verify Account' },
-    { id: 3, title: 'Webhook Sync', icon: Zap, desc: 'Live Activation' },
+    { id: 1, label: 'API Config' },
+    { id: 2, label: 'Number' },
+    { id: 3, label: 'Webhook' },
   ];
 
-  const CopyableField = ({ label, value, masked = false }) => {
-    const displayValue = (masked && value && value.length > 10)
-      ? `${value.substring(0, 15)}...${'*'.repeat(20)}`
-      : (value || 'Pending...');
+  // Compact inline copy field
+  const CopyField = ({ label, value, masked = false, id }) => {
+    const display = masked && value && value.length > 10
+      ? `${value.substring(0, 14)}${'•'.repeat(16)}`
+      : (value || '—');
+    const isCopied = copiedKey === id;
+    return (
+      <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0 group">
+        <div className="min-w-0 flex-1 mr-3">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+          <p className="text-xs font-semibold text-slate-700 truncate font-mono">{display}</p>
+        </div>
+        <button
+          onClick={() => copyToClipboard(value, id)}
+          title="Copy"
+          className={`shrink-0 w-7 h-7 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
+            isCopied
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-500'
+              : 'bg-white border-slate-200 text-slate-400 hover:text-[#004277] hover:border-[#004277]/30'
+          }`}
+        >
+          {isCopied ? <Check size={11} strokeWidth={3} /> : <Copy size={11} />}
+        </button>
+      </div>
+    );
+  };
+
+  // Compact stepper bar
+  const Stepper = () => (
+    <div className="flex items-center gap-1">
+      {steps.map((step, i) => {
+        const done = activeStep > step.id;
+        const active = activeStep === step.id;
+        return (
+          <React.Fragment key={step.id}>
+            <button
+              onClick={() => setActiveStep(step.id)}
+              className={`flex items-center gap-1.5 px-2.5 h-7 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                active
+                  ? 'bg-[#004277] text-white'
+                  : done
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <span className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-black ${
+                active ? 'bg-white/20' : done ? 'bg-emerald-100' : 'bg-slate-100'
+              }`}>
+                {done ? <Check size={9} strokeWidth={3.5} /> : step.id}
+              </span>
+              <span>{step.label}</span>
+            </button>
+            {i < steps.length - 1 && (
+              <ChevronRight size={12} className={`text-slate-300 shrink-0 ${done ? 'text-emerald-300' : ''}`} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+
+  // Success / Connected View
+  const SuccessView = () => {
+    const timeline = [
+      { label: 'API Configured', done: true },
+      { label: 'Number Linked', done: isConnected },
+      { label: 'Webhook Active', done: !!(liveStatus?.webhook_url) },
+      { label: 'System Live', done: isConnected && !!(liveStatus?.webhook_url) },
+    ];
 
     return (
-      <div className="space-y-2">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
-        <div className="relative group">
-          <input
-            readOnly
-            value={displayValue}
-            className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none pr-12 truncate"
-          />
-          <button
-            onClick={() => {
-              if (value) {
-                navigator.clipboard.writeText(value);
-                alert('Copied!');
-              }
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-all bg-white rounded-lg shadow-sm border border-slate-100"
-          >
-            <Copy size={14} />
-          </button>
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-400">
+
+        {/* Status banner */}
+        <div className="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center border border-emerald-100">
+              <CheckCircle2 size={18} className="text-emerald-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">WhatsApp Connected</h3>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Business API integration is live and active</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Active</span>
+            </div>
+            <button
+              onClick={() => setView('setup')}
+              className="flex items-center gap-1.5 h-8 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold rounded-lg transition-all cursor-pointer shadow-sm"
+            >
+              <SettingsIcon size={12} />
+              <span>Edit</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          {/* Credentials Panel */}
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+              <Database size={13} className="text-[#004277]" />
+              <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">API Credentials</h4>
+            </div>
+            <div className="px-4 pb-1">
+              <CopyField id="phone" label="Phone Number ID" value={liveStatus?.phone_number_id || settings.phone_number_id} />
+              <CopyField id="waba" label="WABA Account ID" value={liveStatus?.waba_id || settings.waba_id} />
+              <CopyField id="webhook" label="Webhook URL" value={liveStatus?.webhook_url || `${API_BASE}/api/webhook`} />
+              <CopyField id="token_verify" label="Verify Token" value={liveStatus?.verify_token || "whatsapp_token"} />
+              <CopyField id="token_access" label="Access Token" value={liveStatus?.access_token || settings.access_token} masked />
+            </div>
+          </div>
+
+          {/* Status Timeline */}
+          <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+              <Activity size={13} className="text-[#004277]" />
+              <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Connection Status</h4>
+            </div>
+            <div className="p-4 space-y-3">
+              {timeline.map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                    item.done ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-300'
+                  }`}>
+                    {item.done ? <Check size={10} strokeWidth={3} /> : <span className="text-[8px] font-black">{i + 1}</span>}
+                  </div>
+                  <span className={`text-xs font-semibold ${item.done ? 'text-slate-700' : 'text-slate-400'}`}>{item.label}</span>
+                  {item.done && <span className="ml-auto text-[9px] text-emerald-500 font-bold uppercase">✓</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     );
   };
 
-  // Success View Component
-  const SuccessView = () => (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 pt-12 pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
-      <div className="mb-10 space-y-1">
-        <h1 className="text-3xl font-black text-primary tracking-tight">WhatsApp Setup</h1>
-        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
-          Manage your official Business API integration and credentials
-        </p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-12 space-y-6">
-          <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-200/60 shadow-2xl shadow-slate-200/20 relative overflow-hidden">
-            <div className="absolute top-4 right-4 sm:top-8 sm:right-8">
-               <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-2 border border-emerald-100">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">System Active</span>
-               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 mb-12 mt-12 sm:mt-0 text-center sm:text-left">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-emerald-500 rounded-[1.75rem] sm:rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30 shrink-0">
-                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" strokeWidth={2.5} />
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">Setup Success!</h2>
-                <p className="text-xs sm:text-sm text-slate-400 font-black uppercase tracking-widest leading-relaxed">Your Business API integration is live and running</p>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-               <div className="flex items-center gap-3">
-                  <Info size={16} className="text-primary" />
-                  <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">Active API Credentials</h4>
-               </div>
-               
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                  <CopyableField label="Phone Number ID" value={liveStatus?.phone_number_id || settings.phone_number_id} />
-                  <CopyableField label="WABA Account ID" value={liveStatus?.waba_id || settings.waba_id} />
-                  <CopyableField label="Webhook URL" value={liveStatus?.webhook_url || `${API_BASE}/api/webhook`} />
-                  <CopyableField label="Verify Token" value={liveStatus?.verify_token || "whatsapp_token"} />
-                  <div className="md:col-span-2">
-                    <CopyableField label="Access Token" value={liveStatus?.access_token || settings.access_token} masked={true} />
-                  </div>
-               </div>
-
-                <div className="pt-8 border-t border-slate-50 flex items-center justify-end">
-                  <button 
-                    onClick={() => setView('setup')}
-                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all active:scale-95 shadow-lg shadow-slate-900/20"
-                  >
-                     <SettingsIcon size={14} /> Edit Configuration
-                  </button>
-               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
-      <main className="flex-1 overflow-y-auto custom-scrollbar">
-        
-        {view === 'setup' ? (
-          <>
-            {/* Header Area - Only visible in Setup Mode */}
-            <div className="px-4 md:px-8 lg:px-12 pt-12 pb-6 shrink-0 animate-in fade-in duration-500">
-              <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                <div className="space-y-1">
-                  <h1 className="text-3xl font-black text-primary tracking-tight">WhatsApp Setup</h1>
-                  <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
-                    Activate your official Business API in a few simple steps
-                  </p>
-                </div>
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden">
+      <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-4">
 
-                <div className="flex flex-wrap items-center bg-white p-1.5 rounded-2xl border border-slate-200/60 shadow-sm self-start lg:self-center gap-y-2">
-                  {steps.map((step, i) => (
-                    <React.Fragment key={step.id}>
-                      <button
-                        onClick={() => setActiveStep(step.id)}
-                        className={`flex items-center gap-1.5 sm:gap-3 px-3 sm:px-5 py-2 rounded-xl transition-all duration-300 ${
-                          activeStep === step.id 
-                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                          : 'text-slate-400 hover:text-slate-600'
-                        }`}
-                      >
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] ${
-                          activeStep === step.id ? 'bg-white/20' : 'bg-slate-100'
-                        }`}>
-                          {activeStep > step.id ? <Check size={12} strokeWidth={3} /> : step.id}
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">{step.title}</span>
-                      </button>
-                      {i < steps.length - 1 && (
-                        <ArrowRight size={14} className="mx-1 sm:mx-2 text-slate-300 shrink-0" />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
+        {/* Page Header — single, compact */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">WhatsApp Setup</h1>
+            <p className="text-xs text-slate-400 font-semibold mt-2 leading-none">Configure your WhatsApp Business API</p>
+          </div>
+
+          {/* Stepper — only in setup mode */}
+          {view === 'setup' && (
+            <div className="shrink-0">
+              <Stepper />
             </div>
+          )}
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
-              <div className="xl:col-span-8">
-                {activeStep === 1 && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-xl shadow-slate-200/20 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <h3 className="text-xl font-black text-slate-800 tracking-tight">API Integration</h3>
-                          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest opacity-70">Step 01: Secure Connection</p>
-                        </div>
-                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                          <Code size={24} />
-                        </div>
+          {/* In success mode show reconnect */}
+          {view === 'success' && (
+            <button
+              onClick={fetchStatus}
+              className="flex items-center gap-1.5 h-8 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
+            >
+              <RefreshCcw size={12} />
+              <span>Refresh Status</span>
+            </button>
+          )}
+        </div>
+
+        {view === 'success' ? (
+          <SuccessView />
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+            {/* Main Step Panel */}
+            <div className="xl:col-span-2">
+
+              {/* Step 1: API Config */}
+              {activeStep === 1 && (
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-400">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                    <div className="w-6 h-6 bg-[#004277]/10 rounded-md flex items-center justify-center">
+                      <Code size={12} className="text-[#004277]" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800">API Integration</h3>
+                      <p className="text-[9px] text-slate-400 font-semibold">Step 1 · Secure Connection</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-4">
+                    {/* Meta OAuth button */}
+                    <div className="p-4 bg-slate-900 rounded-lg flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-bold text-white leading-tight">One-Click Meta Integration</p>
+                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">Sync your Business Manager automatically</p>
                       </div>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                        <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white space-y-6 relative overflow-hidden group">
-                          <div className="relative z-10 space-y-4">
-                            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                              <Lock size={20} className="text-primary-light" />
-                            </div>
-                            <h4 className="text-xl font-black tracking-tight leading-tight">One-Click<br />Meta Integration</h4>
-                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed">Sync your Business Manager automatically.</p>
-                          </div>
-                          <button onClick={handleMetaConnect} className="w-full py-4 bg-[#1877F2] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3">
-                            Connect with Meta
-                          </button>
-                        </div>
-                        <div className="space-y-6">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Wand2 size={16} className="text-primary-light" />
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manual Setup</h4>
-                          </div>
-                          <div className="space-y-5">
-                            <div className="space-y-2">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number ID</label>
-                              <input type="text" value={settings.phone_number_id} onChange={e => setSettings({...settings, phone_number_id: e.target.value})} placeholder="Enter Phone ID" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">WABA Account ID</label>
-                              <input type="text" value={settings.waba_id} onChange={e => setSettings({...settings, waba_id: e.target.value})} placeholder="Enter WABA ID" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none" />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Token</label>
-                              <input type="password" value={settings.access_token} onChange={e => setSettings({...settings, access_token: e.target.value})} placeholder="Enter Token" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none" />
-                            </div>
-                            <button onClick={handleSaveSettings} disabled={loading} className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-dark transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
-                              {loading ? <RefreshCcw size={14} className="animate-spin" /> : <ShieldCheck size={14} />} Save Configuration
-                            </button>
-                          </div>
-                        </div>
+                      <button
+                        onClick={handleMetaConnect}
+                        className="shrink-0 h-9 px-4 bg-[#1877F2] text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                      >
+                        <Globe size={13} />
+                        Connect with Meta
+                      </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-slate-100" />
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Or manual setup</span>
+                      <div className="flex-1 h-px bg-slate-100" />
+                    </div>
+
+                    {/* Manual fields */}
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Phone Number ID</label>
+                        <input
+                          type="text"
+                          value={settings.phone_number_id}
+                          onChange={e => setSettings({ ...settings, phone_number_id: e.target.value })}
+                          placeholder="e.g. 123456789012345"
+                          className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:bg-white focus:border-[#004277] focus:ring-1 focus:ring-[#004277]/10 outline-none transition-all placeholder:text-slate-300"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-0.5">WABA Account ID</label>
+                        <input
+                          type="text"
+                          value={settings.waba_id}
+                          onChange={e => setSettings({ ...settings, waba_id: e.target.value })}
+                          placeholder="e.g. 987654321098765"
+                          className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:bg-white focus:border-[#004277] focus:ring-1 focus:ring-[#004277]/10 outline-none transition-all placeholder:text-slate-300"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Access Token</label>
+                        <input
+                          type="password"
+                          value={settings.access_token}
+                          onChange={e => setSettings({ ...settings, access_token: e.target.value })}
+                          placeholder="EAAxxxx..."
+                          className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:bg-white focus:border-[#004277] focus:ring-1 focus:ring-[#004277]/10 outline-none transition-all placeholder:text-slate-300"
+                        />
                       </div>
                     </div>
-                  )}
 
-                  {activeStep === 2 && (
-                    <div className="bg-white rounded-[2.5rem] p-12 border border-slate-200/60 shadow-xl shadow-slate-200/20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="max-w-md mx-auto space-y-8">
-                        <div className={`w-24 h-24 mx-auto rounded-[2.5rem] flex items-center justify-center ${isConnected ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'bg-slate-100 text-slate-300'}`}>
-                          {isConnected ? <Check size={48} strokeWidth={3} /> : <Smartphone size={48} />}
-                        </div>
-                        <div className="space-y-3">
-                          <h3 className="text-2xl font-black text-slate-800 tracking-tight">{isConnected ? 'Instance Verified' : 'Awaiting Connection'}</h3>
-                          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest opacity-70">Step 02: Verification Hub</p>
-                        </div>
-                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-200/60 relative group">
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${liveStatus?.phone_number_id || 'pending'}`} alt="QR" className={`w-36 h-36 transition-all duration-700 ${isConnected ? 'opacity-100' : 'opacity-20 grayscale blur-[2px]'}`} />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                          <button onClick={() => setActiveStep(3)} className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isConnected ? 'bg-primary text-white shadow-lg' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}>
-                            Next: Webhook Activation
-                          </button>
-                          <button onClick={() => setActiveStep(1)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-all">Back to Step 1</button>
-                        </div>
-                      </div>
+                    <button
+                      onClick={handleSaveSettings}
+                      disabled={loading}
+                      className="w-full h-9 bg-[#004277] hover:brightness-105 text-white text-xs font-bold rounded-lg transition-all active:scale-98 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {loading ? <RefreshCcw size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
+                      Save & Continue
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Number Link / QR */}
+              {activeStep === 2 && (
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-400">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                    <div className="w-6 h-6 bg-emerald-50 rounded-md flex items-center justify-center">
+                      <Smartphone size={12} className="text-emerald-500" />
                     </div>
-                  )}
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800">Number Verification</h3>
+                      <p className="text-[9px] text-slate-400 font-semibold">Step 2 · Verify Account</p>
+                    </div>
+                    <div className="ml-auto">
+                      {isConnected ? (
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 text-[9px] font-black uppercase tracking-widest">
+                          <Check size={9} strokeWidth={3} /> Verified
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 text-[9px] font-black uppercase tracking-widest">
+                          <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                          Awaiting
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                  {activeStep === 3 && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-xl shadow-slate-200/20 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <h3 className="text-xl font-black text-slate-800 tracking-tight">Live Activation</h3>
-                          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest opacity-70">Step 03: Webhook Sync</p>
-                        </div>
-                        <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500"><Zap size={24} /></div>
+                  <div className="p-6">
+                    <div className="flex flex-col items-center gap-5">
+                      {/* QR Code */}
+                      <div className={`p-3 bg-white border rounded-xl shadow-sm ${isConnected ? 'border-emerald-200' : 'border-slate-200'}`}>
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${liveStatus?.phone_number_id || 'pending'}`}
+                          alt="WhatsApp QR"
+                          className={`w-32 h-32 transition-all duration-500 ${isConnected ? 'opacity-100' : 'opacity-30 grayscale blur-[1.5px]'}`}
+                        />
                       </div>
-                      <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Callback URL</label>
-                              <div className="relative group">
-                                  <input readOnly value={liveStatus?.webhook_url || `${API_BASE}/api/webhook`} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-primary focus:outline-none pr-12 truncate" />
-                                  <button onClick={() => { navigator.clipboard.writeText(liveStatus?.webhook_url || `${API_BASE}/api/webhook`); alert('Copied!'); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-all"><Copy size={16} /></button>
-                              </div>
-                            </div>
-                            <div className="space-y-3">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verify Token</label>
-                              <div className="relative group">
-                                  <input readOnly value={liveStatus?.verify_token || "whatsapp_token"} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-primary focus:outline-none pr-12 truncate" />
-                                  <button onClick={() => { navigator.clipboard.writeText(liveStatus?.verify_token || "whatsapp_token"); alert('Copied!'); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-primary transition-all"><Copy size={16} /></button>
-                              </div>
-                            </div>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            if(isConnected) setView('success');
-                            else alert('Connection not detected yet. Please ensure Meta settings are correct.');
-                          }}
-                          className={`w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isConnected ? 'bg-secondary text-white shadow-lg shadow-secondary/20 hover:brightness-110' : 'bg-slate-100 text-slate-400'}`}
+
+                      <div className="text-center space-y-1">
+                        <h4 className="text-sm font-bold text-slate-800">
+                          {isConnected ? 'Instance Verified ✓' : 'Scan with WhatsApp'}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-semibold">
+                          {isConnected
+                            ? 'Your number is linked and ready.'
+                            : 'Open WhatsApp → Linked Devices → Link a Device'}
+                        </p>
+                      </div>
+
+                      <div className="w-full flex gap-2">
+                        <button
+                          onClick={() => setActiveStep(1)}
+                          className="flex-1 h-8 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all cursor-pointer"
                         >
-                          {isConnected ? 'Finish Setup & View Details' : 'Awaiting Connection...'}
+                          ← Back
+                        </button>
+                        <button
+                          onClick={() => setActiveStep(3)}
+                          disabled={!isConnected}
+                          className={`flex-1 h-8 text-xs font-bold rounded-lg transition-all ${
+                            isConnected
+                              ? 'bg-[#004277] text-white hover:brightness-105 cursor-pointer active:scale-98'
+                              : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          }`}
+                        >
+                          Next: Webhook →
                         </button>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Webhook */}
+              {activeStep === 3 && (
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-400">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                    <div className="w-6 h-6 bg-amber-50 rounded-md flex items-center justify-center">
+                      <Zap size={12} className="text-amber-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800">Webhook Sync</h3>
+                      <p className="text-[9px] text-slate-400 font-semibold">Step 3 · Live Activation</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-4">
+                    <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                      Add these values to your Meta App → WhatsApp → Configuration → Webhook section.
+                    </p>
+
+                    {/* Callback URL */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Callback URL</label>
+                      <div className="relative group flex">
+                        <input
+                          readOnly
+                          value={liveStatus?.webhook_url || `${API_BASE}/api/webhook`}
+                          className="flex-1 h-9 pl-3 pr-10 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-[#004277] focus:outline-none truncate font-mono"
+                        />
+                        <button
+                          onClick={() => copyToClipboard(liveStatus?.webhook_url || `${API_BASE}/api/webhook`, 'cb_url')}
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center transition-all cursor-pointer ${copiedKey === 'cb_url' ? 'text-emerald-500' : 'text-slate-400 hover:text-[#004277]'}`}
+                        >
+                          {copiedKey === 'cb_url' ? <Check size={11} strokeWidth={3} /> : <Copy size={11} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Verify Token */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Verify Token</label>
+                      <div className="relative flex">
+                        <input
+                          readOnly
+                          value={liveStatus?.verify_token || "whatsapp_token"}
+                          className="flex-1 h-9 pl-3 pr-10 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-[#004277] focus:outline-none truncate font-mono"
+                        />
+                        <button
+                          onClick={() => copyToClipboard(liveStatus?.verify_token || "whatsapp_token", 'verify_tok')}
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center transition-all cursor-pointer ${copiedKey === 'verify_tok' ? 'text-emerald-500' : 'text-slate-400 hover:text-[#004277]'}`}
+                        >
+                          {copiedKey === 'verify_tok' ? <Check size={11} strokeWidth={3} /> : <Copy size={11} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg flex gap-2 text-[#004277]">
+                      <AlertCircle size={13} className="shrink-0 mt-0.5 text-blue-400" />
+                      <p className="text-[10px] font-semibold leading-relaxed">Subscribe to the <strong>messages</strong> field under Webhook Fields in your Meta App Dashboard.</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setActiveStep(2)}
+                        className="flex-1 h-9 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all cursor-pointer"
+                      >
+                        ← Back
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isConnected) setView('success');
+                          else alert('Connection not detected yet. Ensure your Meta settings are correct.');
+                        }}
+                        className={`flex-2 h-9 px-5 text-xs font-bold rounded-lg transition-all active:scale-98 ${
+                          isConnected
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer shadow-sm'
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {isConnected ? 'Finish Setup ✓' : 'Awaiting Connection...'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Collapsible Help Panel */}
+            <div className="xl:col-span-1 space-y-3">
+
+              {/* Help Panel */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <button
+                  onClick={() => setShowHelp(!showHelp)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Headphones size={13} className="text-[#004277]" />
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Need Help?</span>
+                  </div>
+                  {showHelp ? <ChevronUp size={13} className="text-slate-400" /> : <ChevronDown size={13} className="text-slate-400" />}
+                </button>
+
+                {showHelp && (
+                  <div className="px-4 pb-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                      Keep your Meta Developer Dashboard open in another tab while completing setup.
+                    </p>
+                    <a
+                      href="https://developers.facebook.com/apps/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 h-8 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all w-full cursor-pointer"
+                    >
+                      <ExternalLink size={11} />
+                      Open Meta Dashboard
+                    </a>
+                    <a
+                      href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 h-8 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all w-full cursor-pointer"
+                    >
+                      <Globe size={11} />
+                      View Documentation
+                    </a>
+                  </div>
+                )}
               </div>
 
-              {/* Sidebar Tools */}
-              <div className="xl:col-span-4 space-y-6">
-                <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200/60 shadow-xl shadow-slate-200/10 space-y-8">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                        <ShieldCheck size={20} />
+              {/* Quick Step Summary */}
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
+                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Setup Progress</h4>
+                {steps.map((step) => {
+                  const done = activeStep > step.id;
+                  const active = activeStep === step.id;
+                  return (
+                    <div key={step.id} className="flex items-center gap-2.5">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black ${
+                        done ? 'bg-emerald-500 text-white' : active ? 'bg-[#004277] text-white' : 'bg-slate-100 text-slate-400'
+                      }`}>
+                        {done ? <Check size={10} strokeWidth={3} /> : step.id}
                       </div>
-                      <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Setup Guide</h4>
+                      <span className={`text-xs font-semibold ${done ? 'text-emerald-600 line-through' : active ? 'text-slate-800' : 'text-slate-400'}`}>
+                        {step.label}
+                      </span>
+                      {active && <span className="ml-auto text-[9px] text-[#004277] font-black">Current</span>}
                     </div>
-                    <p className="text-xs text-slate-500 font-bold leading-relaxed tracking-tight">
-                      Follow the 3 steps to activate your Business API. We recommend keeping your Meta Developer Dashboard open in another tab.
-                    </p>
-                    <button className="w-full py-4 bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
-                      <Headphones size={14} /> Need Assistance?
-                    </button>
-                </div>
+                  );
+                })}
               </div>
+
             </div>
-          </>
-        ) : (
-          <SuccessView />
+          </div>
         )}
+
       </main>
     </div>
   );

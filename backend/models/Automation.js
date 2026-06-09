@@ -17,6 +17,15 @@ const AutomationSchema = new mongoose.Schema({
     trim: true
   },
   description: String,
+  businessGoal: {
+    type: String,
+    default: ''
+  },
+  priority: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'],
+    default: 'Medium'
+  },
   status: {
     type: String,
     enum: ['active', 'paused', 'draft', 'requested'],

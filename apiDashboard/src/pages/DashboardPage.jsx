@@ -90,11 +90,11 @@ export default function DashboardPage({ onNavigate, initialPath }) {
   useEffect(() => {
     if (initialPath && pathToTabMap[initialPath]) {
       const targetTab = pathToTabMap[initialPath];
-      if (targetTab !== activeTab) {
-        setActiveTab(targetTab);
-      }
+      setActiveTab(targetTab);
     }
-  }, [initialPath, activeTab]);
+    // Only re-sync when the URL path itself changes (browser nav), not on internal tab switches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPath]);
 
   useEffect(() => {
     fetchUserData();
@@ -111,6 +111,24 @@ export default function DashboardPage({ onNavigate, initialPath }) {
     if (targetPath && normalize(targetPath) !== currentPath) {
     }
   }, [activeTab, onNavigate]);
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebarCollapsed') === 'true';
+  });
+
+  useEffect(() => {
+    if (activeTab === 'Automation Builder') {
+      setIsSidebarCollapsed(true);
+    }
+  }, [activeTab]);
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -139,6 +157,8 @@ export default function DashboardPage({ onNavigate, initialPath }) {
         setActiveTab={setActiveTab}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={toggleSidebarCollapse}
         onNavigate={onNavigate}
         userData={userData}
         onLogout={handleLogout}
@@ -146,14 +166,19 @@ export default function DashboardPage({ onNavigate, initialPath }) {
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        <Header
-          toggleSidebar={toggleSidebar}
-          onNavigate={onNavigate}
-          userData={userData}
-          businessData={businessData}
-          onLogout={handleLogout}
-          setActiveTab={setActiveTab}
-        />
+        {activeTab !== 'Automation Builder' && (
+          <Header
+            activeTab={activeTab}
+            toggleSidebar={toggleSidebar}
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={toggleSidebarCollapse}
+            onNavigate={onNavigate}
+            userData={userData}
+            businessData={businessData}
+            onLogout={handleLogout}
+            setActiveTab={setActiveTab}
+          />
+        )}
 
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
@@ -167,14 +192,28 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           ) : activeTab === 'Campaigns' ? (
             <CampaignsPage onNavigate={onNavigate} />
           ) : activeTab === 'Create Campaign' ? (
-            <CreateCampaignPage onNavigate={onNavigate} />
-          ) : activeTab === 'Messages' ? (
-            <InboxPage />
-          ) : activeTab === 'Message History' ? (
-            <MessagesPage />
-          ) : activeTab === 'Templates' ? (
-            <TemplatesPage onNavigate={(path, data) => {
+            <CreateCampaignPage onNavigate={(path, data) => {
               if (path === '/templates/view') {
+                localStorage.setItem('templateViewSource', 'Create Campaign');
+                localStorage.setItem('selectedTemplateData', JSON.stringify(data));
+                setSelectedTemplateData(data);
+                setActiveTab('Template Details');
+                onNavigate(path);
+              } else {
+                onNavigate(path);
+              }
+            }} />
+          ) : activeTab === 'Messages' ? (
+            <InboxPage onNavigate={onNavigate} />
+          ) : activeTab === 'Message History' ? (
+            <MessagesPage onNavigate={onNavigate} />
+          ) : activeTab === 'Templates' ? (
+            <TemplatesPage
+              setActiveTab={setActiveTab}
+              setSelectedTemplateData={setSelectedTemplateData}
+              onNavigate={(path, data) => {
+              if (path === '/templates/view') {
+                localStorage.removeItem('templateViewSource');
                 localStorage.setItem('selectedTemplateData', JSON.stringify(data));
                 setSelectedTemplateData(data);
                 setActiveTab('Template Details');
@@ -186,11 +225,20 @@ export default function DashboardPage({ onNavigate, initialPath }) {
           ) : activeTab === 'Template Details' ? (
             <TemplateDetailsPage
               template={selectedTemplateData}
+              onNavigate={onNavigate}
+              setActiveTab={setActiveTab}
               onBack={() => {
                 localStorage.removeItem('selectedTemplateData');
                 setSelectedTemplateData(null);
-                setActiveTab('Templates');
-                onNavigate('/templates');
+                const source = localStorage.getItem('templateViewSource');
+                localStorage.removeItem('templateViewSource');
+                if (source === 'Create Campaign') {
+                  setActiveTab('Create Campaign');
+                  onNavigate('/campaigns/create');
+                } else {
+                  setActiveTab('Templates');
+                  onNavigate('/templates');
+                }
               }}
             />
           ) : activeTab === 'Contacts' ? (

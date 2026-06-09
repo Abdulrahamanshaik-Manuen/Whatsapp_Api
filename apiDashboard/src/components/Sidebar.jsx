@@ -3,10 +3,10 @@ import {
   LayoutDashboard, Send, MessageSquare, LayoutTemplate,
   Users, Bot, BarChart2, Smartphone, Blocks, CreditCard,
   Settings, HelpCircle, Headphones, Crown, X, Zap, Menu,
-  Clock, FolderOpen, LogOut
+  Clock, FolderOpen, LogOut, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, setIsOpen, userData, onLogout, setShowSupport }) {
+export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, setIsOpen, userData, onLogout, setShowSupport, isCollapsed, setIsCollapsed }) {
   const [showPlanBanner, setShowPlanBanner] = useState(true);
 
   const navItems = [
@@ -28,25 +28,43 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
   return (
     <aside className={`
       fixed lg:static inset-y-0 left-0 z-50
-      w-[260px] bg-primary text-white/70 flex flex-col flex-shrink-0 h-full border-r border-white/5
-      transition-transform duration-300 ease-in-out
+      bg-[#003B6D] text-white/70 flex flex-col flex-shrink-0 h-full border-r border-white/5
+      transition-all duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      ${isCollapsed ? 'w-[210px] lg:w-[72px]' : 'w-[210px] lg:w-[240px]'}
     `}>
-      <div className="p-6">
-        <div className="flex justify-center w-full relative">
-          <h1 className="text-secondary font-bold text-2xl leading-tight tracking-widest uppercase text-center">
-             Client<br/>Dashboard
-          </h1>
+      {/* Sidebar Logo Header */}
+      <div className={`h-14 flex items-center border-b border-white/5 ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}>
+        <div className="flex items-center justify-between w-full relative">
+          {!isCollapsed ? (
+            <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100">
+              <img src="/manuen_square.png" alt="Icon" className="h-7 w-7 object-contain" />
+              <img src="/manuen_logo.png" alt="Manuen" className="h-7 object-contain -ml-2" />
+            </div>
+          ) : (
+            <>
+              <div className="hidden lg:flex items-center justify-center w-full">
+                <div className="bg-white p-1 rounded-md shadow-sm border border-slate-100 flex items-center justify-center">
+                  <img src="/manuen_square.png" alt="Icon" className="h-6 w-6 object-contain" />
+                </div>
+              </div>
+              <div className="lg:hidden flex items-center gap-1 bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100">
+                <img src="/manuen_square.png" alt="Icon" className="h-7 w-7 object-contain" />
+                <img src="/manuen_logo.png" alt="Manuen" className="h-7 object-contain -ml-2" />
+              </div>
+            </>
+          )}
           <button
             onClick={() => setIsOpen(false)}
-            className="lg:hidden absolute right-0 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+            className="lg:hidden absolute right-0 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar no-scrollbar">
+      {/* Navigation items list */}
+      <nav className={`flex-1 space-y-1 overflow-y-auto custom-scrollbar no-scrollbar ${isCollapsed ? 'px-2 py-4' : 'px-3 py-4'}`}>
         {navItems.filter(item => !item.hidden).map((item) => (
           <button
             key={item.name}
@@ -54,35 +72,57 @@ export default function Sidebar({ activeTab, setActiveTab, onNavigate, isOpen, s
               setActiveTab(item.name);
               if (onNavigate) onNavigate(item.path);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${activeTab === item.name
-              ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/20'
-              : 'hover:bg-white/5 hover:text-white'
+            className={`w-full flex items-center rounded-lg transition-all duration-150 group relative ${isCollapsed ? 'lg:justify-center lg:px-2 lg:py-2.5 px-3.5 py-2.5' : 'gap-3 px-3.5 py-2.5'
+              } ${activeTab === item.name
+                ? 'bg-[#0D2E5C] text-white font-semibold'
+                : 'hover:bg-white/5 hover:text-white'
               }`}
+            title={isCollapsed ? item.name : undefined}
           >
-            <item.icon size={18} className={activeTab === item.name ? 'text-secondary' : 'text-white/40 group-hover:text-white/60'} />
-            <span className="text-xs font-bold tracking-wide">{item.name}</span>
+            <item.icon size={16} className={activeTab === item.name ? 'text-secondary' : 'text-white/40 group-hover:text-white/60'} />
+            <span className={`text-[13px] font-medium tracking-wide ${isCollapsed ? 'lg:hidden' : 'block'}`}>{item.name}</span>
+
             {activeTab === item.name && (
-              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(99,193,50,0.6)]"></div>
+              <div className={`rounded-full bg-secondary shadow-[0_0_8px_rgba(99,193,50,0.6)] ${isCollapsed ? 'absolute right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5' : 'ml-auto w-1.5 h-1.5'
+                }`}></div>
             )}
           </button>
         ))}
       </nav>
 
       {/* Support & Logout */}
-      <div className="p-4 mx-4 mb-8 space-y-3 bg-white/5 rounded-2xl border border-white/5">
-        <button 
+      <div className={`mx-3 mb-2 border-t border-white/10 pt-3 ${isCollapsed ? 'px-0' : 'px-1'}`}>
+        {!isCollapsed && (
+          <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1.5 px-1">SUPPORT</p>
+        )}
+        <button
           onClick={() => setShowSupport(true)}
-          className="w-full py-3 bg-transparent border border-white/10 hover:bg-white/5 text-white/60 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2"
+          title="Technical Support"
+          className={`w-full hover:bg-white/5 text-white/70 hover:text-white text-xs font-semibold rounded-lg transition-all flex items-center ${isCollapsed ? 'lg:justify-center lg:py-2.5 lg:px-0 gap-0' : 'py-2 px-1 gap-2.5'
+            }`}
         >
-          <Headphones size={14} />
-          Technical Support
+          <Headphones size={16} className="text-white/40" />
+          <span className={isCollapsed ? 'lg:hidden' : 'block'}>Technical Support</span>
         </button>
-        <button 
+        <button
           onClick={onLogout}
-          className="w-full py-3 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2"
+          title="Log Out System"
+          className={`w-full mt-3 bg-transparent border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 text-xs font-bold rounded-lg transition-all flex items-center justify-center py-2 px-3 ${isCollapsed ? 'lg:py-2.5 lg:px-0 gap-0 border border-rose-500/30' : 'gap-2'
+            }`}
         >
           <LogOut size={14} />
-          Log Out System
+          <span className={isCollapsed ? 'lg:hidden' : 'block'}>Log Out</span>
+        </button>
+      </div>
+
+      {/* Collapse Toggle Button (Desktop only) */}
+      <div className="hidden lg:flex justify-center border-t border-white/10 py-2.5 bg-black/10">
+        <button
+          onClick={setIsCollapsed}
+          className="text-white/40 hover:text-white hover:bg-white/5 p-1 rounded-lg transition-colors flex items-center justify-center w-full"
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
     </aside>

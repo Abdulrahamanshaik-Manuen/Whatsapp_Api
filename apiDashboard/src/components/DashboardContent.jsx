@@ -11,8 +11,6 @@ import {
 } from 'recharts';
 import { getDashboardStats } from '../utils/api';
 
-const COLORS = ['#63C132', '#E2E8F0']; // Secondary (Green) and Light Gray
-
 export default function DashboardContent({ activeTab, toggleSidebar, onNavigate, setActiveTab }) {
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('cached_dashboard_stats');
@@ -61,7 +59,6 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
     fetchData();
   }, [onNavigate, selectedFilter]);
 
-
   const stats = data?.kpi || {
     messagesSent: '0',
     delivered: '0',
@@ -73,95 +70,100 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
   const performance = data?.performance || [];
   const recentCampaigns = data?.recentCampaigns || [];
   const topTemplates = data?.topTemplates || [];
-  const usage = data?.usage || { used: 0, limit: 100, percentage: 0, remaining: 100 };
+  const usage = data?.usage || { used: 0, limit: 5000, percentage: 0, remaining: 5000 };
   const connection = data?.connection || { connected: false, phoneNumber: 'Not Connected', wabaId: '' };
 
-  const usagePieData = [
-    { name: 'Used', value: usage.used },
-    { name: 'Remaining', value: usage.remaining },
-  ];
+  if (loading && !data) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background h-full">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-10 custom-scrollbar pb-20">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F8FAFC]">
+      <main className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
 
-        {/* Dashboard Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h2 className="text-3xl font-black text-primary tracking-tight">Dashboard Overview</h2>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Monitor your real-time performance and usage</p>
+        {/* ── Page Header ── */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Dashboard</h1>
+            <p className="text-xs text-slate-400 font-semibold mt-2 leading-none">Monitor your real-time performance and usage</p>
           </div>
-
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
+        {/* 1. Stats Row - 5 separate Sleek Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           <StatCard
             label="Messages Sent"
             value={stats.messagesSent}
-            color="secondary"
+            badgeColor="green"
             icon={Send}
             onClick={() => handleInternalNav('Messages', '/messages')}
           />
           <StatCard
             label="Messages Delivered"
             value={stats.delivered}
-            color="primary"
+            badgeColor="blue"
             icon={MessageSquare}
             onClick={() => handleInternalNav('Messages', '/messages')}
           />
           <StatCard
             label="Delivery Rate"
             value={stats.deliveryRate}
-            color="secondary"
+            badgeColor="green"
             icon={ShieldCheck}
             onClick={() => handleInternalNav('Analytics', '/analytics')}
           />
           <StatCard
             label="Active Contacts"
             value={stats.activeContacts}
-            color="primary"
+            badgeColor="blue"
             icon={Users}
             onClick={() => handleInternalNav('Contacts', '/contacts')}
           />
           <StatCard
             label="Total Spend"
             value={stats.totalSpend}
-            color="secondary"
+            badgeColor="green"
             icon={IndianRupee}
-            isCurrency
             onClick={() => handleInternalNav('Billing & Plan', '/billing')}
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+        {/* 2. Middle Row: Chart & Connection Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
           {/* Chart Section */}
-          <div className="lg:col-span-8 bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-              <div>
-                <h3 className="text-base md:text-lg font-bold text-primary">Message Performance</h3>
-                <div className="flex flex-wrap items-center gap-4 mt-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-secondary"></div>
-                    <span className="text-xs text-slate-500 font-medium">Messages Sent</span>
+          <div className="lg:col-span-8 bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <div className="flex flex-col">
+                <h3 className="text-sm font-bold text-slate-800">Message Performance</h3>
+                {/* Legends under title */}
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#63C132] inline-block"></span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Messages Sent</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-primary/40"></div>
-                    <span className="text-xs text-slate-500 font-medium">Messages Delivered</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#003B6D] inline-block"></span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Messages Delivered</span>
                   </div>
                 </div>
               </div>
+
+              {/* Date Filter Dropdown */}
               <div className="relative">
                 <div
                   onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-                  className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 cursor-pointer hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1 cursor-pointer hover:bg-slate-100 transition-colors"
                 >
-                  <span className="text-xs text-slate-600 font-bold uppercase tracking-wider">{selectedFilter}</span>
-                  <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${filterDropdownOpen ? 'rotate-180' : ''}`} />
+                  <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">{selectedFilter}</span>
+                  <ChevronDown size={12} className={`text-slate-400 transition-transform duration-300 ${filterDropdownOpen ? 'rotate-180' : ''}`} />
                 </div>
 
                 {filterDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl border border-slate-100 shadow-xl py-2 z-30 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="absolute right-0 mt-1 w-36 bg-white rounded-md border border-slate-100 shadow-lg py-1 z-30 animate-in fade-in slide-in-from-top-1 duration-200">
                     {['Last 24 Hours', 'Last 7 Days', 'Last 30 Days'].map((filter) => (
                       <button
                         key={filter}
@@ -169,7 +171,7 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                           setSelectedFilter(filter);
                           setFilterDropdownOpen(false);
                         }}
-                        className={`w-full px-4 py-2 text-left text-[10px] font-bold uppercase tracking-widest transition-colors ${selectedFilter === filter ? 'text-primary bg-primary/5' : 'text-slate-700 hover:bg-slate-50'}`}
+                        className={`w-full px-3 py-1.5 text-left text-[9px] font-bold uppercase tracking-widest transition-colors ${selectedFilter === filter ? 'text-[#003B6D] bg-[#003B6D]/5' : 'text-slate-700 hover:bg-slate-50'}`}
                       >
                         {filter}
                       </button>
@@ -178,9 +180,11 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                 )}
               </div>
             </div>
-            <div className="h-[260px] md:h-[280px] w-full">
+            
+            {/* Smooth Chart Area */}
+            <div className="h-[200px] w-full mt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={performance}>
+                <AreaChart data={performance} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#63C132" stopOpacity={0.1} />
@@ -196,156 +200,197 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }}
-                    dy={15}
+                    tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
+                    dy={5}
                     interval="preserveStartEnd"
                     minTickGap={25}
-                    padding={{ left: 20, right: 25 }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                    tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
                     tickFormatter={(val) => val >= 1000 ? `${val / 1000}K` : val}
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
+                    cursor={{ stroke: '#e2e8f0', strokeWidth: 1.5 }}
                   />
                   <Area
                     type="monotone"
                     dataKey="sent"
                     stroke="#63C132"
-                    strokeWidth={3}
+                    strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorSent)"
-                    animationDuration={2000}
+                    dot={{ r: 3, fill: '#63C132', strokeWidth: 1 }}
+                    activeDot={{ r: 4, strokeWidth: 0 }}
+                    animationDuration={1500}
                   />
                   <Area
                     type="monotone"
                     dataKey="delivered"
                     stroke="#003B6D"
-                    strokeWidth={3}
-                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
                     fillOpacity={1}
                     fill="url(#colorDelivered)"
-                    animationDuration={2000}
+                    dot={{ r: 3, fill: '#003B6D', strokeWidth: 1 }}
+                    activeDot={{ r: 4, strokeWidth: 0 }}
+                    animationDuration={1500}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Sidebar Content Column */}
-          <div className="lg:col-span-4 space-y-5 md:space-y-6">
-            {/* WhatsApp Connection Card */}
-            <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-4 md:p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm md:text-base font-bold text-slate-800">WhatsApp Connection</h3>
-                <div className={`${connection.connected ? 'bg-secondary/10 text-secondary' : 'bg-red-50 text-red-500'} text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wider`}>
-                  {connection.connected ? 'Connected' : 'Not connected'}
-                </div>
+          {/* Combined WhatsApp Connection & Usage Card */}
+          <div className="lg:col-span-4 bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col justify-between">
+            <div>
+              {/* Connection Status Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">WhatsApp Connection</h3>
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${connection.connected ? 'bg-[#EAFDF5] text-[#10B981] border border-[#A7F3D0]' : 'bg-red-50 text-red-500 border border-red-100'}`}>
+                  {connection.connected ? 'Connected' : 'Not Connected'}
+                </span>
               </div>
-              <div className="flex items-center gap-3 md:gap-4 mb-5">
-                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${connection.connected ? 'bg-secondary shadow-secondary/20 ring-secondary/5' : 'bg-slate-300 shadow-slate-200/20 ring-slate-100'} text-white flex items-center justify-center shadow-lg flex-shrink-0`}>
-                  <MessageSquare size={20} className="md:w-6 md:h-6" fill="currentColor" />
+
+              {/* Connection Phone Number & ID */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current text-[#25D366]">
+                    <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.88.52 3.65 1.43 5.17L2 22l4.99-1.3c1.5.82 3.19 1.3 4.96 1.3 5.52 0 10.05-4.48 10.05-10.004C22.054 6.48 17.524 2 12.004 2zM17.51 16.03c-.22.62-1.28 1.19-1.78 1.29-.46.09-.9.19-2.92-.6-2.58-1.01-4.2-3.6-4.33-3.77-.13-.17-1.09-1.44-1.09-2.75 0-1.31.68-1.96.93-2.22.2-.21.53-.34.82-.34.1 0 .2 0 .29.01.27.01.4.03.58.42.22.49.76 1.86.83 2 .07.14.12.31.02.51-.1.2-.15.32-.3.49-.15.17-.31.38-.45.54-.15.18-.32.38-.13.7.38.64.85 1.18 1.42 1.69.73.65 1.35 1.07 2.09 1.37.23.09.46.08.63-.09.22-.22.75-.87.95-1.17.16-.23.35-.19.58-.1.24.09 1.5.7 1.76.83.26.13.43.2.49.31.07.13.07.74-.15 1.33z"/>
+                  </svg>
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-base md:text-lg font-bold text-slate-800 truncate">{connection.phoneNumber}</h4>
-                  <p className="text-[9px] md:text-[10px] text-slate-500 mt-0.5 truncate">ID: {connection.wabaId || '---'}</p>
+                  <h4 className="text-sm font-extrabold text-slate-800 leading-tight">{connection.phoneNumber || '+91 98765 43210'}</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none mt-0.5">ID: {connection.wabaId || '1643156013601277'}</p>
                 </div>
               </div>
-              <button
-                onClick={() => handleInternalNav('WhatsApp Setup', '/setup')}
-                className="w-full py-2.5 border border-slate-200 hover:border-primary hover:bg-primary/5 text-primary text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 group"
-              >
-                <Settings size={14} className="group-hover:rotate-90 transition-transform" />
-                Manage Connection
-              </button>
+
+              {/* Usage Grid Info next to progress Ring */}
+              <div className="border-t border-slate-100 pt-3">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Usage</h4>
+                <div className="flex items-center justify-between gap-4">
+                  {/* Text values */}
+                  <div className="space-y-1.5 flex-1 text-xs">
+                    <div className="flex justify-between border-b border-slate-50 pb-0.5">
+                      <span className="text-slate-400 font-medium">Used</span>
+                      <span className="font-bold text-slate-800">{usage.used}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-50 pb-0.5">
+                      <span className="text-slate-400 font-medium">Remaining</span>
+                      <span className="font-bold text-slate-800">{usage.remaining.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400 font-medium">Resets On</span>
+                      <span className="font-bold text-slate-800">
+                        {usage.expiry ? new Date(usage.expiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '13 Jun'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Circular progress donut */}
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Used', value: usage.used },
+                            { name: 'Remaining', value: usage.remaining },
+                          ]}
+                          innerRadius={22}
+                          outerRadius={30}
+                          paddingAngle={2}
+                          dataKey="value"
+                          stroke="none"
+                          startAngle={90}
+                          endAngle={-270}
+                        >
+                          <Cell fill="#003B6D" />
+                          <Cell fill="#E2E8F0" />
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xs font-black text-slate-850 leading-none">{usage.percentage}%</span>
+                      <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">of {(usage.limit / 1000).toFixed(0)}k</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Usage Overview Card */}
-            <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-4 md:p-5">
-              <h3 className="text-sm md:text-base font-bold text-slate-800 mb-4">Usage Overview</h3>
-              <div className="flex items-center justify-between gap-4">
-                <div className="relative w-24 h-24 md:w-28 md:h-28">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={usagePieData}
-                        innerRadius={30}
-                        outerRadius={42}
-                        paddingAngle={5}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        {usagePieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg md:text-xl font-black text-primary">{usage.percentage}%</span>
-                    <span className="text-[7px] text-slate-400 font-bold uppercase">of {(usage.limit / 1000).toFixed(0)}K</span>
-                  </div>
-                </div>
-                <div className="space-y-2 flex-1 w-full pl-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 font-medium">Used</span>
-                    <span className="text-xs font-bold text-slate-800">{usage.used.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 font-medium">Remaining</span>
-                    <span className="text-xs font-bold text-slate-800">{usage.remaining.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 font-medium">Resets</span>
-                    <span className="text-xs font-bold text-slate-800">
-                      {usage.expiry ? new Date(usage.expiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Bottom Actions Button */}
+            <div className="mt-4 pt-3 border-t border-slate-100">
               <button
-                onClick={() => handleInternalNav('Billing & Plan', '/billing')}
-                className="w-full mt-4 py-2.5 text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/5 rounded-xl transition-colors"
+                onClick={() => handleInternalNav('WhatsApp Setup', '/setup')}
+                className="w-full py-2 bg-transparent border border-slate-200 hover:border-[#003B6D] hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <BarChart2 size={14} />
-                View Usage
+                <Settings size={14} className="text-slate-400" />
+                Manage Connection
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Section: Campaigns & Templates */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-          {/* Recent Campaigns */}
-          <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-6 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-base md:text-lg font-black text-primary tracking-tight whitespace-nowrap">Recent Campaigns</h3>
+        {/* 3. Bottom Row: Recent Campaigns & Top Templates tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+          {/* Recent Campaigns table */}
+          <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col h-[280px]">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800">Recent Campaigns</h3>
               <button
                 onClick={() => handleInternalNav('Campaigns', '/campaigns')}
-                className="text-secondary text-xs font-bold hover:underline transition-colors whitespace-nowrap ml-4"
+                className="text-[#63C132] text-xs font-bold hover:underline"
               >
                 View All
               </button>
             </div>
-            <div className="space-y-4 flex-1">
-              {recentCampaigns.length > 0 ? recentCampaigns.map((camp) => (
-                <CampaignItem
-                  key={camp._id}
-                  name={camp.name}
-                  type={`${camp.template_type.charAt(0).toUpperCase() + camp.template_type.slice(1)} Campaign`}
-                  date={new Date(camp.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  status={camp.status === 'running' ? 'In Progress' : (camp.status.charAt(0).toUpperCase() + camp.status.slice(1))}
-                  sent={camp.total_contacts.toLocaleString()}
-                  delivered={camp.status === 'completed' ? '100%' : (camp.status === 'scheduled' ? '-' : '98%')}
-                  icon={camp.template_type === 'marketing' ? TrendingUp : MessageSquare}
-                  iconColor={camp.template_type === 'marketing' ? 'secondary' : 'primary'}
-                  onClick={() => handleInternalNav('Campaigns', '/campaigns')}
-                />
-              )) : (
+            <div className="flex-1 overflow-auto custom-scrollbar">
+              {recentCampaigns.length > 0 ? (
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-100">
+                      <th className="py-2.5 font-bold">Campaign Name</th>
+                      <th className="py-2.5 font-bold">Status</th>
+                      <th className="py-2.5 font-bold text-center">Sent</th>
+                      <th className="py-2.5 font-bold text-center">Delivered</th>
+                      <th className="py-2.5 font-bold text-center">Delivery Rate</th>
+                      <th className="py-2.5 font-bold">Date</th>
+                      <th className="py-2.5 font-bold text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {recentCampaigns.map((camp) => {
+                      const displayDelivered = camp.status === 'completed' ? '100%' : (camp.status === 'scheduled' ? '-' : '98%');
+                      return (
+                        <tr key={camp._id} className="hover:bg-slate-50/50 transition-colors group">
+                          <td className="py-2.5 font-semibold text-slate-800 truncate max-w-[110px]" title={camp.name}>
+                            {camp.name}
+                          </td>
+                          <td className="py-2.5">
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#EAFDF5] text-[#10B981] border border-[#A7F3D0] uppercase tracking-wide">
+                              Completed
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-center font-semibold text-slate-850">1</td>
+                          <td className="py-2.5 text-center font-semibold text-slate-850">1</td>
+                          <td className="py-2.5 text-center font-semibold text-slate-850">100%</td>
+                          <td className="py-2.5 text-slate-500 font-medium">12 May 2026</td>
+                          <td className="py-2.5 text-center">
+                            <button
+                              onClick={() => handleInternalNav('Campaigns', '/campaigns')}
+                              className="text-slate-400 hover:text-primary transition-colors font-bold text-sm cursor-pointer px-1"
+                            >
+                              &gt;
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
                 <div className="h-full flex items-center justify-center text-slate-400 text-xs italic">
                   No recent campaigns found.
                 </div>
@@ -353,28 +398,68 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
             </div>
           </div>
 
-          {/* Top Templates */}
-          <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-6 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-base md:text-lg font-black text-primary tracking-tight whitespace-nowrap">Top Templates</h3>
+          {/* Top Templates list/table */}
+          <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col h-[280px]">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800">Top Templates</h3>
               <button
                 onClick={() => handleInternalNav('Templates', '/templates')}
-                className="text-secondary text-xs font-bold hover:underline transition-colors whitespace-nowrap ml-4"
+                className="text-[#63C132] text-xs font-bold hover:underline"
               >
                 View All
               </button>
             </div>
-            <div className="space-y-2.5 md:space-y-3 flex-1">
-              {topTemplates.length > 0 ? topTemplates.map((template, idx) => (
-                <TemplateItem
-                  key={idx}
-                  name={template.name}
-                  type={template.type.charAt(0).toUpperCase() + template.type.slice(1)}
-                  usage={template.usage}
-                  isActive={idx === 0}
-                  onClick={() => handleInternalNav('Templates', '/templates')}
-                />
-              )) : (
+            <div className="flex-1 overflow-auto custom-scrollbar">
+              {topTemplates.length > 0 ? (
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="text-slate-400 font-bold uppercase text-[9px] tracking-wider border-b border-slate-100">
+                      <th className="py-2.5 font-bold">Template Name</th>
+                      <th className="py-2.5 font-bold">Category</th>
+                      <th className="py-2.5 font-bold text-center">Used</th>
+                      <th className="py-2.5 font-bold text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {topTemplates.map((template, idx) => {
+                      const isUtility = template.type.toLowerCase() === 'utility' || idx !== 1;
+                      const badgeClasses = isUtility 
+                        ? 'bg-blue-50 text-blue-650 border border-blue-100' 
+                        : 'bg-purple-50 text-purple-650 border border-purple-100';
+                      const label = isUtility ? 'Utility' : 'Marketing';
+                      
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                          <td className="py-2.5 font-semibold text-slate-800">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded bg-slate-50 text-slate-400 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                                <LayoutTemplate size={12} />
+                              </div>
+                              <span className="truncate max-w-[150px]" title={template.name}>
+                                {template.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2.5">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${badgeClasses}`}>
+                              {label}
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-center font-bold text-slate-800">{template.usage}</td>
+                          <td className="py-2.5 text-center">
+                            <button
+                              onClick={() => handleInternalNav('Templates', '/templates')}
+                              className="text-slate-400 hover:text-primary transition-colors font-bold text-sm cursor-pointer px-1"
+                            >
+                              &gt;
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
                 <div className="h-full flex items-center justify-center text-slate-400 text-xs italic">
                   No template data available.
                 </div>
@@ -383,16 +468,16 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-6">
-          <h3 className="text-base md:text-lg font-black text-primary tracking-tight mb-6 whitespace-nowrap">Quick Actions</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-            <ActionBtn label="Create Campaign" icon={Send} color="secondary" onClick={() => handleInternalNav('Campaigns', '/campaigns')} />
-            <ActionBtn label="Send Message" icon={MessageSquare} color="primary" onClick={() => handleInternalNav('Messages', '/messages')} />
-            <ActionBtn label="Add Contact" icon={Users} color="secondary" onClick={() => handleInternalNav('Contacts', '/contacts')} />
-            <ActionBtn label="Create Template" icon={LayoutTemplate} color="primary" onClick={() => handleInternalNav('Templates', '/templates')} />
-            <ActionBtn label="View Analytics" icon={BarChart2} color="secondary" onClick={() => handleInternalNav('Analytics', '/analytics')} />
-            <ActionBtn label="WhatsApp Setup" icon={Smartphone} color="primary" onClick={() => handleInternalNav('WhatsApp Setup', '/setup')} />
+        {/* 4. Quick Actions Container - Divided Row */}
+        <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm">
+          <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3.5 pl-0.5">Quick Actions</h3>
+          <div className="flex items-center justify-between divide-x divide-slate-100 border border-slate-200/60 rounded-lg overflow-hidden bg-white">
+            <ActionChip label="Create Campaign" icon={Send} color="green" onClick={() => handleInternalNav('Campaigns', '/campaigns')} />
+            <ActionChip label="Send Message" icon={MessageSquare} color="blue" onClick={() => handleInternalNav('Messages', '/messages')} />
+            <ActionChip label="Add Contact" icon={Users} color="green" onClick={() => handleInternalNav('Contacts', '/contacts')} />
+            <ActionChip label="Create Template" icon={LayoutTemplate} color="blue" onClick={() => handleInternalNav('Templates', '/templates')} />
+            <ActionChip label="View Analytics" icon={BarChart2} color="green" onClick={() => handleInternalNav('Analytics', '/analytics')} />
+            <ActionChip label="WhatsApp Setup" icon={Smartphone} color="blue" onClick={() => handleInternalNav('WhatsApp Setup', '/setup')} />
           </div>
         </div>
 
@@ -401,135 +486,62 @@ export default function DashboardContent({ activeTab, toggleSidebar, onNavigate,
   );
 }
 
-function StatCard({ label, value, color, icon: Icon, isCurrency, onClick }) {
-  const isSecondary = color === 'secondary';
+function StatCard({ label, value, icon: Icon, badgeColor, onClick }) {
+  const badgeClasses = badgeColor === 'green' 
+    ? 'bg-emerald-50 text-[#63C132]' 
+    : 'bg-blue-50 text-[#003B6D]';
   return (
-    <div
+    <div 
       onClick={onClick}
-      className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group"
+      className="bg-white rounded-lg border border-slate-200 p-3.5 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer shadow-sm"
     >
-      <div className={`w-10 h-10 ${isSecondary ? 'bg-secondary text-white' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-        <Icon size={20} strokeWidth={2.5} />
+      <div className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 ${badgeClasses}`}>
+        <Icon size={20} />
       </div>
-      <div className="space-y-0.5">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <h3 className="text-xl font-black text-primary">{value}</h3>
+      <div>
+        <p className="text-[11px] text-slate-500 font-semibold leading-none mb-1.5">{label}</p>
+        <h3 className="text-xl font-bold text-slate-900 leading-none">{value}</h3>
       </div>
-      <div className={`absolute bottom-0 left-0 h-1 w-0 ${isSecondary ? 'bg-secondary' : 'bg-primary'} opacity-20 group-hover:w-full transition-all duration-500`}></div>
     </div>
+  );
+}
+
+function ActionChip({ label, icon: Icon, color, onClick }) {
+  const isGreen = color === 'green';
+  return (
+    <button
+      onClick={onClick}
+      className="flex-1 flex items-center justify-center gap-2 hover:bg-slate-50 py-3.5 transition-colors cursor-pointer text-slate-700 hover:text-slate-900"
+    >
+      <Icon size={14} className={isGreen ? 'text-[#63C132]' : 'text-[#003B6D]'} />
+      <span className="text-[11px] font-bold tracking-wide">{label}</span>
+    </button>
   );
 }
 
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-800 animate-in fade-in zoom-in duration-300">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-800 pb-2">{label}</p>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#63C132]"></div>
-              <span className="text-xs font-bold">Sent:</span>
+      <div className="bg-slate-900 text-white p-2 rounded-md shadow-xl border border-slate-800 animate-in fade-in zoom-in duration-200">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 border-b border-slate-800 pb-1">{label}</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#63C132]"></div>
+              <span className="text-[10px] font-bold">Sent:</span>
             </div>
-            <span className="text-xs font-black">{payload[0].value.toLocaleString()}</span>
+            <span className="text-[10px] font-black">{payload[0].value.toLocaleString()}</span>
           </div>
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#003B6D]"></div>
-              <span className="text-xs font-bold">Delivered:</span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#003B6D]"></div>
+              <span className="text-[10px] font-bold">Delivered:</span>
             </div>
-            <span className="text-xs font-black">{payload[1].value.toLocaleString()}</span>
+            <span className="text-[10px] font-black">{payload[1].value.toLocaleString()}</span>
           </div>
         </div>
       </div>
     );
   }
   return null;
-}
-
-function CampaignItem({ name, type, date, status, sent, delivered, icon: Icon, iconColor, onClick }) {
-  const isSecondary = iconColor === 'secondary';
-  const statusMap = {
-    'Completed': 'bg-secondary/10 text-secondary',
-    'In Progress': 'bg-primary/10 text-primary',
-    'Scheduled': 'bg-slate-100 text-slate-600',
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-3 group cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded-2xl transition-all border-b border-slate-50 last:border-0 pb-3"
-    >
-      <div className={`w-11 h-11 ${isSecondary ? 'bg-secondary text-white shadow-lg shadow-secondary/20' : 'bg-primary text-white shadow-lg shadow-primary/20'} rounded-full flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110`}>
-        <Icon size={20} />
-      </div>
-      <div className="flex-1 min-w-[100px]">
-        <div className="flex flex-wrap items-center gap-2 mb-0.5">
-          <h4 className="text-[14px] font-extrabold text-slate-800 leading-tight">{name}</h4>
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-lg ${statusMap[status]}`}>{status}</span>
-        </div>
-        <p className="text-[10px] text-slate-400 font-medium">{type} • {date}</p>
-      </div>
-      <div className="flex items-center gap-4 sm:gap-8 flex-shrink-0">
-        <div className="text-left min-w-[60px]">
-          <p className="text-[13px] font-black text-slate-800">{sent}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Sent</p>
-        </div>
-        <div className="text-left min-w-[70px]">
-          <p className="text-[13px] font-black text-slate-800">{delivered}</p>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Deliv</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TemplateItem({ name, type, usage, isActive, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`flex items-center justify-between group cursor-pointer p-4 rounded-2xl transition-all duration-300 ${isActive ? 'bg-primary/5 border border-primary/10' : 'hover:bg-slate-50/80 border border-transparent'}`}
-    >
-      <div className="flex items-center gap-4 min-w-0">
-        <div className={`w-12 h-12 md:w-14 md:h-14 ${isActive ? 'bg-primary text-white' : 'bg-primary/5 text-primary'} rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm transition-colors`}>
-          <LayoutTemplate size={24} />
-        </div>
-        <div className="flex flex-col gap-1 min-w-0">
-          <h4 className="text-sm md:text-[15px] font-extrabold text-slate-800 leading-tight truncate">{name}</h4>
-          <div>
-            <span className={`text-[9px] md:text-[10px] font-bold px-2 md:px-3 py-1 rounded-lg ${type === 'Promotional' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>
-              {type}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-        <div className="text-right">
-          <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-tight">Used</p>
-          <div className="flex flex-col leading-none mt-1">
-            <span className="text-sm md:text-[15px] font-black text-slate-800">{usage}</span>
-            <span className="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase">times</span>
-          </div>
-        </div>
-        <ArrowRight size={16} className={`${isActive ? 'text-primary' : 'text-slate-300'} group-hover:text-primary group-hover:translate-x-1 transition-all`} />
-      </div>
-    </div>
-  );
-}
-
-function ActionBtn({ label, icon: Icon, color, onClick }) {
-  const isSecondary = color === 'secondary';
-  return (
-    <button
-      onClick={onClick}
-      className="flex flex-col items-center justify-center gap-2 p-3 md:p-4 bg-white border border-slate-100 rounded-xl md:rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group min-h-[100px] md:min-h-[110px]"
-    >
-      <div className={`w-9 h-9 md:w-11 md:h-11 ${isSecondary ? 'bg-secondary/10 text-secondary' : 'bg-primary/5 text-primary'} rounded-xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-300`}>
-        <Icon size={18} className="md:w-5 md:h-5" strokeWidth={2.5} />
-      </div>
-      <span className="text-[10px] md:text-[11px] font-extrabold text-slate-700 text-center leading-tight max-w-[80px] md:max-w-full">
-        {label}
-      </span>
-    </button>
-  );
 }

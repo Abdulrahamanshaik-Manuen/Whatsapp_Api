@@ -125,4 +125,19 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-200 rounded-full hover:bg-slate-300;
   }
+
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-surface:focus,
+  .recharts-wrapper:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  svg:focus,
+  svg *:focus {
+    outline: none !important;
+    border: none !important;
+  }
 }

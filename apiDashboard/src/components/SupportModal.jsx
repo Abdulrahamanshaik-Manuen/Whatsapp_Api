@@ -1,93 +1,121 @@
-import React from 'react';
-import { X, Headphones, MessageCircle, Mail, BookOpen, Clock, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  X, Headphones, MessageCircle, Mail,
+  Search, Clock
+} from 'lucide-react';
 
 export default function SupportModal({ onClose }) {
-    const supportChannels = [
-        {
-            title: "WhatsApp Support",
-            description: "Instant chat with our technical team",
-            icon: <MessageCircle className="text-emerald-500" />,
-            action: "Chat Now",
-            link: "https://wa.me/918501920633", // Replace with real support number
-            color: "bg-emerald-50"
-        },
-        {
-            title: "Email Support",
-            description: "Get help for complex issues",
-            icon: <Mail className="text-blue-500" />,
-            action: "Send Email",
-            link: "mailto:connect@manuen.com",
-            color: "bg-blue-50"
-        }
-    ];
+  const [query, setQuery] = useState('');
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
-            ></div>
+  const primaryChannels = [
+    {
+      icon: MessageCircle,
+      color: 'bg-emerald-50 text-emerald-500',
+      title: 'WhatsApp Support',
+      hint: 'Best for quick questions',
+      action: 'Chat Now',
+      actionStyle: 'bg-emerald-500 hover:bg-emerald-600 text-white',
+      link: 'https://wa.me/918501920633',
+      primary: true
+    },
+    {
+      icon: Mail,
+      color: 'bg-blue-50 text-blue-500',
+      title: 'Email Support',
+      hint: 'Best for technical issues',
+      action: 'Send Email',
+      actionStyle: 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700',
+      link: 'mailto:connect@manuen.com',
+      primary: false
+    }
+  ];
 
-            <div className="relative w-full max-w-lg bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-slate-900/20 overflow-hidden animate-in fade-in zoom-in duration-300">
-                {/* Header */}
-                <div className="p-5 sm:p-8 bg-gradient-to-br from-primary to-slate-900 text-white relative">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 sm:top-6 sm:right-6 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                    >
-                        <X size={18} />
-                    </button>
 
-                    <div className="flex items-center gap-3 sm:gap-4 mb-4 pr-10">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-                            <Headphones size={28} className="text-secondary" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl sm:text-2xl font-black tracking-tight">Technical Support</h2>
-                            <p className="text-white/60 text-xs sm:text-sm font-medium">We're here to help you scale your business.</p>
-                        </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full w-fit">
-                        <Clock size={12} className="text-secondary shrink-0" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Average Response: 15 Mins</span>
-                    </div>
-                </div>
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:justify-end p-0 sm:p-6">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-                {/* Content */}
-                <div className="p-4 sm:p-8 space-y-3 sm:space-y-4">
-                    {supportChannels.map((channel, idx) => (
-                        <a
-                            key={idx}
-                            href={channel.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 hover:border-primary/20 hover:bg-slate-50 transition-all group"
-                        >
-                            <div className={`w-12 h-12 sm:w-14 sm:h-14 ${channel.color} rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                                {React.cloneElement(channel.icon, { size: 24 })}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-black text-slate-800 tracking-tight text-sm">{channel.title}</h4>
-                                <p className="text-xs text-slate-500 font-medium mt-0.5">{channel.description}</p>
-                            </div>
-                            <div className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-widest shrink-0">
-                                {channel.action}
-                                <ExternalLink size={11} />
-                            </div>
-                        </a>
-                    ))}
-                </div>
+      {/* Panel */}
+      <div className="relative w-full sm:w-[360px] bg-white rounded-t-2xl sm:rounded-xl shadow-2xl shadow-slate-900/20 overflow-hidden animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-300 flex flex-col max-h-[90vh]">
 
-                {/* Footer */}
-                <div className="px-5 sm:px-8 py-4 sm:py-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-4">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate">Manuen Infotech Support</p>
-                    <div className="flex items-center gap-2 shrink-0">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest whitespace-nowrap">Support Online</span>
-                    </div>
-                </div>
+        {/* ── Header ── */}
+        <div className="flex items-center gap-3 px-4 py-3 bg-[#003B6D] text-white shrink-0">
+          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
+            <Headphones size={16} className="text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-bold text-white leading-none">Technical Support</h2>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-[10px] text-white/60 font-semibold">Online · Avg response: 15 min</span>
             </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all cursor-pointer shrink-0"
+          >
+            <X size={14} />
+          </button>
         </div>
-    );
+
+        {/* ── Search ── */}
+        <div className="px-4 pt-3 pb-2 shrink-0">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search help articles..."
+              className="w-full h-9 pl-8 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-[#004277] outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        {/* ── Primary Channels ── */}
+        <div className="px-4 pb-3 space-y-2 shrink-0">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Contact Us</p>
+          {primaryChannels.map((ch, i) => (
+            <a
+              key={i}
+              href={ch.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 hover:bg-slate-50/60 transition-all group cursor-pointer"
+            >
+              <div className={`w-9 h-9 rounded-lg ${ch.color} flex items-center justify-center shrink-0`}>
+                <ch.icon size={16} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-800 leading-none">{ch.title}</p>
+                <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{ch.hint}</p>
+              </div>
+              <span className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg cursor-pointer transition-all shrink-0 ${ch.actionStyle}`}>
+                {ch.action}
+              </span>
+            </a>
+          ))}
+        </div>
+
+
+
+        {/* ── Footer ── */}
+        <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Clock size={11} className="text-slate-400" />
+            <span className="text-[10px] text-slate-400 font-semibold">Mon–Sat · 9 AM – 7 PM IST</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold text-emerald-600">Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -25,6 +25,7 @@ export const getAutomations = async (req, res) => {
 
 export const createAutomation = async (req, res) => {
   try {
+    const { name, description, status, nodes, edges, clientId, businessGoal, priority } = req.body;
     const userRole = (req.user.role || '').toLowerCase();
     
     // If client is creating, enforce status = requested
@@ -38,6 +39,8 @@ export const createAutomation = async (req, res) => {
     const automation = await Automation.create({
       name,
       description,
+      businessGoal,
+      priority,
       nodes: nodes || [],
       edges: edges || [],
       status: finalStatus,
@@ -49,7 +52,7 @@ export const createAutomation = async (req, res) => {
     if (userRole === 'client') {
         await notifyAdmins(
             'New Automation Request',
-            `Client requested a new automation: "${name}".`,
+            `Client requested a new automation: "${name}". Priority: ${priority || 'Medium'}. Goal: ${businessGoal || 'None'}.`,
             'info'
         );
     }
