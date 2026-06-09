@@ -12,8 +12,8 @@ const systemConfigSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['meta', 'security', 'infrastructure', 'webhooks'],
-        required: true
+        enum: ['meta', 'security', 'infrastructure', 'webhooks', 'branding', 'limits'],
+        default: 'meta'
     },
     description: {
         type: String

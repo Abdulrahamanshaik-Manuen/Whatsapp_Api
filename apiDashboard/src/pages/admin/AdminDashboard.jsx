@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Send, Users, IndianRupee, ShieldCheck,
-  Loader2, Bot, Clock, AlertCircle, RefreshCw,
+  Bot, Clock, AlertCircle, RefreshCw,
   UserPlus
 } from 'lucide-react';
 import {
@@ -11,7 +11,7 @@ import {
 
 import { useSocket } from '../../context/SocketContext';
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ onNavigate }) {
   const { socket } = useSocket();
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(() => {
@@ -100,25 +100,23 @@ export default function AdminDashboard() {
     };
   }, [socket]);
 
-
-
   const performanceData = stats?.performance || [];
   const userGrowthData = stats?.userGrowth || [];
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-10 custom-scrollbar pb-20">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F8FAFC]">
+      <main className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
 
-        {/* Dashboard Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Platform Overview</h2>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Monitor and manage all managed nodes and global traffic</p>
+        {/* Page Header */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight leading-none">Platform Overview</h1>
+            <p className="text-xs text-slate-400 font-semibold mt-2 leading-none">Monitor and manage all managed nodes and global traffic</p>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
           <StatCard
             label="Managed Clients"
             value={stats?.totalUsers || 0}
@@ -148,41 +146,39 @@ export default function AdminDashboard() {
             value={`₹${stats?.mrr?.toLocaleString() || '0'}`}
             color="secondary"
             icon={IndianRupee}
-            isCurrency
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+        {/* Charts & Revenue Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
           {/* Messages Throughput Section */}
-          <div className="lg:col-span-7 bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-              <div>
-                <h3 className="text-base md:text-lg font-bold text-primary">Messages Throughput</h3>
-                <div className="flex flex-wrap items-center gap-4 mt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-secondary"></div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sent</span>
+          <div className="lg:col-span-7 bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+              <div className="flex flex-col">
+                <h3 className="text-sm font-bold text-slate-800">Messages Throughput</h3>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#63C132] inline-block"></span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Sent</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary/40"></div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Delivered</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#003B6D] inline-block"></span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Delivered</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Failed</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Failed</span>
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 cursor-pointer">
-                  <span className="text-[10px] text-slate-600 font-black uppercase tracking-wider">Current Week (Mon - Sun)</span>
-                </div>
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1">
+                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Current Week</span>
               </div>
             </div>
-            <div className="h-[280px] w-full">
+            <div className="h-[200px] w-full mt-2">
               {performanceData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={performanceData}>
+                  <AreaChart data={performanceData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#63C132" stopOpacity={0.1} />
@@ -202,73 +198,77 @@ export default function AdminDashboard() {
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
-                      dy={15}
+                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
+                      dy={5}
                       interval="preserveStartEnd"
                       minTickGap={25}
-                      padding={{ left: 10, right: 10 }}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }}
+                      tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
                       tickFormatter={(val) => val >= 1000 ? `${val / 1000}K` : val}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#e2e8f0', strokeWidth: 1.5 }} />
                     <Area
                       type="monotone"
                       dataKey="sent"
                       stroke="#63C132"
-                      strokeWidth={3}
+                      strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorSent)"
+                      dot={{ r: 2.5, fill: '#63C132', strokeWidth: 1 }}
+                      activeDot={{ r: 3.5, strokeWidth: 0 }}
                     />
                     <Area
                       type="monotone"
                       dataKey="delivered"
                       stroke="#003B6D"
-                      strokeWidth={3}
-                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                      strokeDasharray="4 4"
                       fillOpacity={1}
                       fill="url(#colorDelivered)"
+                      dot={{ r: 2.5, fill: '#003B6D', strokeWidth: 1 }}
+                      activeDot={{ r: 3.5, strokeWidth: 0 }}
                     />
                     <Area
                       type="monotone"
                       dataKey="failed"
                       stroke="#ef4444"
-                      strokeWidth={2}
+                      strokeWidth={1.5}
                       fillOpacity={1}
                       fill="url(#colorFailed)"
+                      dot={{ r: 2, fill: '#ef4444', strokeWidth: 1 }}
+                      activeDot={{ r: 3, strokeWidth: 0 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full w-full flex items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-xs text-slate-400 font-black uppercase tracking-widest">Collecting data stream...</p>
+                <div className="h-full w-full flex items-center justify-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Collecting data stream...</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* User Growth Column - AGGRESSIVELY TIGHTENED */}
-          <div className="lg:col-span-5 space-y-5 md:space-y-6 flex flex-col">
-            <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-6 flex flex-col overflow-hidden relative group h-fit">
-              <div className="flex items-center justify-between mb-4">
+          {/* User Growth & Revenue Column */}
+          <div className="lg:col-span-5 space-y-3.5 flex flex-col justify-between">
+            {/* User Growth Card */}
+            <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm flex flex-col justify-between h-[180px]">
+              <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h3 className="text-base font-black text-primary tracking-tight">User Growth</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Weekly Acquisition Bar</p>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">User Growth</h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Weekly Acquisition</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <UserPlus size={20} strokeWidth={2.5} />
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+                  <UserPlus size={16} strokeWidth={2.5} />
                 </div>
               </div>
-
-              {/* Bar Chart for User Growth - Minimized padding and offsets */}
-              <div className="h-[140px] w-full">
+              <div className="h-[90px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={userGrowthData}
-                    margin={{ top: 0, right: 0, left: -20, bottom: 5 }}
+                    margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
                     style={{ outline: 'none' }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
@@ -276,17 +276,15 @@ export default function AdminDashboard() {
                       dataKey="week"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 8, fill: '#94a3b8', fontWeight: 800 }}
-                      dy={8}
-                      interval="preserveStartEnd"
-                      minTickGap={20}
+                      tick={{ fontSize: 8, fill: '#94a3b8', fontWeight: 600 }}
+                      dy={5}
                     />
                     <Tooltip
                       cursor={{ fill: '#f1f5f9' }}
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl">
+                            <div className="bg-slate-900 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest shadow-lg">
                               {payload[0].value} New Clients
                             </div>
                           );
@@ -294,7 +292,7 @@ export default function AdminDashboard() {
                         return null;
                       }}
                     />
-                    <Bar dataKey="users" radius={[6, 6, 0, 0]} barSize={40}>
+                    <Bar dataKey="users" radius={[4, 4, 0, 0]} barSize={28}>
                       {userGrowthData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={index === userGrowthData.length - 1 ? '#63C132' : '#E2E8F0'} />
                       ))}
@@ -302,35 +300,29 @@ export default function AdminDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Total Active Nodes</p>
-                  <p className="text-lg font-black text-primary">{stats?.totalUsers}</p>
-                </div>
+              <div className="mt-2 pt-2 border-t border-slate-50 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <span>Total Active Nodes: {stats?.totalUsers}</span>
               </div>
             </div>
 
-            <div className="bg-slate-900 rounded-2xl md:rounded-[1.5rem] p-6 text-white relative overflow-hidden shadow-2xl shadow-primary/40 h-[180px] group border border-white/10">
-              {/* Animated Mesh Gradient Background */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/30 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-secondary/40 transition-colors"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/20 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2"></div>
-
-              <div className="relative z-10 flex flex-col justify-between h-full">
+            {/* Platform Revenue Card */}
+            <div className="bg-slate-900 rounded-lg p-4 text-white relative overflow-hidden shadow-sm flex flex-col justify-between h-[180px] group border border-white/10">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/20 rounded-full blur-[30px] translate-y-1/2 -translate-x-1/2"></div>
+              
+              <div className="relative z-10 flex flex-col justify-between h-full space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <h3 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Platform Revenue</h3>
-                    <h4 className="text-3xl font-black tracking-tighter text-white drop-shadow-sm">
+                    <h3 className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">Platform Revenue</h3>
+                    <h4 className="text-2xl font-bold tracking-tight text-white">
                       ₹{(stats?.mrr + stats?.metaCost)?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </h4>
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  {/* Visual Breakdown Bar */}
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
+                <div className="space-y-2">
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden flex">
                     <div
-                      className="h-full bg-secondary transition-all duration-1000 ease-out"
+                      className="h-full bg-[#63C132] transition-all duration-1000 ease-out"
                       style={{ width: `${(stats?.mrr / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
                     ></div>
                     <div
@@ -338,17 +330,14 @@ export default function AdminDashboard() {
                       style={{ width: `${(stats?.metaCost / (stats?.mrr + stats?.metaCost || 1)) * 100}%` }}
                     ></div>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-6">
-                      <div className="space-y-0.5">
-                        <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Subscriptions</p>
-                        <p className="text-[11px] font-bold text-white">₹{stats?.mrr?.toLocaleString()}</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[8px] text-white/30 font-black uppercase tracking-widest">Usage/Meta</p>
-                        <p className="text-[11px] font-bold text-secondary">₹{stats?.metaCost?.toLocaleString()}</p>
-                      </div>
+                  <div className="flex gap-4 text-[10px]">
+                    <div>
+                      <span className="text-white/30 block uppercase font-bold text-[8px] tracking-wider">Subscriptions</span>
+                      <span className="font-bold text-white">₹{stats?.mrr?.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-white/30 block uppercase font-bold text-[8px] tracking-wider">Usage/Meta</span>
+                      <span className="font-bold text-[#63C132]">₹{stats?.metaCost?.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -358,50 +347,48 @@ export default function AdminDashboard() {
         </div>
 
         {/* System Logs & Errors Section */}
-        <div className="bg-white rounded-2xl md:rounded-[1.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-lg border border-slate-200/60 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-black text-primary tracking-tight">System Logs & Errors</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Real-time Backend Security & Infrastructure Tracking</p>
+              <h3 className="text-sm font-bold text-slate-800">System Logs & Errors</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Real-time Backend Security & Infrastructure Tracking</p>
             </div>
-            <div className="flex gap-2">
-              <button onClick={fetchLogs} className="p-2 bg-slate-50 text-slate-400 hover:text-primary rounded-lg transition-colors">
-                <RefreshCw size={16} />
-              </button>
-            </div>
+            <button onClick={fetchLogs} className="p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-400 hover:text-primary rounded-md transition-colors">
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            </button>
           </div>
 
-          <div className="h-[300px] overflow-y-auto custom-scrollbar border border-slate-50 rounded-xl">
+          <div className="h-[220px] overflow-y-auto custom-scrollbar border border-slate-100 rounded-lg bg-slate-50/30">
             {systemLogs.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center bg-slate-50/50">
-                <ShieldCheck size={32} className="text-emerald-400 mb-3" />
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No System Errors Detected</p>
+              <div className="h-full flex flex-col items-center justify-center">
+                <ShieldCheck size={28} className="text-emerald-500 mb-2" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No System Errors Detected</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-slate-100">
                 {systemLogs.map((log, index) => (
-                  <div key={index} className="p-4 hover:bg-slate-50/50 transition-colors flex gap-4">
+                  <div key={index} className="p-3 hover:bg-white transition-colors flex gap-3 text-xs">
                     <div className="shrink-0 mt-0.5">
                       {log.level === 'error' ? (
-                        <div className="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center"><AlertCircle size={16} /></div>
+                        <div className="w-7 h-7 bg-rose-50 text-rose-500 rounded-md flex items-center justify-center"><AlertCircle size={14} /></div>
                       ) : log.level === 'warn' ? (
-                        <div className="w-8 h-8 bg-amber-50 text-amber-500 rounded-lg flex items-center justify-center"><AlertCircle size={16} /></div>
+                        <div className="w-7 h-7 bg-amber-50 text-amber-500 rounded-md flex items-center justify-center"><AlertCircle size={14} /></div>
                       ) : (
-                        <div className="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><Bot size={16} /></div>
+                        <div className="w-7 h-7 bg-blue-50 text-blue-500 rounded-md flex items-center justify-center"><Bot size={14} /></div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${log.level === 'error' ? 'bg-rose-100 text-rose-600' : log.level === 'warn' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${log.level === 'error' ? 'bg-rose-100 text-rose-600' : log.level === 'warn' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
                           {log.source || 'internal'}
                         </span>
                         <span className="text-[10px] text-slate-400 font-bold">
                           {new Date(log.created_at).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-sm font-bold text-slate-800 break-words leading-relaxed">{log.message}</p>
+                      <p className="text-slate-800 font-semibold break-words leading-tight">{log.message}</p>
                       {log.stack && (
-                        <pre className="mt-2 p-3 bg-slate-900 text-slate-300 text-[10px] rounded-lg overflow-x-auto font-mono opacity-80 group-hover:opacity-100 transition-opacity">
+                        <pre className="mt-1.5 p-2 bg-slate-900 text-slate-300 text-[9px] rounded-md overflow-x-auto font-mono opacity-85">
                           {log.stack.split('\n')[0]}...
                         </pre>
                       )}
@@ -418,18 +405,20 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, color, icon: Icon, isCurrency }) {
+function StatCard({ label, value, color, icon: Icon }) {
   const isSecondary = color === 'secondary';
+  const badgeClasses = isSecondary 
+    ? 'bg-emerald-50 text-[#63C132]' 
+    : 'bg-blue-50 text-[#003B6D]';
   return (
-    <div className="bg-white p-4 md:p-5 rounded-[1.25rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden group">
-      <div className={`w-10 h-10 ${isSecondary ? 'bg-secondary text-white shadow-lg shadow-secondary/20' : 'bg-primary/10 text-primary'} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-        <Icon size={20} strokeWidth={2.5} />
+    <div className="bg-white rounded-lg border border-slate-200 p-3.5 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer shadow-sm">
+      <div className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 ${badgeClasses}`}>
+        <Icon size={20} />
       </div>
-      <div className="space-y-0.5">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <h3 className="text-xl font-black text-primary">{value}</h3>
+      <div>
+        <p className="text-[11px] text-slate-500 font-semibold leading-none mb-1.5">{label}</p>
+        <h3 className="text-xl font-bold text-slate-900 leading-none">{value}</h3>
       </div>
-      <div className={`absolute bottom-0 left-0 h-1 w-0 ${isSecondary ? 'bg-secondary' : 'bg-primary'} opacity-20 group-hover:w-full transition-all duration-500`}></div>
     </div>
   );
 }
@@ -437,30 +426,30 @@ function StatCard({ label, value, color, icon: Icon, isCurrency }) {
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-800 animate-in fade-in zoom-in duration-300">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-800 pb-2">{label}</p>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#63C132]"></div>
-              <span className="text-xs font-bold">Sent:</span>
+      <div className="bg-slate-900 text-white p-2 rounded-md shadow-xl border border-slate-800 animate-in fade-in zoom-in duration-200">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 border-b border-slate-800 pb-1">{label}</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#63C132]"></div>
+              <span className="text-[10px] font-bold">Sent:</span>
             </div>
-            <span className="text-xs font-black">{payload[0].value.toLocaleString()}</span>
+            <span className="text-[10px] font-black">{payload[0].value.toLocaleString()}</span>
           </div>
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#003B6D] opacity-40"></div>
-              <span className="text-xs font-bold">Delivered:</span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#003B6D] opacity-40"></div>
+              <span className="text-[10px] font-bold">Delivered:</span>
             </div>
-            <span className="text-xs font-black">{payload[1].value.toLocaleString()}</span>
+            <span className="text-[10px] font-black">{payload[1].value.toLocaleString()}</span>
           </div>
           {payload[2] && (
-            <div className="flex items-center justify-between gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#ef4444]"></div>
-                <span className="text-xs font-bold">Failed:</span>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></div>
+                <span className="text-[10px] font-bold">Failed:</span>
               </div>
-              <span className="text-xs font-black">{payload[2].value.toLocaleString()}</span>
+              <span className="text-[10px] font-black">{payload[2].value.toLocaleString()}</span>
             </div>
           )}
         </div>

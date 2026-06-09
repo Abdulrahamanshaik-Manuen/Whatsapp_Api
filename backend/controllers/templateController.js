@@ -144,7 +144,7 @@ export const submitToMeta = async (req, res) => {
         const access_token = owner.access_token;
 
         // Deferred Meta Upload: If we have a preview but no Meta handle yet
-        if (!finalMediaHandle && template.header?.media_url && template.header?.type !== 'TEXT') {
+        if (!finalMediaHandle && template.header?.media_url && template.header?.format !== 'TEXT') {
             try {
                 const response = await axios.get(template.header.media_url, { responseType: 'arraybuffer' });
                 const buffer = Buffer.from(response.data);
@@ -172,9 +172,9 @@ export const submitToMeta = async (req, res) => {
         if (template.header) {
             const header = {
                 type: 'HEADER',
-                format: template.header.type,
+                format: template.header.format,
             };
-            if (template.header.type === 'TEXT') {
+            if (template.header.format === 'TEXT') {
                 header.text = template.header.text;
             } else if (finalMediaHandle) {
                 header.example = {
@@ -315,7 +315,7 @@ export const requestCustomTemplate = async (req, res) => {
             language: language || 'en_US',
             content,
             variables: uniqueVariables,
-            header: headerType !== 'NONE' ? { type: headerType, text: headerText, handle: finalMediaHandle, media_url: previewUrl } : null,
+            header: headerType !== 'NONE' ? { format: headerType, text: headerText, handle: finalMediaHandle, media_url: previewUrl } : null,
             footer: footer || null,
             buttons: buttons || [],
             created_by: targetUserId,
@@ -497,7 +497,7 @@ export const syncAllTemplatesFromMeta = async (req, res) => {
                     }
 
                     header = {
-                        type: format?.toUpperCase() || 'TEXT',
+                        format: format?.toUpperCase() || 'TEXT',
                         text: activeHeader.text || null,
                         media_url: mediaUrl
                     };

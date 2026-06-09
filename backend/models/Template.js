@@ -21,7 +21,7 @@ const templateSchema = new mongoose.Schema({
         required: true
     },
     header: {
-        type: {
+        format: {
             type: String, // TEXT, IMAGE, VIDEO, DOCUMENT
             enum: ["TEXT", "IMAGE", "VIDEO", "DOCUMENT"]
         },

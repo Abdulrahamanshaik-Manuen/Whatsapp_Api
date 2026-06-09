@@ -433,16 +433,38 @@ export const getSettings = async (req, res) => {
 export const updateSettings = async (req, res) => {
     try {
         const updates = req.body;
+
+        const categoryMap = {
+            COMPANY_NAME: 'branding', SUPPORT_EMAIL: 'branding',
+            SUPPORT_PHONE: 'branding', COMPANY_TAX_NUMBER: 'branding',
+            COMPANY_ADDRESS: 'branding',
+            MAINTENANCE_MODE: 'limits', DEFAULT_CONTACT_LIMIT: 'limits',
+            APP_ID: 'meta', APP_SECRET: 'meta',
+            WHATSAPP_BUSINESS_ACCOUNT_ID: 'meta', PHONE_NUMBER_ID: 'meta',
+            ACCESSTOKEN: 'meta',
+            WEBHOOKVERIFYTOKEN: 'webhooks', WEBHOOKCALLBACKURL: 'webhooks',
+            META_REDIRECT_URI: 'webhooks', FRONTEND_URL: 'webhooks',
+            JWT_SECRET: 'security', JWT_EXPIRY: 'security',
+            OTP_EXPIRY: 'security', MAX_OTP_ATTEMPTS: 'security',
+            USER_EMAIL: 'security',
+            MONGO_URI: 'infrastructure', REDIS_URI: 'infrastructure',
+            CLOUDINARY_API_KEY: 'infrastructure', CLOUDINARY_API_SECRET: 'infrastructure',
+        };
+
         const operations = Object.entries(updates).map(([key, value]) => ({
             updateOne: {
                 filter: { key },
-                update: { value, updated_at: new Date() },
+                update: {
+                    $set: { value, updated_at: new Date() },
+                    $setOnInsert: { category: categoryMap[key] || 'meta' }
+                },
                 upsert: true
             }
         }));
         await SystemConfig.bulkWrite(operations);
         res.json({ message: "Settings updated successfully" });
     } catch (err) {
+        console.error("updateSettings error:", err);
         res.status(500).json({ error: "Failed to update settings" });
     }
 };

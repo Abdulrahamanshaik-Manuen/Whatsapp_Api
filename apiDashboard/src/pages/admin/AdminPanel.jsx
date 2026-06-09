@@ -36,6 +36,9 @@ export default function AdminPanel({ onNavigate, initialPath }) {
   });
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('adminSidebarCollapsed') === 'true';
+  });
   const [adminData, setAdminData] = useState(null);
   const [selectedAutomationData, setSelectedAutomationData] = useState(() => {
     const saved = localStorage.getItem('selectedAutomationData');
@@ -85,6 +88,21 @@ export default function AdminPanel({ onNavigate, initialPath }) {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('adminSidebarCollapsed', String(next));
+      return next;
+    });
+  };
+
+  // Auto-collapse when entering Automation Builder
+  useEffect(() => {
+    if (activeTab === 'Automation Builder') {
+      setIsSidebarCollapsed(true);
+    }
+  }, [activeTab]);
+
   return (
     <div className="flex h-screen bg-[#F5F7FA] font-['Inter',_sans-serif] overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
@@ -102,10 +120,21 @@ export default function AdminPanel({ onNavigate, initialPath }) {
         setIsOpen={setIsSidebarOpen}
         onNavigate={onNavigate}
         userData={adminData}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={toggleSidebarCollapse}
       />
 
       <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
-        {activeTab !== 'Automation Builder' && <Header toggleSidebar={toggleSidebar} onNavigate={onNavigate} setActiveTab={handleTabChange} />}
+        {activeTab !== 'Automation Builder' && (
+          <Header
+            toggleSidebar={toggleSidebar}
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={toggleSidebarCollapse}
+            onNavigate={onNavigate}
+            setActiveTab={handleTabChange}
+            userData={adminData}
+          />
+        )}
 
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {activeTab === 'Dashboard' ? (
