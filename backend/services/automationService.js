@@ -5,7 +5,7 @@ import User from '../models/User.js';
 import Contact from '../models/Contact.js';
 import Message from '../models/Message.js';
 import Notification from '../models/Notification.js';
-import { sendTemplateMessage, sendTextMessage } from './whatsappService.js';
+import { sendTemplateMessage, sendTextMessage, sendMediaMessage } from './whatsappService.js';
 import { calculateMetaCost } from '../utils/pricingEngine.js';
 import axios from 'axios';
 import { io } from '../server/Server.js';
@@ -215,7 +215,6 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     return { success: false, error: "Message limit exceeded." };
                 }
 
-                // Replace variables in text
                 let text = config.message || '';
                 if (state.context) {
                     state.context.forEach((val, key) => {
@@ -223,19 +222,35 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     });
                 }
 
-                // Attempt with user token first, fallback to system if it fails
                 const userToken = user.access_token;
                 const systemToken = process.env.ACCESSTOKEN;
                 const phoneId = user.phone_number_id || process.env.PHONE_NUMBER_ID;
+                const mediaUrl = config.mediaUrl;
+                const mediaType = config.mediaType || 'image';
 
-                let result = await sendTextMessage(phoneId, userToken || systemToken, state.phoneNumber, text);
+                let result;
 
-                if (!result.success) {
-                    const errorStr = JSON.stringify(result.error || '');
-                    const isAuthError = errorStr.includes('190') || errorStr.includes('Authentication');
+                if (mediaUrl) {
+                    result = await sendMediaMessage(phoneId, userToken || systemToken, state.phoneNumber, mediaType, mediaUrl, text);
 
-                    if (isAuthError && userToken && systemToken) {
-                        result = await sendTextMessage(phoneId, systemToken, state.phoneNumber, text);
+                    if (!result.success) {
+                        const errorStr = JSON.stringify(result.error || '');
+                        const isAuthError = errorStr.includes('190') || errorStr.includes('Authentication');
+
+                        if (isAuthError && userToken && systemToken) {
+                            result = await sendMediaMessage(phoneId, systemToken, state.phoneNumber, mediaType, mediaUrl, text);
+                        }
+                    }
+                } else {
+                    result = await sendTextMessage(phoneId, userToken || systemToken, state.phoneNumber, text);
+
+                    if (!result.success) {
+                        const errorStr = JSON.stringify(result.error || '');
+                        const isAuthError = errorStr.includes('190') || errorStr.includes('Authentication');
+
+                        if (isAuthError && userToken && systemToken) {
+                            result = await sendTextMessage(phoneId, systemToken, state.phoneNumber, text);
+                        }
                     }
                 }
 
@@ -248,26 +263,24 @@ const handleNodeExecution = async (node, automation, state, lastMessage) => {
                     io.emit('live_event', {
                         type: 'automation_message',
                         from: state.phoneNumber,
-                        body: text,
+                        body: text || `[${mediaType}]`,
                         timestamp: new Date()
                     });
                 }
 
-                // Save to DB
                 await Message.create({
                     user_id: user._id,
                     to: state.phoneNumber,
                     direction: 'outgoing',
-                    type: 'text',
-                    body: text,
+                    type: mediaUrl ? mediaType : 'text',
+                    body: text || `[${mediaType}]`,
                     status: 'sent',
                     meta_message_id: result.data?.messages?.[0]?.id,
                     created_at: new Date()
                 });
 
-                // Update Usage
                 user.messages_used += 1;
-                
+
                 if (user.messages_used >= user.message_limit) {
                     user.subscription_status = 'suspended';
                 }

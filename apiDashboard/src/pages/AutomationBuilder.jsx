@@ -204,6 +204,7 @@ function BuilderCanvas({ onClose, automation }) {
   const [automationStatus, setAutomationStatus] = useState(automation?.status || 'active');
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const messageUploadInputRef = useRef(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'admin';
@@ -410,6 +411,40 @@ function BuilderCanvas({ onClose, automation }) {
         return node;
       })
     );
+  };
+
+  const handleAutomationMediaUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedNode || selectedNode.type !== 'messageNode') return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await axios.post(`${API_BASE_URL}/messages/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const mediaUrl = uploadRes.data?.url;
+      if (!mediaUrl) {
+        throw new Error('Missing uploaded media URL');
+      }
+
+      const mediaType = file.type.startsWith('image/') ? 'image'
+        : file.type.startsWith('video/') ? 'video'
+          : file.type.startsWith('audio/') ? 'audio'
+            : 'document';
+
+      updateNodeConfig({ mediaUrl, mediaType, mediaName: file.name });
+      if (messageUploadInputRef.current) messageUploadInputRef.current.value = '';
+    } catch (err) {
+      console.error('Automation attachment upload failed:', err);
+      alert('Failed to upload attachment for automation message.');
+    }
   };
 
   const handleValidate = () => {
@@ -922,6 +957,51 @@ function BuilderCanvas({ onClose, automation }) {
                         placeholder="Hello! How can we assist you?"
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold focus:bg-white focus:border-[#004277] outline-none resize-none"
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-0.5">Attachment</label>
+
+                      <input
+                        ref={messageUploadInputRef}
+                        type="file"
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        onChange={handleAutomationMediaUpload}
+                        className="hidden"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => messageUploadInputRef.current?.click()}
+                        className="w-full h-9 px-3 border border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-lg text-[11px] font-bold text-slate-600 transition-colors cursor-pointer"
+                      >
+                        {selectedNode.data.config?.mediaUrl ? 'Replace Attachment' : 'Upload Attachment'}
+                      </button>
+
+                      {selectedNode.data.config?.mediaUrl && (
+                        <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                          {selectedNode.data.config.mediaType === 'image' && (
+                            <img src={selectedNode.data.config.mediaUrl} alt="Automation preview" className="h-20 w-full object-cover rounded-lg border border-slate-200" />
+                          )}
+                          {selectedNode.data.config.mediaType === 'video' && (
+                            <video src={selectedNode.data.config.mediaUrl} className="h-20 w-full object-cover rounded-lg border border-slate-200" controls />
+                          )}
+                          {(selectedNode.data.config.mediaType === 'document' || selectedNode.data.config.mediaType === 'audio') && (
+                            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2 py-2 text-[11px] font-semibold text-slate-600">
+                              <span className="truncate">{selectedNode.data.config.mediaName || 'Attachment'}</span>
+                              <span className="uppercase text-[9px] tracking-wide text-slate-400">{selectedNode.data.config.mediaType}</span>
+                            </div>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => updateNodeConfig({ mediaUrl: '', mediaType: '', mediaName: '' })}
+                            className="w-full h-8 rounded-lg border border-red-200 bg-red-50 text-[10px] font-bold text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+                          >
+                            Remove Attachment
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
